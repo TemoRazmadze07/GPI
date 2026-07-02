@@ -1,0 +1,246 @@
+/* ==========================================================================
+   GPI Design Tokens — exported from the GPI Foundation File
+   (Figma file 0tM9lZKxEjYLT35DbWBrVy). Single source of truth for the
+   prototype. Colours + type pulled live from Figma variables/styles;
+   spacing/radius/border/focus/elevation from the foundation spec.
+   DO NOT hardcode raw values in components — reference these vars (Rule 8).
+   ========================================================================== */
+
+:root {
+  /* ---- Primitive colour ramps -------------------------------------------- */
+  --color-pink-25: #fef3f8; /* extra-light tint (pink/50 ~50% on white) for selected surfaces */
+  --color-pink-50: #fde7f1;
+  --color-pink-100: #fbc4dd;
+  --color-pink-200: #f79cc4;
+  --color-pink-300: #f36ba5;
+  --color-pink-400: #f0418c;
+  --color-pink-500: #ee2a7b; /* brand anchor (NOT AA for text) */
+  --color-pink-600: #de2773; /* action/primary (AA on white) */
+  --color-pink-700: #c42266;
+  --color-pink-800: #ab1e59;
+  --color-pink-900: #801642;
+
+  --color-indigo-50: #ecebf4;
+  --color-indigo-100: #d3d0e7;
+  --color-indigo-200: #aba6ce;
+  --color-indigo-300: #837bb5;
+  --color-indigo-400: #5c5299;
+  --color-indigo-500: #423a80;
+  --color-indigo-600: #383073;
+  --color-indigo-700: #302a66;
+  --color-indigo-800: #292562;
+  --color-indigo-900: #1b1842;
+
+  --color-link-25: #f1f0ff; /* extra-light blue-lavender tint — info-alert bg (design 89:2625 exact) */
+  --color-link-50: #e7e6ff;
+  --color-link-100: #c4c0ff;
+  --color-link-200: #9d96ff;
+  --color-link-300: #746aff;
+  --color-link-400: #4e3fff;
+  --color-link-500: #2a18ff;
+  --color-link-600: #1000f6;
+  --color-link-700: #0d00c4;
+  --color-link-800: #0a0095;
+  --color-link-900: #070066;
+
+  --color-neutral-50: #f7f8fa;
+  --color-neutral-100: #eef0f4;
+  --color-neutral-200: #dee1e8;
+  --color-neutral-300: #c5cad5;
+  --color-neutral-400: #9ba2b0;
+  --color-neutral-500: #6b7280;
+  --color-neutral-600: #4b5363;
+  --color-neutral-700: #374151;
+  --color-neutral-800: #1f2734;
+  --color-neutral-900: #111722;
+
+  --color-green-50: #e8f6ee;
+  --color-green-100: #c0e7d0;
+  --color-green-200: #8fd3ac;
+  --color-green-300: #4fb985;
+  --color-green-400: #22a368;
+  --color-green-500: #138a54;
+  --color-green-600: #0f7347;
+  --color-green-700: #0c5a38;
+  --color-green-800: #08412a;
+  --color-green-900: #05281a;
+
+  --color-amber-50: #fef4e6;
+  --color-amber-100: #fbe0b3;
+  --color-amber-200: #f7c775;
+  --color-amber-300: #f2ac3a;
+  --color-amber-400: #e69214;
+  --color-amber-500: #c2790a;
+  --color-amber-600: #9a6108;
+  --color-amber-700: #744808;
+  --color-amber-800: #4f3206;
+  --color-amber-900: #2e1d03;
+
+  --color-red-50: #fdecea;
+  --color-red-100: #f9c9c4;
+  --color-red-200: #f39a91;
+  --color-red-300: #ed6a5c;
+  --color-red-400: #e5412f;
+  --color-red-500: #d72516;
+  --color-red-600: #b41c10;
+  --color-red-700: #8c160c;
+  --color-red-800: #631009;
+  --color-red-900: #3d0a05;
+
+  --color-sky-50: #e6f4fb;
+  --color-sky-100: #bbe0f4;
+  --color-sky-200: #86c7e9;
+  --color-sky-300: #4ba9da;
+  --color-sky-400: #1e8bc4;
+  --color-sky-500: #0e72a6;
+  --color-sky-600: #0a5c86;
+  --color-sky-700: #084766;
+  --color-sky-800: #053147;
+  --color-sky-900: #031e2c;
+
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* ---- Semantic colour roles --------------------------------------------- */
+  --action-primary: #de2773;
+  --action-primary-hover: #c42266;
+  --action-primary-pressed: #ab1e59;
+  --action-primary-fg: #ffffff;
+  --action-secondary: #292562;
+  --action-secondary-hover: #1b1842;
+  --action-secondary-fg: #ffffff;
+  --action-danger: #b41c10;
+  --action-danger-hover: #8c160c;
+  --action-danger-fg: #ffffff;
+  --action-link: #1000f6;
+  --action-link-hover: #0d00c4;
+
+  --status-success-fg: #0f7347;
+  --status-success-bg: #e8f6ee;
+  --status-success-border: #8fd3ac;
+  --status-warning-fg: #9a6108;
+  --status-warning-bg: #fef4e6;
+  --status-warning-border: #f7c775;
+  --status-error-fg: #b41c10;
+  --status-error-bg: #fdecea;
+  --status-error-border: #f39a91;
+  --status-info-fg: #0a5c86;
+  --status-info-bg: #e6f4fb;
+  --status-info-border: #86c7e9;
+  --status-neutral-fg: #374151;
+  --status-neutral-bg: #eef0f4;
+  --status-neutral-border: #c5cad5;
+
+  --surface-page: #f7f8fa;
+  --surface-card: #ffffff;
+  --surface-sunken: #eef0f4;
+  --surface-overlay: #11172273;
+
+  --text-main: #111722;
+  --text-muted: #6b7280;
+  --text-disabled: #9ba2b0;
+  --text-placeholder: var(--color-neutral-400); /* semantic text/placeholder */
+  --text-inverse: #ffffff;
+  --text-link: #1000f6;
+  --text-brand: #de2773;
+
+  --icon-default: var(--color-neutral-700); /* semantic icon/default */
+  --icon-muted: var(--color-neutral-400); /* semantic icon/muted */
+  --icon-inverse: #ffffff; /* semantic icon/inverse */
+
+  --border-default: #dee1e8;
+  --border-strong: #c5cad5;
+  --border-divider: #eef0f4;
+  --border-field: #9ba2b0;
+  --border-field-hover: #6b7280;
+  --border-focus: #1000f6;
+
+  --interactive-hover-bg: #eef0f4;
+  --interactive-selected-bg: var(--color-pink-25); /* softened from pink/50 → pink/25 (system-wide) */
+  --interactive-disabled-bg: #eef0f4;
+
+  /* Info alert (design 89:2625: blue-lavender bg + navy text). bg = link/25
+     (the design's exact #f1f0ff — indigo/50 read too GREY, user wanted bluer);
+     text stays indigo/800 per the navy→indigo mapping.
+     TODO: port `color/link/25` + `alert/info/*` into the Figma foundation. */
+  --alert-info-bg: var(--color-link-25);
+  --alert-info-fg: var(--color-indigo-800);
+
+  /* Inactive/upcoming indicator (e.g. stepper "todo" step) — secondary (indigo) tint,
+     filled not stroked. Reusable across steppers/indicators in any flow. */
+  --indicator-todo-bg: var(--color-link-25); /* design's lavender #f1f0ff (was indigo-50; re-pointed with link/25's arrival) */
+  --indicator-todo-fg: var(--color-indigo-500);
+
+  /* Clinic / category colours — a CATEGORICAL palette. Used by the booking
+     calendar (clinic-coloured availability rings) + clinic chips. NOT a status
+     colour — purely categorical. Colours match the Step-2 Figma design
+     (node 104:8241): blue / green / magenta rings.
+     TODO: port this group into the Figma foundation as semantic `clinic/*` tokens. */
+  --clinic-1: var(--color-link-600);     /* საბურთალოზე — link blue */
+  --clinic-1-bg: var(--color-link-50);
+  --clinic-1-fg: var(--color-link-600);
+  --clinic-2: var(--color-pink-500);     /* ვაკეში — brand pink (non-text anchor) */
+  --clinic-2-bg: var(--color-pink-50);
+  --clinic-2-fg: var(--color-pink-700);
+
+  /* ---- Spacing (4px base) ------------------------------------------------- */
+  --space-0: 0px;
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-48: 48px;
+  --space-64: 64px;
+
+  /* ---- Sizing ------------------------------------------------------------- */
+  --control-xs: 24px;
+  --control-sm: 32px;
+  --control-md: 40px;
+  --control-lg: 48px;
+  --icon-sm: 16px;
+  --icon-md: 20px;
+  --icon-lg: 24px;
+  --avatar-sm: 24px;
+  --avatar-md: 32px;
+  --avatar-lg: 40px;
+  --avatar-xl: 48px;
+
+  /* ---- Radius ------------------------------------------------------------- */
+  --radius-none: 0px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 999px;
+
+  /* ---- Border width / focus ---------------------------------------------- */
+  --border-width-sm: 1px;
+  --border-width-md: 1.5px;
+  --border-width-lg: 2px;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+
+  /* ---- Layout ------------------------------------------------------------- */
+  --layout-max-width: 1280px;
+  --layout-topbar-height: 64px;
+  --layout-sidebar-expanded: 256px; /* layout/sidebar/expanded256 */
+  --layout-sidebar-collapsed: 72px; /* layout/sidebar/collapsed72 */
+
+  /* ---- Elevation (gray-only drop shadows, base neutral/900) -------------- */
+  /* Exact match to Figma Effect styles (Elevation board 25:7). */
+  --elevation-card: 0 1px 2px 0 rgba(17, 23, 34, 0.06), 0 1px 3px 0 rgba(17, 23, 34, 0.10);
+  --elevation-dropdown: 0 2px 4px 0 rgba(17, 23, 34, 0.06), 0 4px 8px 0 rgba(17, 23, 34, 0.08);
+  --elevation-popover: 0 2px 6px 0 rgba(17, 23, 34, 0.06), 0 8px 16px 0 rgba(17, 23, 34, 0.10);
+  --elevation-modal: 0 4px 8px 0 rgba(17, 23, 34, 0.08), 0 16px 32px 0 rgba(17, 23, 34, 0.14);
+  --elevation-toast: 0 4px 8px 0 rgba(17, 23, 34, 0.10), 0 12px 24px 0 rgba(17, 23, 34, 0.16);
+
+  /* ---- Type families ------------------------------------------------------ */
+  --font-sans: "Noto Sans Georgian", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
