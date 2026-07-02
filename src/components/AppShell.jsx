@@ -8,7 +8,7 @@ import { ka } from '../i18n/strings.js'
 function Logo() {
   return (
     <a className="gpi-logo" href="#" aria-label="GPI — Vienna Insurance Group">
-      <img className="gpi-logo__img" src="/logo.png" alt="GPI — Vienna Insurance Group" />
+      <img className="gpi-logo__img" src={`${import.meta.env.BASE_URL}logo.png`} alt="GPI — Vienna Insurance Group" />
     </a>
   )
 }

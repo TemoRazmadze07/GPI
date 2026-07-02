@@ -8,7 +8,7 @@ export const kaB2B = {
     clientShort: 'მაგალითი კომპანია',
     clientMark: 'MK',
     // Per-client logo (production: each corporate account has its own). null → initials fallback.
-    clientLogo: '/client-logo.svg',
+    clientLogo: import.meta.env.BASE_URL + 'client-logo.svg',
     search: 'ძიება — პირი, პოლისი, ინვოისი…',
     searchClear: 'ძიების გასუფთავება',
     newRequest: 'ახალი მოთხოვნა',

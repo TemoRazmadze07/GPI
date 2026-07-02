@@ -16,11 +16,10 @@
 export const LINK_BASE = {
   // Figma Foundation file — append each flow's `figma` node query (e.g. ?node-id=104-8241).
   figma: 'https://www.figma.com/design/0tM9lZKxEjYLT35DbWBrVy/GPI-Foundation-File',
-  // Production deploy for sharing with coworkers.
-  // ⚠️ DEPLOY PENDING — swap this for the real host (Cloudflare Pages / Netlify /
-  // GitHub Pages) once the prototype is deployed. Until then `share` links copy a
-  // URL that won't resolve yet.
-  share: 'https://gpi-proto.pages.dev',
+  // Production deploy for sharing with coworkers — GitHub Pages (repo TemoRazmadze07/GPI,
+  // served under the /GPI/ subpath). Built + published by .github/workflows/deploy.yml on
+  // every push to main. Study links become https://temorazmadze07.github.io/GPI/?study=1#<hash>.
+  share: 'https://temorazmadze07.github.io/GPI',
   // Local dev server. Derived from the CURRENT origin at runtime so the copied
   // link always matches whatever port the server was assigned (autoPort), not a
   // stale hardcoded one. Falls back to :5173 only in a non-browser context.
