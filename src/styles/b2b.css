@@ -4,8 +4,14 @@
    rhythm across the whole top bar; nothing typographic below 12px.
    ========================================================================== */
 
+/* Viewport-locked shell: chrome (topbar + sidebar) stays fixed in the
+   viewport; ONLY the content pane (.b2b-main) scrolls. Keeps the sidebar's
+   collapse button always visible (user rule 2026-07-02). */
 .b2b-shell {
-  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: var(--surface-page);
   font-family: var(--font-sans);
   color: var(--text-main);
@@ -14,6 +20,7 @@
 /* ---- Top bar: single 40px control row, centered in 64px ------------------ */
 .b2b-topbar {
   height: var(--layout-topbar-height);
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: var(--space-12);
@@ -186,18 +193,22 @@
 
 /* ---- Body: sidebar + floating canvas ------------------------------------- */
 .b2b-body {
+  flex: 1;
+  min-height: 0; /* lets .b2b-main become the inner scroll container */
   display: flex;
   align-items: stretch;
-  min-height: calc(100vh - var(--layout-topbar-height));
 }
 
 .b2b-sidebar {
   width: var(--layout-sidebar-expanded);
   flex-shrink: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   padding: var(--space-8) var(--space-16) var(--space-16);
   transition: width 0.18s ease;
+  /* NB: .b2b-nav deliberately has no overflow — a scroll container would clip
+     the rail flyouts; the 8-item nav fits any reasonable desktop viewport. */
 }
 .b2b-sidebar.is-collapsed {
   width: var(--layout-sidebar-collapsed);
@@ -439,10 +450,14 @@
   flex: 1;
   min-width: 0;
   display: flex;
+  flex-direction: column;
   padding: 0 var(--space-16) var(--space-16) var(--space-4);
+  overflow-y: auto; /* the ONE scroll container of the shell */
 }
 .b2b-canvas {
-  flex: 1;
+  /* fills the viewport when content is short, grows WITH content when tall
+     (row-flex stretch capped it at the visible height — table spilled out) */
+  flex: 1 0 auto;
   min-width: 0;
   background: var(--surface-card);
   border: var(--border-width-sm) solid var(--border-divider);
@@ -452,11 +467,6 @@
 }
 
 /* ---- Stub page ------------------------------------------------------------ */
-.b2b-page__crumbs {
-  font: 400 12px/16px var(--font-sans);
-  color: var(--text-disabled);
-  margin-bottom: var(--space-12);
-}
 .b2b-page__head {
   display: flex;
   align-items: flex-start;
@@ -473,6 +483,14 @@
   font: 400 13px/20px var(--font-sans); /* Body/Small */
   color: var(--text-muted);
   margin-top: var(--space-4);
+}
+.b2b-page__filters {
+  margin-bottom: var(--space-16);
+}
+.b2b-page__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
 }
 .b2b-page__stub {
   min-height: 420px;

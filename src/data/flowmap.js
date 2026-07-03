@@ -80,6 +80,14 @@ export const apps = [
           { id: 'shell', path: 'b2b', label: 'navigation & layout', status: 'in-progress', hash: '/b2b' },
         ],
       },
+      {
+        id: 'contracts',
+        label: 'contracts',
+        status: 'in-progress',
+        flows: [
+          { id: 'list', path: 'b2b/contracts', label: 'contracts list', status: 'in-progress', hash: '/b2b/contracts' },
+        ],
+      },
     ],
   },
 ]

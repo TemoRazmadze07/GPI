@@ -253,6 +253,13 @@ const PATHS = {
       <path d="M7 4v16" />
     </>
   ),
+  'more-vertical': (
+    <>
+      <circle cx="12" cy="12" r="1" />
+      <circle cx="12" cy="5" r="1" />
+      <circle cx="12" cy="19" r="1" />
+    </>
+  ),
   copy: (
     <>
       <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />

@@ -1088,3 +1088,233 @@
 .gpi-docinfo__row { display: flex; align-items: center; gap: var(--space-8); flex-wrap: wrap; }
 .gpi-docinfo__row svg { color: var(--text-muted); flex: 0 0 auto; }
 .gpi-star { color: var(--color-amber-400); }
+
+/* ---- Breadcrumbs (v1) -------------------------------------------------------- */
+.gpi-crumbs { margin-bottom: var(--space-12); }
+.gpi-crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font: 400 12px/16px var(--font-sans); /* Caption */
+}
+.gpi-crumbs li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+.gpi-crumbs a {
+  color: var(--text-muted);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+.gpi-crumbs a:hover {
+  color: var(--text-main);
+  text-decoration: underline;
+}
+/* Links get the link-blue focus ring (breadcrumb = link, not button) */
+.gpi-crumbs a:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--surface-card), 0 0 0 4px var(--border-focus);
+}
+.gpi-crumbs span:not(.gpi-crumbs__sep) { color: var(--text-muted); }
+.gpi-crumbs__sep { color: var(--text-disabled); }
+.gpi-crumbs__current { color: var(--text-muted); }
+
+/* ---- Filter Chip — single-select filter pills (Filter Chip v1) ------------- */
+.gpi-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+.gpi-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: 36px;
+  padding: 0 var(--space-16);
+  background: var(--surface-card);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-full);
+  font: 400 13px/20px var(--font-sans); /* Body/Small */
+  color: var(--text-main);
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+.gpi-chip:hover {
+  background: var(--interactive-hover-bg);
+  border-color: var(--border-field-hover);
+}
+/* Own-hue (pink) offset focus ring — chips select brand-pink, so no blue ring */
+.gpi-chip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--surface-page), 0 0 0 4px var(--action-primary);
+}
+.gpi-chip__count { color: var(--text-muted); }
+.gpi-chip.is-selected {
+  background: var(--interactive-selected-bg);
+  border-color: var(--action-primary);
+  color: var(--color-pink-700);
+  font-weight: 500; /* Label weight */
+}
+.gpi-chip.is-selected:hover { background: var(--interactive-selected-bg); }
+.gpi-chip.is-selected .gpi-chip__count { color: var(--color-pink-700); }
+
+/* ---- Data Table (v1) -------------------------------------------------------- */
+.gpi-table {
+  background: var(--surface-card);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-xl);
+  /* overflow stays visible so row action-menu dropdowns aren't clipped;
+     the painted thead corners are rounded explicitly instead. */
+}
+.gpi-table thead th:first-child {
+  border-top-left-radius: calc(var(--radius-xl) - var(--border-width-sm));
+}
+.gpi-table thead th:last-child {
+  border-top-right-radius: calc(var(--radius-xl) - var(--border-width-sm));
+}
+.gpi-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.gpi-table thead th {
+  height: 44px;
+  padding: 0 var(--space-12);
+  background: var(--surface-page);
+  font: 500 13px/16px var(--font-sans); /* Label */
+  color: var(--text-muted);
+  text-align: left;
+  white-space: nowrap;
+}
+.gpi-table tbody td {
+  height: 64px;
+  padding: var(--space-8) var(--space-12);
+  border-top: var(--border-width-sm) solid var(--border-divider);
+  font: 400 14px/22px var(--font-sans); /* Body/Default */
+  color: var(--text-main);
+  vertical-align: middle;
+}
+.gpi-table .is-right { text-align: right; }
+.gpi-table tbody tr.is-clickable { cursor: pointer; }
+.gpi-table tbody tr.is-clickable:hover td { background: var(--interactive-hover-bg); }
+.gpi-table__media {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg); /* nested inside the 16px table card */
+  background: var(--color-link-25);
+  color: var(--action-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gpi-table__media img { width: 29px; height: auto; display: block; }
+.gpi-table__id { font: 500 14px/20px var(--font-mono); } /* Numeric */
+.gpi-table__muted { color: var(--text-muted); }
+.gpi-table__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  border: 0;
+  background: none;
+  padding: var(--space-4);
+  border-radius: var(--radius-sm);
+  font: 600 14px/16px var(--font-sans); /* Button/Medium */
+  color: var(--action-primary);
+  cursor: pointer;
+}
+.gpi-table__link:hover {
+  color: var(--action-primary-hover);
+  text-decoration: underline;
+}
+.gpi-table__link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--surface-page), 0 0 0 4px var(--action-primary);
+}
+.gpi-table--empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-48) var(--space-24);
+  text-align: center;
+}
+.gpi-table__empty-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gpi-table__empty-title { font: 600 14px/22px var(--font-sans); color: var(--text-main); }
+.gpi-table__empty-hint {
+  font: 400 13px/20px var(--font-sans);
+  color: var(--text-muted);
+  margin-bottom: var(--space-8);
+}
+
+/* ---- Action Menu — kebab row-actions dropdown (v1) -------------------------- */
+.gpi-iconbtn--ghost {
+  border-color: transparent;
+  background: transparent;
+}
+.gpi-iconbtn--ghost:hover { background: var(--interactive-hover-bg); }
+.gpi-actmenu {
+  position: relative;
+  display: inline-flex;
+}
+.gpi-actmenu__panel {
+  position: absolute;
+  top: calc(100% + var(--space-4));
+  right: 0;
+}
+.gpi-actmenu__panel--up {
+  top: auto;
+  bottom: calc(100% + var(--space-4));
+}
+.gpi-actmenu__panel {
+  z-index: 30;
+  min-width: 200px;
+  padding: var(--space-8);
+  background: var(--surface-card);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-dropdown);
+}
+.gpi-actmenu__item {
+  display: block;
+  width: 100%;
+  padding: var(--space-12);
+  border: 0;
+  background: none;
+  border-radius: var(--radius-md); /* inset tile inside the 12px panel */
+  font: 400 14px/22px var(--font-sans);
+  color: var(--text-main);
+  text-align: left;
+  cursor: pointer;
+}
+.gpi-actmenu__item:hover { background: var(--interactive-hover-bg); }
+.gpi-actmenu__item:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--border-focus, var(--action-primary));
+}
+.gpi-actmenu__item.is-destructive { color: var(--status-error-fg); }
+.gpi-actmenu__item.is-destructive:hover { background: var(--status-error-bg); }
+.gpi-actmenu__divider {
+  height: 1px;
+  margin: var(--space-4) 0;
+  background: var(--border-divider);
+}
+
+/* Merged first cell: product tile + contract number */
+.gpi-table__contract {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+}
