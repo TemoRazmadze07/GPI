@@ -4,6 +4,7 @@ import PersonCard from '../components/PersonCard.jsx'
 import PromoCard from '../components/PromoCard.jsx'
 import WizardFooter from '../components/WizardFooter.jsx'
 import AppointmentCard from '../components/AppointmentCard.jsx'
+import AddInsuredModal from '../components/AddInsuredModal.jsx'
 import Avatar from '../components/Avatar.jsx'
 import Icon from '../lib/Icon.jsx'
 import { Button } from '../components/Button.jsx'
@@ -42,7 +43,9 @@ const newDraft = (type = 'personal') => ({
 
 export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom = null, editFrom = null }) {
   const [stepIdx, setStepIdx] = useState(initialStep)
+  const [people, setPeople] = useState(insuredPersons)
   const [selectedId, setSelectedId] = useState(defaultInsuredId)
+  const [showAddInsured, setShowAddInsured] = useState(false)
   const [appointments, setAppointments] = useState([])
   const [draft, setDraft] = useState(null)
   const [confirmed, setConfirmed] = useState([])
@@ -79,8 +82,16 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
     setStepIdx(initialStep === 3 && confirmed.length === 0 ? 0 : initialStep)
   }, [initialStep]) // eslint-disable-line react-hooks/exhaustive-deps — confirmed is read fresh per run
 
-  const insured = insuredPersons.find((p) => p.id === selectedId)
-  const owner = insuredPersons.find((p) => p.relation === 'owner')
+  const insured = people.find((p) => p.id === selectedId)
+  const owner = people.find((p) => p.relation === 'owner')
+
+  // Newly added insured (via lookup or manual entry) is appended to the list
+  // and auto-selected, so the user continues with the person they just added.
+  const handleAddInsured = (person) => {
+    setPeople((prev) => (prev.some((p) => p.id === person.id) ? prev : [...prev, person]))
+    setSelectedId(person.id)
+    setShowAddInsured(false)
+  }
   const canSaveDraft = !!(draft && draft.doctorId && draft.date && draft.slot)
 
   // Max one personal-doctor appointment per booking.
@@ -170,12 +181,14 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
           <section className="gpi-card gpi-insured">
             <h2 className="t-h3 gpi-insured__title">{ka.wizard.insured.title}</h2>
             <div className="gpi-insured__grid" role="radiogroup" aria-label={ka.wizard.insured.title}>
-              {insuredPersons.map((p) => (
+              {people.map((p) => (
                 <PersonCard key={p.id} person={p} selected={selectedId === p.id} onSelect={setSelectedId} />
               ))}
             </div>
             <div className="gpi-insured__add">
-              <Button variant="tertiary" size="md" leadingIcon="user-plus">{ka.wizard.insured.add}</Button>
+              <Button variant="tertiary" size="md" leadingIcon="user-plus" onClick={() => setShowAddInsured(true)}>
+                {ka.wizard.insured.add}
+              </Button>
             </div>
           </section>
           <PromoCard />
@@ -322,6 +335,14 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
           canContinue={footer.can}
           continueLabel={footer.label}
           continueIcon={footer.icon}
+        />
+      )}
+
+      {showAddInsured && (
+        <AddInsuredModal
+          existingIds={people.map((p) => p.id)}
+          onAdd={handleAddInsured}
+          onClose={() => setShowAddInsured(false)}
         />
       )}
     </div>

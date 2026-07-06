@@ -60,8 +60,19 @@ export default function AppointmentCard({ appt, expanded, index, onToggle, onCha
       <BookingWorkspace value={appt} onChange={onChange} />
 
       <div className="gpi-appt__ft">
-        <Button variant="tertiary" size="md" onClick={onRemove}>{ka.wizard.book.cancel}</Button>
-        <Button variant="primary" size="md" onClick={onSave} disabled={!canSave}>{ka.wizard.book.add}</Button>
+        {doctor && appt.date && appt.slot && clinic ? (
+          <div className="gpi-appt__ftsum">
+            <Avatar name={doctor.name} seed={doctor.avatar} size={36} />
+            <div className="gpi-appt__ftsumtxt">
+              <span className="gpi-appt__ftname">{doctor.name}</span>
+              <span className="gpi-appt__ftmeta">{fmtDateLong(appt.date)} · {appt.slot} · {clinic.label}</span>
+            </div>
+          </div>
+        ) : <span className="gpi-appt__ftsum" />}
+        <div className="gpi-appt__ftbtns">
+          <Button variant="tertiary" size="md" onClick={onRemove}>{ka.wizard.book.cancel}</Button>
+          <Button variant="primary" size="md" onClick={onSave} disabled={!canSave}>{ka.wizard.book.add}</Button>
+        </div>
       </div>
     </div>
   )

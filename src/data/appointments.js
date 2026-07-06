@@ -5,24 +5,28 @@
    references, so the list and the booking wizard are one consistent world.
    Grouped in the UI by `dateKey`; each row keeps its own exact date + time. */
 
-import { doctors, clinicByValue, availableDates, slotGroupsFor, fmtDateLong } from './booking.js'
+import { doctors, clinicByValue, availableDates, slotGroupsFor, fmtDateLong, dateKeyOf } from './booking.js'
 import { insuredPersons } from './insured.js'
+
+/* Dates are RELATIVE to real today so the list stays coherent with the live
+   booking calendar: ongoing rows land on real future dates via bookedSlot();
+   finished/cancelled sit in the recent past. */
+const dayOffset = (n) => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + n); return dateKeyOf(d) }
 
 /* The booking as stored: shared-record refs + the originally-reserved
    date/time/status. `clinicValue` is where it was booked (saburtalo | vake);
    `insuredId` is the patient; `doctorId` maps to a real wizard doctor.
-   Implicit "today" ≈ 1 Nov 2025 (availability month): ongoing rows land on
-   Nov dates via bookedSlot(); finished/cancelled dates must sit in the PAST
-   so statuses read consistently. Labels derive from dateKey (fmtDateLong). */
+   Ongoing rows' dateKey is overwritten by bookedSlot() (a real future slot);
+   finished/cancelled use relative past dates. Labels derive from dateKey. */
 const raw = [
-  { id: 'a1', dateKey: '2025-11-12', time: '11:30 – 12:00', doctorId: 'd1', clinicValue: 'saburtalo', status: 'ongoing',   insuredId: 'p1' },
-  { id: 'a2', dateKey: '2025-11-12', time: '13:00 – 13:30', doctorId: 'd9', clinicValue: 'saburtalo', status: 'ongoing',   insuredId: 'p1' },
-  { id: 'a3', dateKey: '2025-10-21', time: '16:15 – 16:45', doctorId: 'd7', clinicValue: 'vake',      status: 'cancelled', insuredId: 'p3' },
-  { id: 'a4', dateKey: '2025-11-12', time: '10:00 – 10:30', doctorId: 'd1', clinicValue: 'vake',      status: 'ongoing',   insuredId: 'p1' },
-  { id: 'a5', dateKey: '2025-10-14', time: '11:30 – 12:00', doctorId: 'd3', clinicValue: 'vake',      status: 'finished',  insuredId: 'p1' },
-  { id: 'a6', dateKey: '2025-10-14', time: '14:00 – 14:30', doctorId: 'd7', clinicValue: 'vake',      status: 'finished',  insuredId: 'p3' },
-  { id: 'a7', dateKey: '2025-09-30', time: '09:15 – 09:45', doctorId: 'd9', clinicValue: 'vake',      status: 'finished',  insuredId: 'p1' },
-  { id: 'a8', dateKey: '2025-09-02', time: '12:30 – 13:00', doctorId: 'd1', clinicValue: 'saburtalo', status: 'finished',  insuredId: 'p1' },
+  { id: 'a1', dateKey: dayOffset(2),   time: '11:30 – 12:00', doctorId: 'd1', clinicValue: 'saburtalo', status: 'ongoing',   insuredId: 'p1' },
+  { id: 'a2', dateKey: dayOffset(2),   time: '13:00 – 13:30', doctorId: 'd9', clinicValue: 'saburtalo', status: 'ongoing',   insuredId: 'p1' },
+  { id: 'a3', dateKey: dayOffset(-11), time: '16:15 – 16:45', doctorId: 'd7', clinicValue: 'vake',      status: 'cancelled', insuredId: 'p3' },
+  { id: 'a4', dateKey: dayOffset(2),   time: '10:00 – 10:30', doctorId: 'd1', clinicValue: 'vake',      status: 'ongoing',   insuredId: 'p1' },
+  { id: 'a5', dateKey: dayOffset(-18), time: '11:30 – 12:00', doctorId: 'd3', clinicValue: 'vake',      status: 'finished',  insuredId: 'p1' },
+  { id: 'a6', dateKey: dayOffset(-18), time: '14:00 – 14:30', doctorId: 'd7', clinicValue: 'vake',      status: 'finished',  insuredId: 'p3' },
+  { id: 'a7', dateKey: dayOffset(-32), time: '09:15 – 09:45', doctorId: 'd9', clinicValue: 'vake',      status: 'finished',  insuredId: 'p1' },
+  { id: 'a8', dateKey: dayOffset(-60), time: '12:30 – 13:00', doctorId: 'd1', clinicValue: 'saburtalo', status: 'finished',  insuredId: 'p1' },
 ]
 
 const drById = (id) => doctors.find((d) => d.id === id)

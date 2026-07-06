@@ -15,19 +15,30 @@ export default function DoctorRow({ doctor, selected, onSelect, onDeselect, onIn
         role="button"
         tabIndex={0}
         aria-pressed={selected}
-        onClick={(e) => { if (e.target.closest('.gpi-drow__namelink')) return; onSelect(doctor.id) }}
-        onKeyDown={(e) => { if (e.target.closest('.gpi-drow__namelink')) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(doctor.id) } }}
+        onClick={(e) => { if (e.target.closest('.gpi-drow__namelink, .gpi-drow__info')) return; onSelect(doctor.id) }}
+        onKeyDown={(e) => { if (e.target.closest('.gpi-drow__namelink, .gpi-drow__info')) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(doctor.id) } }}
       >
         <Avatar name={doctor.name} seed={doctor.avatar} size={40} />
         <div className="gpi-drow__meta">
-          <button
-            type="button"
-            className="gpi-drow__namelink"
-            onClick={(e) => { e.stopPropagation(); onInfo(doctor) }}
-            title={doctor.name}
-          >
-            {doctor.name}
-          </button>
+          <div className="gpi-drow__nameline">
+            <button
+              type="button"
+              className="gpi-drow__namelink"
+              onClick={(e) => { e.stopPropagation(); onInfo(doctor) }}
+              title={doctor.name}
+            >
+              {doctor.name}
+            </button>
+            <button
+              type="button"
+              className="gpi-drow__info"
+              onClick={(e) => { e.stopPropagation(); onInfo(doctor) }}
+              aria-label={ka.wizard.book.info}
+              title={ka.wizard.book.info}
+            >
+              <Icon name="info" size={16} />
+            </button>
+          </div>
           <span className="gpi-drow__role">{doctor.role}</span>
         </div>
       </div>

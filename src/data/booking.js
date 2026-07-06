@@ -83,15 +83,21 @@ export const langLabels = { KA: 'ქართული', EN: 'ინგლის
 export const langTag = { KA: 'Geo', EN: 'Eng', RU: 'Rus', DE: 'Deu' }
 
 /* ---- Month + availability ------------------------------------------------ */
-/* Reference month for the prototype = November 2025 (deterministic). */
-export const bookingMonth = new Date(2025, 10, 1) // month 10 = November
+/* Anchored to the REAL current date: the calendar always tracks this month/year and
+   availability syncs to real dates (today forward; past days are non-bookable). */
+const startOfDay = (dt) => new Date(dt.getFullYear(), dt.getMonth(), dt.getDate())
+const TODAY = startOfDay(new Date())
+export const bookingMonth = new Date(TODAY.getFullYear(), TODAY.getMonth(), 1) // first of the current month
 const KA_MONTHS = ['იან', 'თებ', 'მარ', 'აპრ', 'მაი', 'ივნ', 'ივლ', 'აგვ', 'სექ', 'ოქტ', 'ნოე', 'დეკ']
-const DAYS_IN_MONTH = 30 // November
 
 const RANGES = [
   '10:00 - 10:30', '10:30 - 11:00', '11:00 - 11:30', '11:30 - 12:00',
   '13:00 - 13:30', '13:30 - 14:00', '15:00 - 15:30', '16:00 - 16:30', '18:30 - 19:00',
 ]
+// A doctor working two clinics on one day does mornings at one, afternoons at the
+// other — so every slot maps to exactly ONE clinic (you can't be in two places at once).
+const MORNING = RANGES.slice(0, 4)   // 10:00–12:00
+const AFTERNOON = RANGES.slice(4)    // 13:00–19:00
 
 function hash(s) {
   let h = 2166136261
@@ -103,7 +109,7 @@ function hash(s) {
 }
 
 const pad = (n) => String(n).padStart(2, '0')
-export const dateKeyOf = (day) => `2025-11-${pad(day)}`
+export const dateKeyOf = (date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 
 /* avail[doctorId] = { 'YYYY-MM-DD': [{ clinic, slots: [range,…] }] }  (memoised) */
 const _avail = {}
@@ -112,18 +118,35 @@ function availabilityFor(doctorId) {
   const doctor = doctors.find((d) => d.id === doctorId)
   const map = {}
   if (doctor) {
-    for (let day = 1; day <= DAYS_IN_MONTH; day++) {
-      const key = dateKeyOf(day)
+    // Real dates from today through the end of NEXT month: the current month (from
+    // today) + all of next month get availability; past days get none (non-bookable).
+    const end = new Date(TODAY.getFullYear(), TODAY.getMonth() + 2, 0)
+    for (let dt = new Date(TODAY); dt <= end; dt.setDate(dt.getDate() + 1)) {
+      const key = dateKeyOf(dt)
+      // Which of the doctor's clinics are open that day (deterministic per real date).
+      const openCls = doctor.clinics.filter((cl) => hash(`${doctorId}|${cl}|${key}`) % 5 < 2)
+      if (!openCls.length) continue
       const groups = []
-      doctor.clinics.forEach((cl) => {
-        const h = hash(`${doctorId}|${cl}|${day}`)
-        if (h % 5 < 2) {
-          const n = 2 + (h % 4) // 2–5 slots
-          const start = h % (RANGES.length - n)
-          groups.push({ clinic: cl, slots: RANGES.slice(start, start + n) })
-        }
-      })
-      if (groups.length) map[key] = groups
+      if (openCls.length === 1) {
+        const cl = openCls[0]
+        const h = hash(`${doctorId}|${cl}|${key}`)
+        const n = 2 + (h % 4) // 2–5 slots
+        const start = h % (RANGES.length - n)
+        groups.push({ clinic: cl, slots: RANGES.slice(start, start + n) })
+      } else {
+        // Two clinics same day → non-overlapping windows: one gets the morning,
+        // the other the afternoon. Hash decides which clinic takes mornings.
+        const [am, pm] = [...openCls].sort((a, b) =>
+          (hash(`${doctorId}|${a}|${key}`) % 100) - (hash(`${doctorId}|${b}|${key}`) % 100))
+        const hm = hash(`${doctorId}|${am}|am|${key}`)
+        const hp = hash(`${doctorId}|${pm}|pm|${key}`)
+        const mn = 2 + (hm % (MORNING.length - 1))            // 2–4 morning slots
+        const pn = 2 + (hp % (AFTERNOON.length - 1))          // 2–5 afternoon slots
+        const ps = hp % (AFTERNOON.length - pn + 1)
+        groups.push({ clinic: am, slots: MORNING.slice(0, mn) })
+        groups.push({ clinic: pm, slots: AFTERNOON.slice(ps, ps + pn) })
+      }
+      map[key] = groups
     }
   }
   _avail[doctorId] = map
@@ -280,7 +303,7 @@ export function fmtDate(dateKey) {
   return `${d} ${KA_MONTHS[m - 1]}`
 }
 
-/* Long form for the collapsed summary row — e.g. "12 ნოე, 2025". */
+/* Long form for the collapsed summary row — e.g. "12 ივლ, 2026". */
 export function fmtDateLong(dateKey) {
   if (!dateKey) return ''
   const [y, m, d] = dateKey.split('-').map(Number)

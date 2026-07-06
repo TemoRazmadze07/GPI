@@ -23,7 +23,7 @@ function ringBackground(tones) {
   return `conic-gradient(${stops})`
 }
 
-export default function MonthCalendar({ month, onPrevMonth, onNextMonth, isAvailable, getTones, selected, onSelect }) {
+export default function MonthCalendar({ month, onPrevMonth, onNextMonth, isAvailable, getTones, selected, onSelect, canPrev = true, canNext = true }) {
   const year = month.getFullYear()
   const m = month.getMonth()
   const offset = (new Date(year, m, 1).getDay() + 6) % 7 // Monday-first
@@ -37,9 +37,9 @@ export default function MonthCalendar({ month, onPrevMonth, onNextMonth, isAvail
   return (
     <div className="gpi-cal">
       <div className="gpi-cal__hd">
-        <button className="gpi-cal__nav" onClick={onPrevMonth} aria-label="წინა თვე"><Icon name="chevron-left" size={20} /></button>
+        <button className="gpi-cal__nav" onClick={onPrevMonth} disabled={!canPrev} aria-label="წინა თვე"><Icon name="chevron-left" size={20} /></button>
         <span className="gpi-cal__title">{KA_MONTHS_FULL[m]} {year}</span>
-        <button className="gpi-cal__nav" onClick={onNextMonth} aria-label="შემდეგი თვე"><Icon name="chevron-right" size={20} /></button>
+        <button className="gpi-cal__nav" onClick={onNextMonth} disabled={!canNext} aria-label="შემდეგი თვე"><Icon name="chevron-right" size={20} /></button>
       </div>
 
       <div className="gpi-cal__weekdays">

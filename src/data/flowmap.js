@@ -42,7 +42,7 @@ export const apps = [
           { id: 'book1',  path: '…/book',                        label: 'step 1 — insured',       status: 'done',        hash: '/desktop/appointments/book',          figma: '?node-id=89-1112' },
           { id: 'book2',  path: '…/book/schedule',               label: 'step 2 — doctor & time', status: 'done',        hash: '/desktop/appointments/book/schedule', figma: '?node-id=104-8241' },
           { id: 'book3',  path: '…/book/review',                 label: 'step 3 — review',        status: 'in-progress', hash: '/desktop/appointments/book/review' },
-          { id: 'bookFirst', path: '…/book?state=first-login',   label: 'first-login / empty',    status: 'planned' },
+          { id: 'bookFirst', path: 'desktop/appointments/empty', label: 'first-time — empty state', status: 'in-progress', hash: '/desktop/appointments/empty', figma: '?node-id=89-1619' },
           { id: 'bookErr',   path: '…/book?state=error',         label: 'error states',           status: 'planned' },
         ],
       },

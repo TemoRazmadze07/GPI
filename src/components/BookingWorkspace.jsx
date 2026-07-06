@@ -26,6 +26,22 @@ export default function BookingWorkspace({ value: v, onChange }) {
   const [month, setMonth] = useState(bookingMonth)
   const [info, setInfo] = useState(null) // doctor whose bio modal is open
 
+  // Keep the calendar on the month of the selected/seeded date. Auto-select, edit and
+  // reschedule can land in a different month than the current one (especially near
+  // month-end), so without this the pre-selected day would be off-screen. Fires only
+  // when v.date changes, so manual prev/next browsing is never overridden.
+  useEffect(() => {
+    if (!v.date) return
+    const [y, mo] = v.date.split('-').map(Number)
+    setMonth((prev) => (prev.getFullYear() === y && prev.getMonth() === mo - 1) ? prev : new Date(y, mo - 1, 1))
+  }, [v.date])
+
+  // Availability spans the current month (from today) → end of next month, so bound the
+  // month nav to that window (no paging into all-greyed dead months).
+  const maxMonth = new Date(bookingMonth.getFullYear(), bookingMonth.getMonth() + 1, 1)
+  const atMinMonth = month.getFullYear() === bookingMonth.getFullYear() && month.getMonth() === bookingMonth.getMonth()
+  const atMaxMonth = month.getFullYear() === maxMonth.getFullYear() && month.getMonth() === maxMonth.getMonth()
+
   const active = v.activeClinics && v.activeClinics.length ? v.activeClinics : allClinicValues
   const base = sortBySoonest(filterDoctors({ type: v.type, specialty: v.specialty, query }), active)
   const doctorSel = !!v.doctorId
@@ -69,16 +85,21 @@ export default function BookingWorkspace({ value: v, onChange }) {
     ? dayClinics(v.doctorId, k, active).map((cv) => clinicByValue(cv).tone)
     : listDayTones(base, k, active)
 
-  // Time items for the selected day.
-  let slotItems = []
+  // Time items for the selected day, grouped by clinic. With a doctor chosen each
+  // group is one clinic (morning/afternoon windows never overlap); without one the
+  // clinic can't be resolved yet, so it's a single headerless group.
+  let slotGroups = []
   if (v.date) {
     if (doctorSel) {
-      slotGroupsFor(v.doctorId, v.date, active).forEach((g) => g.slots.forEach((s) => slotItems.push({ slot: s, clinic: g.clinic })))
-      slotItems.sort((a, b) => a.slot.localeCompare(b.slot))
+      slotGroups = slotGroupsFor(v.doctorId, v.date, active)
+        .map((g) => ({ clinic: g.clinic, slots: [...g.slots].sort((a, b) => a.localeCompare(b)) }))
+        .sort((a, b) => a.slots[0].localeCompare(b.slots[0]))
     } else {
-      slotItems = listSlotsOn(base, v.date, active).map(({ slot, clinics: cs }) => ({ slot, clinic: cs.length === 1 ? cs[0] : null }))
+      const flat = listSlotsOn(base, v.date, active).map(({ slot }) => slot).sort((a, b) => a.localeCompare(b))
+      slotGroups = flat.length ? [{ clinic: null, slots: flat }] : []
     }
   }
+  const slotCount = slotGroups.reduce((n, g) => n + g.slots.length, 0)
 
   const pickDoctor = (id) => {
     const keepDate = v.date && availableDates(id, active).includes(v.date) ? v.date : firstAvailableDate(id, active)
@@ -127,7 +148,7 @@ export default function BookingWorkspace({ value: v, onChange }) {
             onChange={(x) => onChange({ ...v, specialty: x, doctorId: null, date: null, slot: null, slotClinic: null })}
           />
         )}
-        <ClinicChips clinics={clinics} active={v.activeClinics || []} onToggle={toggleClinic} />
+        <ClinicChips clinics={clinics} active={v.activeClinics || []} selectedClinic={v.slotClinic} onToggle={toggleClinic} />
       </div>
 
       <div className="gpi-bw3__cols">
@@ -148,8 +169,10 @@ export default function BookingWorkspace({ value: v, onChange }) {
           <div className="gpi-bw3__colhd" aria-hidden="true">{' '}</div>
           <MonthCalendar
             month={month}
-            onPrevMonth={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}
-            onNextMonth={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}
+            canPrev={!atMinMonth}
+            canNext={!atMaxMonth}
+            onPrevMonth={() => { if (!atMinMonth) setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1)) }}
+            onNextMonth={() => { if (!atMaxMonth) setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1)) }}
             isAvailable={(k) => calSet.has(k)}
             getTones={tonesOf}
             selected={v.date}
@@ -159,8 +182,8 @@ export default function BookingWorkspace({ value: v, onChange }) {
 
         <div className="gpi-bw3__col gpi-bw3__col--div">
           <div className="gpi-bw3__colhd" aria-hidden="true">{' '}</div>
-          {awaitingDirection ? null : v.date && slotItems.length ? (
-            <SlotList items={slotItems} selected={v.slot ? { slot: v.slot, clinic: v.slotClinic } : null} onSelect={pickSlot} />
+          {awaitingDirection ? null : v.date && slotCount ? (
+            <SlotList groups={slotGroups} selected={v.slot ? { slot: v.slot, clinic: v.slotClinic } : null} onSelect={pickSlot} />
           ) : (
             <div className="gpi-bw3__empty">{v.date ? ka.wizard.book.noSlots : ka.wizard.book.pickDay}</div>
           )}

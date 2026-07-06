@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import AppShell from './components/AppShell.jsx'
 import AppointmentsScreen from './screens/AppointmentsScreen.jsx'
+import EmptyBookingsScreen from './screens/EmptyBookingsScreen.jsx'
 import WizardScreen from './screens/WizardScreen.jsx'
 import MapScreen from './screens/MapScreen.jsx'
 import B2BApp from './b2b/B2BApp.jsx'
@@ -49,6 +50,8 @@ function resolve(segs) {
       const wizardStep = sub === 'schedule' ? 1 : sub === 'review' ? 2 : sub === 'done' ? 3 : 0
       return { view: 'wizard', wizardStep }
     }
+    // First-time booking flow starts on the empty All-Bookings page.
+    if (segs[ai + 1] === 'empty') return { view: 'emptyBookings', wizardStep: 0 }
     return { view: 'appointments', wizardStep: 0 }
   }
   return { view: 'map', wizardStep: 0 }
@@ -70,7 +73,7 @@ function Flow({ view, wizardStep, rescheduleFrom, editFrom, b2bSection }) {
   }
   return (
     <AppShell>
-      {view === 'appointments' ? (
+      {view === 'appointments' && (
         <AppointmentsScreen
           onStartBooking={() => {
             window.location.hash = '#/desktop/appointments/book'
@@ -82,7 +85,15 @@ function Flow({ view, wizardStep, rescheduleFrom, editFrom, b2bSection }) {
             window.location.hash = '#/desktop/appointments/book/schedule?edit=' + id
           }}
         />
-      ) : (
+      )}
+      {view === 'emptyBookings' && (
+        <EmptyBookingsScreen
+          onStartBooking={() => {
+            window.location.hash = '#/desktop/appointments/book'
+          }}
+        />
+      )}
+      {view === 'wizard' && (
         <WizardScreen
           initialStep={wizardStep}
           rescheduleFrom={rescheduleFrom}

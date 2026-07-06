@@ -187,6 +187,19 @@
   color: var(--text-muted);
 }
 
+/* ---- Bookings empty state ----------------------------------------------- */
+.gpi-bookings { padding: var(--space-24); }
+.gpi-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-16);
+  padding: var(--space-40) var(--space-24) var(--space-48);
+}
+.gpi-empty__illus { width: 180px; height: auto; display: block; }
+.gpi-empty__title { margin: 0; font: 400 15px/22px var(--font-sans); color: var(--text-muted); }
+
 /* ---- Appointments table ------------------------------------------------- */
 .gpi-card--table {
   padding: var(--space-24);
@@ -925,7 +938,13 @@
 .gpi-appt--open .gpi-appt__hd { justify-content: space-between; margin-bottom: var(--space-12); }
 .gpi-appt__title { font: 600 18px/1.2 var(--font-sans); color: var(--color-indigo-800); }
 .gpi-appt--open .gpi-seg { width: 100%; margin-bottom: var(--space-16); }
-.gpi-appt__ft { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-12); margin-top: var(--space-20); }
+.gpi-appt__ft { display: flex; align-items: center; justify-content: space-between; gap: var(--space-16); margin-top: var(--space-20); }
+.gpi-appt__ftbtns { display: flex; align-items: center; gap: var(--space-12); flex: 0 0 auto; }
+/* Full selection summary — what you're adding: doctor · date · time · clinic. */
+.gpi-appt__ftsum { display: flex; align-items: center; gap: var(--space-12); min-width: 0; }
+.gpi-appt__ftsumtxt { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.gpi-appt__ftname { font: 600 14px/20px var(--font-sans); color: var(--color-indigo-800); }
+.gpi-appt__ftmeta { font: 400 13px/18px var(--font-sans); color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Workspace shell */
 .gpi-bw3 { position: relative; margin-top: var(--space-8); }
@@ -947,12 +966,16 @@
    104:8697, surface/page) — separates it from the filters above and the
    cancel/add buttons below, and bounds the doctor-list scroll. Full-bleed to the
    card edges (negative margin cancels the card's padding). */
-.gpi-bw3__cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.78fr); gap: var(--space-16); align-items: stretch; background: var(--surface-page); padding: var(--space-20) var(--space-24); margin: 0 calc(-1 * var(--space-16)); }
-.gpi-bw3__col { min-width: 0; }
+/* FIXED-HEIGHT panel: the calendar (≈257px) sets the reference so it never scrolls;
+   the doctor list and the time column each scroll independently inside this height.
+   Keeps the card height stable + the footer/CTA in view no matter how many doctors
+   or time slots there are. */
+.gpi-bw3__cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.78fr); gap: var(--space-16); align-items: stretch; height: 344px; background: var(--surface-page); padding: var(--space-20) var(--space-24); margin: 0 calc(-1 * var(--space-16)); }
+.gpi-bw3__col { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
 .gpi-bw3__col--div { border-left: var(--border-width-sm) solid var(--border-default); padding-left: var(--space-16); }
-.gpi-bw3__colhd { font: 500 12px/1 var(--font-sans); letter-spacing: 0.04em; color: var(--text-muted); margin-bottom: var(--space-8); min-height: 12px; }
+.gpi-bw3__colhd { flex: 0 0 auto; font: 500 12px/1 var(--font-sans); letter-spacing: 0.04em; color: var(--text-muted); margin-bottom: var(--space-8); min-height: 12px; }
 .gpi-bw3__listmeta { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted); margin: var(--space-8) 0; }
-.gpi-bw3__list { display: flex; flex-direction: column; gap: var(--space-8); max-height: 300px; overflow-y: auto; padding-right: var(--space-4); }
+.gpi-bw3__list { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: var(--space-8); overflow-y: auto; padding-right: var(--space-4); }
 .gpi-bw3__empty { font-size: 13px; color: var(--text-muted); padding: var(--space-12) 0; }
 
 /* Search field */
@@ -972,6 +995,10 @@
 .gpi-clinicchip__ring { width: 12px; height: 12px; border-radius: var(--radius-full); border: 2px solid var(--c); background: transparent; box-sizing: border-box; flex: 0 0 auto; }
 .gpi-clinicchip.is-on { background: var(--c-bg); border-color: var(--c); }
 .gpi-clinicchip.is-on .gpi-clinicchip__ring { background: var(--c); }
+/* Reflected = the clinic of the picked time slot (not an active filter): filled ring
+   + clinic-colour border, but NO background tint — distinct from the pressed filter. */
+.gpi-clinicchip.is-reflected { border-color: var(--c); }
+.gpi-clinicchip.is-reflected .gpi-clinicchip__ring { background: var(--c); }
 
 /* Doctor row (slim, selectable) */
 /* Doctor row (design 104:8702): pill, transparent until selected; selected =
@@ -987,6 +1014,11 @@
 .gpi-drow__namelink { max-width: 100%; padding: 0; border: none; background: none; text-align: left; cursor: pointer; font: 600 14px/20px var(--font-sans); color: var(--color-indigo-800); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .gpi-drow__namelink:hover { color: var(--text-link); text-decoration: underline; }
 .gpi-drow__role { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+/* Name + a visible info affordance on one line — both open the doctor's bio modal. */
+.gpi-drow__nameline { display: flex; align-items: center; gap: var(--space-4); min-width: 0; max-width: 100%; }
+.gpi-drow__nameline .gpi-drow__namelink { min-width: 0; }
+.gpi-drow__info { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; padding: 0; border: none; background: none; color: var(--icon-default); cursor: pointer; border-radius: var(--radius-full); }
+.gpi-drow__info:hover { color: var(--text-link); background: var(--interactive-hover-bg); }
 .gpi-drow__tags { display: flex; gap: var(--space-4); flex: 0 0 auto; align-items: center; }
 .gpi-langtag { font: 400 13px/20px var(--font-sans); color: var(--text-main); background: var(--surface-sunken); border-radius: var(--radius-sm); padding: 2px var(--space-4); }
 .gpi-drow__x { border: none; background: none; color: var(--text-muted); padding: var(--space-4); flex: 0 0 auto; display: grid; place-items: center; }
@@ -1001,8 +1033,11 @@
 .gpi-modal__title { flex: 1; margin: 0; font: 600 18px/32px var(--font-sans); color: var(--color-indigo-800); text-transform: uppercase; }
 .gpi-modal__close { flex: 0 0 auto; display: grid; place-items: center; padding: var(--space-8); border: none; background: none; border-radius: 12px; color: var(--color-indigo-800); cursor: pointer; }
 .gpi-modal__close:hover { background: var(--interactive-hover-bg); }
-.gpi-modal__body { display: flex; flex-direction: column; gap: var(--space-16); padding: var(--space-24) var(--space-24) 40px; }
-.gpi-modal__ft { display: flex; gap: var(--space-16); justify-content: flex-end; padding: var(--space-24) var(--space-40) var(--space-40); }
+.gpi-modal__body { display: flex; flex-direction: column; gap: var(--space-16); padding: var(--space-24); }
+/* Footer: 24px on all sides so buttons align with the body edges; the body's own
+   24px bottom padding supplies the gap above the buttons (so top padding = 0 here
+   avoids a double gap). 16px between buttons. Matches Figma dev-mode spec. */
+.gpi-modal__ft { display: flex; gap: var(--space-16); justify-content: flex-end; padding: 0 var(--space-24) var(--space-24); }
 /* Doctor bio modal content */
 .gpi-bio__person { display: flex; gap: var(--space-12); align-items: center; }
 .gpi-bio__meta { min-width: 0; display: flex; flex-direction: column; gap: var(--space-2); }
@@ -1010,6 +1045,55 @@
 .gpi-bio__attr { font: 400 12px/20px var(--font-sans); color: var(--text-main); }
 .gpi-bio__attr strong { font-weight: 600; }
 .gpi-bio__desc { margin: 0; font: 400 14px/20px var(--font-sans); color: var(--text-main); }
+
+/* Add-insured modal content */
+.gpi-addins { display: flex; flex-direction: column; gap: var(--space-16); }
+.gpi-addins .gpi-seg { width: 100%; }
+.gpi-addins .gpi-seg__item { flex: 1 1 0; justify-content: center; text-align: center; }
+.gpi-addins__intro { margin: 0; font: 400 13px/1.5 var(--font-sans); color: var(--text-muted); }
+.gpi-addins__grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-12); }
+.gpi-addins__back { margin-bottom: calc(-1 * var(--space-8)); }
+.gpi-addins__manual { padding-top: var(--space-12); border-top: 1px dashed var(--border-default);
+  font: 400 13px/1.5 var(--font-sans); color: var(--text-muted); }
+
+.gpi-field { display: flex; flex-direction: column; gap: var(--space-8); }
+.gpi-field__lbl { font: 500 13px/16px var(--font-sans); color: var(--text-main); }
+.gpi-field__req { color: var(--status-error-fg); margin-left: 2px; }
+.gpi-field__hint { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+.gpi-input { width: 100%; height: 44px; box-sizing: border-box; padding: 0 var(--space-16);
+  border: var(--border-width-sm) solid var(--border-field); border-radius: var(--radius-lg);
+  background: var(--surface-card); font: 400 14px/1 var(--font-sans); color: var(--text-main); }
+.gpi-input::placeholder { color: var(--text-muted); }
+.gpi-input:focus { outline: none; border-color: var(--border-focus); }
+.gpi-input.is-error { border-color: var(--status-error-fg); border-width: var(--border-width-md); }
+.gpi-input--select { padding-right: var(--space-12); cursor: pointer; }
+
+.gpi-errbar { display: flex; gap: var(--space-8); align-items: flex-start; background: var(--status-error-bg);
+  border-radius: var(--radius-lg); padding: var(--space-12) var(--space-16);
+  font: 400 13px/1.45 var(--font-sans); color: var(--status-error-fg); }
+.gpi-errbar svg { flex: 0 0 auto; margin-top: 1px; }
+
+.gpi-found { display: flex; gap: var(--space-12); align-items: center; background: var(--interactive-selected-bg);
+  border: 1px solid var(--color-pink-100); border-radius: var(--radius-lg); padding: var(--space-16); }
+.gpi-found__meta { min-width: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.gpi-found__name { font: 600 15px/20px var(--font-sans); color: var(--text-main); }
+.gpi-found__id { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+.gpi-found__badge { align-self: flex-start; margin-top: var(--space-4); display: inline-flex; align-items: center; gap: 4px; }
+
+.gpi-checkrow { display: flex; gap: var(--space-12); align-items: flex-start; width: 100%;
+  padding: 0; border: none; background: none; text-align: left; cursor: pointer; }
+.gpi-check { flex: 0 0 auto; width: 20px; height: 20px; margin-top: 1px; display: grid; place-items: center;
+  border-radius: var(--radius-sm); border: var(--border-width-md) solid var(--border-field);
+  background: var(--surface-card); color: var(--text-inverse); }
+.gpi-check.is-on { background: var(--action-primary); border-color: var(--action-primary); }
+.gpi-checkrow__text { display: flex; flex-direction: column; gap: 2px; }
+.gpi-checkrow__title { font: 500 14px/20px var(--font-sans); color: var(--text-main); }
+.gpi-checkrow__help { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+
+.gpi-link { display: inline-flex; align-items: center; gap: 4px; padding: 0; border: none; background: none;
+  font: 500 13px/1.5 var(--font-sans); color: var(--color-link-600); cursor: pointer; }
+.gpi-link:hover { text-decoration: underline; }
+.gpi-link svg { flex: 0 0 auto; }
 /* Confirm dialog content */
 .gpi-confirm__text { margin: 0; font: 400 14px/22px var(--font-sans); color: var(--text-main); }
 .gpi-confirm__appt { display: flex; gap: var(--space-12); align-items: center; background: var(--surface-sunken); border-radius: 12px; padding: var(--space-12) var(--space-16); }
@@ -1021,11 +1105,13 @@
 /* Month calendar */
 /* Geometry matches the design Calendar (I104:8769): 7×40px cells, 2px gaps,
    292px wide, centred. Dark text = indigo/800 (design's navy, tokenized). */
-.gpi-cal { width: 292px; max-width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-8); align-items: center; }
+.gpi-cal { flex: 0 0 auto; width: 292px; max-width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-8); align-items: center; }
 .gpi-cal__hd { display: flex; align-items: center; justify-content: space-between; width: 100%; }
 .gpi-cal__title { flex: 1; text-align: center; font: 600 14px/1 var(--font-sans); color: var(--color-indigo-800); }
-.gpi-cal__nav { width: 32px; height: 32px; display: grid; place-items: center; border: none; background: none; border-radius: var(--radius-full); color: var(--color-indigo-800); }
+.gpi-cal__nav { width: 32px; height: 32px; display: grid; place-items: center; border: none; background: none; border-radius: var(--radius-full); color: var(--color-indigo-800); cursor: pointer; }
 .gpi-cal__nav:hover { background: var(--interactive-hover-bg); }
+.gpi-cal__nav:disabled { opacity: 0.3; cursor: default; }
+.gpi-cal__nav:disabled:hover { background: none; }
 .gpi-cal__weekdays { display: grid; grid-template-columns: repeat(7, 40px); gap: var(--space-2); justify-content: center; width: 100%; }
 .gpi-cal__dow { height: 32px; display: grid; place-items: center; font: 500 12px/1 var(--font-sans); letter-spacing: 0.02em; color: var(--text-muted); text-transform: uppercase; }
 .gpi-cal__sep { width: 100%; height: 1px; background: var(--border-strong); }
@@ -1040,7 +1126,14 @@
 .gpi-cal__day--sel { cursor: pointer; border-radius: var(--radius-full); background: var(--action-secondary); color: var(--text-inverse); font-weight: 500; }
 
 /* Time column — slots with clinic dots */
-.gpi-slots { display: flex; flex-direction: column; gap: var(--space-8); }
+.gpi-slots { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: var(--space-16); overflow-y: auto; padding-right: var(--space-4); }
+/* Time slots grouped by clinic — a colour-coded header (dot + clinic name) carries
+   the clinic, so the pills stay clean. */
+.gpi-slotgroup { display: flex; flex-direction: column; gap: var(--space-8); }
+.gpi-slotgroup__hd { display: inline-flex; align-items: center; gap: var(--space-8); font: 500 12px/16px var(--font-sans); color: var(--color-indigo-800); }
+.gpi-slotgroup__slots { display: flex; flex-direction: column; gap: var(--space-8); }
+/* Clinic colour dot — colour comes from the gpi-cl--{tone} class (--c token). */
+.gpi-cldot { width: 9px; height: 9px; border-radius: var(--radius-full); background: var(--c); box-sizing: border-box; flex: 0 0 auto; }
 /* Time slot (design 104:8774): full-width white pill rounded-32, centred semibold text/muted. */
 .gpi-slot2 { display: flex; align-items: center; justify-content: center; width: 100%; padding: var(--space-8) var(--space-16); border: 1px solid var(--border-strong); border-radius: 32px; background: var(--surface-card); font: 600 14px/24px var(--font-sans); color: var(--text-muted); box-shadow: 0 1px 2px rgba(17, 23, 34, 0.05); }
 .gpi-slot2:hover { border-color: var(--border-field-hover); }
