@@ -96,12 +96,18 @@ export const apps = [
    · share = ISOLATED study/participant link. The `?study` flag locks the app to
      THIS flow — no hub, no access to other (in-development) flows. This is the
      link you hand to usability-study participants.
-   · dev   = full app on localhost (hub + all flows + start buttons) for developers. */
+   · dev   = full app on localhost (hub + all flows + start buttons) for developers.
+   · download = link to a self-contained STATIC HTML snapshot of the flow (markup +
+     inlined CSS; images/fonts load from the live host). One file per flow under
+     /downloads/<slug>.html — for the dev team to open/save locally. Generated from
+     the rendered app (see scripts, session log 2026-07-06), NOT hand-written. */
 export function flowLinks(flow) {
+  const slug = flow.hash ? flow.hash.replace(/^\//, '').replace(/\//g, '-') : null
   return {
     figma: flow.figma ? LINK_BASE.figma + flow.figma : null,
     share: flow.hash ? `${LINK_BASE.share}/?study=1#${flow.hash}` : null,
     dev: flow.hash ? `${LINK_BASE.dev}/#${flow.hash}` : null,
+    download: slug ? `${LINK_BASE.share}/downloads/${slug}.html` : null,
   }
 }
 

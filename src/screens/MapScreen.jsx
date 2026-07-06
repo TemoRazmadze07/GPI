@@ -68,6 +68,7 @@ function FlowRow({ flow }) {
           <CopyBtn label="figma" url={links.figma} />
           <CopyBtn label="share" url={links.share} />
           <CopyBtn label="dev" url={links.dev} />
+          <CopyBtn label="html" url={links.download} />
         </>
       ) : (
         <span className="gpi-fmap__notbuilt">— not built</span>
@@ -103,8 +104,9 @@ export default function MapScreen() {
       <div className="gpi-fmap__legend">
         <span><b>start</b> open the flow</span>
         <span><b>figma</b> design</span>
-        <span><b>share</b> study link · one flow only · deploy pending</span>
+        <span><b>share</b> study link · one flow only</span>
         <span><b>dev</b> localhost</span>
+        <span><b>html</b> download · self-contained snapshot</span>
       </div>
 
       <div className="gpi-fmap__metrics">
