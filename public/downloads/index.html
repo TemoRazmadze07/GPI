@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GPI — screen snapshots for developers</title>
+<style>
+  :root { --ink:#1c2330; --muted:#5b6472; --line:#e6e9ef; --brand:#c8106e; --bg:#f6f7f9; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height:1.5; padding:40px 20px; }
+  .wrap { max-width:760px; margin:0 auto; }
+  h1 { font-size:24px; margin:0 0 6px; }
+  .sub { color:var(--muted); margin:0 0 28px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:12px; padding:20px 22px; margin-bottom:20px; }
+  .how h3 { margin:0 0 10px; font-size:14px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+  .how ol { margin:0; padding-left:20px; }
+  .how li { margin:6px 0; }
+  kbd { background:#eef0f4; border:1px solid var(--line); border-radius:5px; padding:1px 6px; font-size:12px; font-family:ui-monospace,Menlo,Consolas,monospace; }
+  .note { color:var(--muted); font-size:13px; margin-top:12px; border-top:1px dashed var(--line); padding-top:12px; }
+  .grp h2 { font-size:15px; margin:0 0 10px; }
+  .grp + .grp { margin-top:22px; }
+  ul { list-style:none; margin:0; padding:0; }
+  .grp li { display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:11px 0; border-bottom:1px solid var(--line); }
+  .grp li:last-child { border-bottom:0; }
+  .grp a { color:var(--brand); text-decoration:none; font-weight:600; }
+  .grp a:hover { text-decoration:underline; }
+  .grp code { color:var(--muted); font-size:12px; font-family:ui-monospace,Menlo,Consolas,monospace; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>GPI — screen snapshots</h1>
+    <p class="sub">Static HTML + CSS of each prototype screen, for the dev team to reference markup and styling.</p>
+
+    <div class="card how">
+      <h3>How to use a snapshot</h3>
+      <ol>
+        <li>Click a screen below — it opens the rendered page.</li>
+        <li><b>Save it:</b> press <kbd>Cmd/Ctrl</kbd> + <kbd>S</kbd> → choose <b>“Webpage, HTML Only”</b>. You get one self-contained <code>.html</code> file (markup + all CSS inlined).</li>
+        <li><b>Read the code:</b> open that file in your editor, or <b>View Source</b> (<kbd>Cmd/Ctrl</kbd> + <kbd>U</kbd>). Styles live in the single <code>&lt;style&gt;</code> block.</li>
+        <li><b>Inspect an element:</b> right-click it → <b>Inspect</b> to see its exact HTML + CSS.</li>
+      </ol>
+      <p class="note">These are <b>static</b> snapshots — not interactive, and wizard steps show the default (empty) state. Class names (<code>gpi-*</code>, <code>b2b-*</code>) are the design-system tokens. Keep an internet connection so images and the Georgian font render.</p>
+    </div>
+
+    
+    <section class="grp">
+      <h2>Desktop — My Cabinet (web)</h2>
+      <ul>
+        <li><a href="./desktop-appointments.html">All appointments</a><code>desktop-appointments.html</code></li>
+        <li><a href="./desktop-appointments-book.html">Booking · step 1 — insured</a><code>desktop-appointments-book.html</code></li>
+        <li><a href="./desktop-appointments-book-schedule.html">Booking · step 2 — doctor & time</a><code>desktop-appointments-book-schedule.html</code></li>
+        <li><a href="./desktop-appointments-book-review.html">Booking · step 3 — review</a><code>desktop-appointments-book-review.html</code></li>
+        <li><a href="./desktop-appointments-empty.html">First-time / empty state</a><code>desktop-appointments-empty.html</code></li>
+      </ul>
+    </section>
+
+    <section class="grp">
+      <h2>B2B — CORPO portal (web)</h2>
+      <ul>
+        <li><a href="./b2b.html">App shell</a><code>b2b.html</code></li>
+        <li><a href="./b2b-contracts.html">Contracts</a><code>b2b-contracts.html</code></li>
+      </ul>
+    </section>
+  </div>
+</body>
+</html>
