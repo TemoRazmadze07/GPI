@@ -7,6 +7,7 @@
 
 import { doctors, clinicByValue, availableDates, slotGroupsFor, fmtDateLong, dateKeyOf } from './booking.js'
 import { insuredPersons } from './insured.js'
+import { ka } from '../i18n/strings.js'
 
 /* Dates are RELATIVE to real today so the list stays coherent with the live
    booking calendar: ongoing rows land on real future dates via bookedSlot();
@@ -80,16 +81,19 @@ export function confirmBooking(insuredId, drafts) {
   const pt = personById(insuredId)
   const rows = drafts.map((d) => {
     const dr = drById(d.doctorId)
-    const cl = clinicByValue(d.slotClinic)
+    const isRemote = d.type === 'personal' && d.visit === 'remote'
+    const cl = isRemote ? null : clinicByValue(d.slotClinic)
     return {
       id: 'b' + ++bookedSeq,
       dateKey: d.date, dateLabel: fmtDateLong(d.date), time: d.slot,
-      doctorId: d.doctorId, clinicValue: d.slotClinic, status: 'ongoing', insuredId,
-      date: d.date, slot: d.slot, slotClinic: d.slotClinic,
-      type: d.type,
+      doctorId: d.doctorId, clinicValue: isRemote ? null : d.slotClinic, status: 'ongoing', insuredId,
+      date: d.date, slot: d.slot, slotClinic: isRemote ? null : d.slotClinic,
+      type: d.type, visit: d.visit || null,
       specialty: d.specialty ?? (dr.specialtyValue || dr.studyValue || null),
       doctor: { name: dr.name, specialty: dr.role, avatar: dr.avatar },
-      clinic: { name: cl.label, address: cl.address, isPhone: false },
+      clinic: isRemote
+        ? { name: ka.wizard.visit.remote, address: null, isPhone: true }
+        : { name: cl.label, address: cl.address, isPhone: false },
       patient: { name: pt.name, relation: pt.relation },
     }
   })

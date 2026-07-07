@@ -88,6 +88,14 @@ export const apps = [
           { id: 'list', path: 'b2b/contracts', label: 'contracts list', status: 'in-progress', hash: '/b2b/contracts' },
         ],
       },
+      {
+        id: 'insured',
+        label: 'insured',
+        status: 'in-progress',
+        flows: [
+          { id: 'addInsured', path: 'b2b/insured/add', label: 'add insured (wizard)', status: 'in-progress', hash: '/b2b/insured/add' },
+        ],
+      },
     ],
   },
 ]

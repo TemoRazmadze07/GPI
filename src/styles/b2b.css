@@ -569,3 +569,219 @@
 .b2b-launcher__row svg {
   color: var(--color-indigo-800);
 }
+
+/* ==== Add-insured wizard (concept 2026-07-06) ================================ */
+/* Full-page wizard ON the canvas; shell kept. Reuses Stepper + WizardFooter;
+   footer repositioned from fixed/full-bleed to sticky at the canvas bottom. */
+
+/* Stepper sits bare on the canvas — no container box (user, 2026-07-06). */
+.b2b-wiz__stepper {
+  margin-bottom: var(--space-32);
+}
+.b2b-wiz__h {
+  font: 600 16px/24px var(--font-sans);
+  color: var(--text-main);
+  margin: var(--space-24) 0 var(--space-16);
+}
+
+/* Contract context chip */
+.b2b-wiz__contract {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-12) var(--space-16);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-lg);
+  font: 400 13px/20px var(--font-sans);
+}
+.b2b-wiz__contract-lbl { color: var(--text-muted); }
+.b2b-wiz__contract-val { font-weight: 600; color: var(--text-main); }
+.b2b-wiz__contract .gpi-link { margin-left: auto; font-size: 13px; }
+
+/* Method / who selector cards (Radio Card usage) */
+.b2b-method {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-12);
+  margin-bottom: var(--space-16);
+}
+.b2b-method__card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-12);
+  padding: var(--space-16);
+  background: var(--surface-card);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-sans);
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+.b2b-method__card:hover:not(:disabled) { border-color: var(--border-strong); }
+.b2b-method__card.is-selected {
+  border: var(--border-width-md) solid var(--action-primary);
+  background: var(--interactive-selected-bg);
+  padding: calc(var(--space-16) - 0.5px);
+}
+.b2b-method__card:disabled {
+  cursor: not-allowed;
+  background: var(--surface-page);
+}
+.b2b-method__card:disabled .b2b-method__title,
+.b2b-method__card:disabled .b2b-method__meta,
+.b2b-method__card:disabled .b2b-method__icon { color: var(--text-muted); }
+.b2b-method__card .gpi-radio { flex: 0 0 auto; margin-top: 2px; }
+.b2b-method__card:disabled .gpi-radio { visibility: hidden; }
+.b2b-method__icon { flex: 0 0 auto; color: var(--color-indigo-800); margin-top: 1px; }
+.b2b-method__body { min-width: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.b2b-method__title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  font: 600 14px/20px var(--font-sans);
+  color: var(--text-main);
+}
+.b2b-method__meta { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+
+/* Two-column wizard body */
+.b2b-wiz__cols { display: flex; gap: var(--space-24); align-items: flex-start; }
+.b2b-wiz__main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--space-16); }
+.b2b-wiz__side { flex: 0 0 300px; min-width: 0; display: flex; flex-direction: column; gap: var(--space-12); }
+.b2b-wiz__sidecard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-16);
+  border: var(--border-width-sm) solid var(--border-divider);
+  border-radius: var(--radius-lg);
+}
+.b2b-wiz__sidehd {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-8);
+  font: 600 13px/20px var(--font-sans);
+  color: var(--text-main);
+}
+.b2b-wiz__sidenote { font: 400 11px/16px var(--font-sans); color: var(--text-muted); }
+.b2b-wiz__sidetext { font: 400 12px/18px var(--font-sans); color: var(--text-muted); padding: 0 var(--space-4); }
+.b2b-wiz__sideplain { display: flex; flex-direction: column; gap: var(--space-2); padding: 0 var(--space-4); }
+.b2b-wiz__sidelbl { font: 400 11px/16px var(--font-sans); color: var(--text-muted); }
+.b2b-wiz__sideval { font: 600 13px/20px var(--font-sans); color: var(--text-main); }
+
+/* Form grid (reuses .gpi-field / .gpi-input / Select) */
+.b2b-wiz__grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-20) var(--space-16); }
+.b2b-wiz__grid .wide { grid-column: 1 / -1; }
+.b2b-wiz__radios { display: flex; gap: var(--space-24); min-height: var(--control-md); align-items: center; }
+.b2b-wiz .gpi-input[readonly] { background: var(--surface-page); color: var(--text-muted); }
+.b2b-systag {
+  display: inline-block;
+  margin-left: var(--space-4);
+  padding: 1px var(--space-8);
+  border-radius: var(--radius-full);
+  background: var(--surface-sunken);
+  font: 500 10px/14px var(--font-sans);
+  color: var(--text-muted);
+  vertical-align: middle;
+}
+.b2b-hint-ok { color: var(--status-success-fg) !important; }
+.b2b-hint-err { color: var(--status-error-fg) !important; }
+.b2b-wiz__formactions { display: flex; justify-content: flex-end; gap: var(--space-12); }
+
+/* Batch list */
+.b2b-batch {
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.b2b-batch__hd {
+  padding: var(--space-8) var(--space-16);
+  background: var(--surface-sunken);
+  font: 600 12px/20px var(--font-sans);
+  color: var(--color-indigo-800);
+}
+.b2b-batch__empty { padding: var(--space-16); font: 400 13px/20px var(--font-sans); color: var(--text-muted); }
+.b2b-batch__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-12) var(--space-16);
+}
+.b2b-batch__row + .b2b-batch__row { border-top: var(--border-width-sm) solid var(--border-divider); }
+.b2b-batch__txt { min-width: 0; flex: 1 1 auto; }
+.b2b-batch__name { font: 600 13px/18px var(--font-sans); color: var(--text-main); }
+.b2b-batch__meta { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+.b2b-batch__pkg { font: 400 13px/18px var(--font-sans); color: var(--text-main); white-space: nowrap; }
+.b2b-batch__actions { display: flex; align-items: center; gap: var(--space-8); }
+.b2b-batch__actions .gpi-link { font-size: 12px; white-space: nowrap; }
+.b2b-batch__iconbtn {
+  display: grid;
+  place-items: center;
+  width: var(--control-xs);
+  height: var(--control-xs);
+  border: none;
+  background: none;
+  border-radius: var(--radius-sm);
+  color: var(--icon-default);
+  cursor: pointer;
+}
+.b2b-batch__iconbtn:hover { background: var(--interactive-hover-bg); color: var(--text-main); }
+.b2b-batch__total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-16);
+  padding: var(--space-12) var(--space-16);
+  border-top: var(--border-width-sm) solid var(--border-divider);
+  background: var(--surface-page);
+  font: 400 12px/18px var(--font-sans);
+  color: var(--text-muted);
+}
+.b2b-batch__total strong { font: 600 14px/20px var(--font-sans); color: var(--text-main); }
+
+/* Success */
+.b2b-wiz__done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-64) var(--space-24);
+  text-align: center;
+}
+.b2b-wiz__donemark {
+  display: grid;
+  place-items: center;
+  width: var(--control-lg);
+  height: var(--control-lg);
+  border-radius: var(--radius-full);
+  background: var(--status-success-bg);
+  color: var(--status-success-fg);
+  margin-bottom: var(--space-8);
+}
+.b2b-wiz__donetitle { font: 600 20px/28px var(--font-sans); color: var(--text-main); margin: 0; }
+.b2b-wiz__donemeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font: 400 14px/20px var(--font-sans);
+  color: var(--text-main);
+}
+.b2b-wiz__donenote { font: 400 13px/20px var(--font-sans); color: var(--text-muted); }
+.b2b-wiz__doneactions { display: flex; gap: var(--space-12); margin-top: var(--space-16); }
+
+/* WizardFooter, repositioned for the viewport-locked shell: sticky band at the
+   canvas bottom (full-bleed over the canvas padding, rounded to match). */
+.b2b-canvas .gpi-wizard-footer {
+  position: sticky;
+  inset: auto;
+  bottom: 0;
+  z-index: 5;
+  margin: var(--space-24) calc(-1 * var(--space-32)) calc(-1 * var(--space-32));
+  border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
+}
+.b2b-canvas .gpi-wizard-footer__inner {
+  max-width: none;
+  /* extra right clearance so the ContactLauncher FAB never covers the CTA */
+  padding: var(--space-12) calc(var(--space-32) + var(--space-64)) var(--space-12) var(--space-32);
+}

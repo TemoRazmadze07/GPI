@@ -42,7 +42,7 @@ function parseHashQuery() {
 
 function resolve(segs) {
   if (segs.length === 0 || segs[0] === 'map') return { view: 'map', wizardStep: 0 }
-  if (segs[0] === 'b2b') return { view: 'b2b', wizardStep: 0, b2bSection: segs[1] || 'home' }
+  if (segs[0] === 'b2b') return { view: 'b2b', wizardStep: 0, b2bSection: segs.slice(1).join('/') || 'home' }
   const ai = segs.indexOf('appointments')
   if (ai !== -1) {
     if (segs[ai + 1] === 'book') {

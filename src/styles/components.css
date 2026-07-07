@@ -206,6 +206,16 @@
   --cols: minmax(200px, 1.4fr) 150px minmax(180px, 1.4fr) 130px 150px 104px;
   --row-px: var(--space-20);
 }
+/* The appointments table wrapper reuses the bare `.gpi-table` class, which also
+   carries the B2B Data Table's card treatment (border + white fill + radius, see
+   ~line 1301). Inside this shadow card that paints a redundant EXTRA stroke around
+   the whole table — neutralise it here. The row boxes + the card supply the
+   structure; keep the B2B Data Table (its own `.gpi-table`) untouched. */
+.gpi-card--table .gpi-table {
+  border: none;
+  background: transparent;
+  border-radius: 0;
+}
 .gpi-table__heading {
   margin: 0 0 var(--space-20);
   color: var(--text-main);
@@ -243,13 +253,16 @@
   white-space: nowrap;
 }
 
-/* Row */
+/* Row — boxed card matching the Figma design (node 89:1354): white fill, 1px light
+   border (--border-default ≈ the mock's #dee1ed), rounded, 16px padding → 72px tall.
+   Rows sit 12px apart (via the group gap). Radius = --radius-lg (nested inside the
+   16px table card, per the concentric-corner ladder), not the mock's raw 20px. */
 .gpi-row {
   display: grid;
   grid-template-columns: var(--cols);
   align-items: center;
   gap: var(--space-16);
-  padding: var(--space-12) var(--row-px);
+  padding: var(--space-16) var(--row-px);
   background: var(--surface-card);
   border: var(--border-width-sm) solid var(--border-default);
   border-radius: var(--radius-lg);
@@ -355,12 +368,33 @@
 .gpi-badge--neutral { color: var(--status-neutral-fg); background: var(--status-neutral-bg); }
 .gpi-badge--brand   { color: var(--color-pink-700);    background: var(--color-pink-50); }
 
+/* ---- Inline Alert (design-system component; Figma port pending) ------------ */
+.gpi-alert {
+  display: flex;
+  gap: var(--space-8);
+  align-items: flex-start;
+  padding: var(--space-12);
+  border-radius: var(--radius-md);
+  font: 400 12px/16px var(--font-sans);
+}
+.gpi-alert__icon { flex: 0 0 auto; margin-top: 1px; }
+.gpi-alert__body { min-width: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.gpi-alert__title { font: 600 12px/16px var(--font-sans); }
+.gpi-alert__text { color: var(--text-main); }
+.gpi-alert--success { background: var(--status-success-bg); color: var(--status-success-fg); }
+.gpi-alert--warning { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+.gpi-alert--info    { background: var(--status-info-bg);    color: var(--status-info-fg); }
+.gpi-alert--error   { background: var(--status-error-bg);   color: var(--status-error-fg); }
+
 /* ---- Buttons ------------------------------------------------------------ */
 .gpi-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-8);
+  /* Rule: button labels NEVER wrap to two lines (2026-07-06). If a button is
+     too tight, resize it / shorten the text / drop the icon — never let it wrap. */
+  white-space: nowrap;
   border-radius: var(--radius-lg);
   border: var(--border-width-md) solid transparent;
   font-family: var(--font-sans);
@@ -785,17 +819,22 @@
   justify-content: space-between;
   gap: var(--space-8);
   border: var(--border-width-sm) solid var(--border-field);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg); /* control radius = 12 (locked 2026-06-30) */
   padding: 0 var(--space-12);
   background: var(--surface-card);
   color: var(--text-main);
   font: 400 14px/20px var(--font-sans);
 }
+.gpi-fsel__btn.is-error { border-color: var(--status-error-fg); border-width: var(--border-width-md); }
 .gpi-fsel__btn svg { color: var(--text-muted); flex: 0 0 auto; }
 /* Keep the selected value on ONE line, truncate with an ellipsis when it overflows.
    line-height 20px (> font size) so Georgian glyphs aren't clipped by overflow:hidden. */
 .gpi-fsel__btn > span { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; line-height: 20px; }
 .gpi-fsel__btn.is-open { border-color: var(--border-focus); }
+/* Disabled = a fixed/locked field (e.g. city in the returning personal-doctor flow):
+   sunken bg, muted text + a lock glyph, non-interactive but still legible. */
+.gpi-fsel__btn.is-disabled { background: var(--surface-page); color: var(--text-muted); cursor: default; }
+.gpi-fsel__btn.is-disabled svg { color: var(--text-muted); }
 .gpi-fsel__ph { color: var(--text-muted); }
 .gpi-fsel__menu {
   position: absolute;
@@ -999,6 +1038,40 @@
    + clinic-colour border, but NO background tint — distinct from the pressed filter. */
 .gpi-clinicchip.is-reflected { border-color: var(--c); }
 .gpi-clinicchip.is-reflected .gpi-clinicchip__ring { background: var(--c); }
+/* Disabled = the doctor works at ONE clinic (returning personal-doctor flow): the
+   single clinic shows as a fixed, non-interactive chip with a lock glyph. */
+.gpi-clinicchips.is-disabled .gpi-clinicchip { cursor: default; border-color: var(--border-strong); background: var(--surface-page); }
+.gpi-clinicchips.is-disabled .gpi-clinicchip:hover { border-color: var(--border-strong); }
+.gpi-clinicchips.is-disabled .gpi-clinicchip svg { color: var(--text-muted); }
+
+/* Visit-type selector (in-clinic / remote) — returning personal-doctor flow only.
+   Radio group (lighter than a 2nd segmented control next to the type tabs). */
+.gpi-bw3__visit { display: flex; align-items: center; gap: var(--space-16); margin-bottom: var(--space-16); flex-wrap: wrap; }
+.gpi-bw3__visitlbl { font: 500 12px/1 var(--font-sans); letter-spacing: 0.04em; color: var(--text-muted); }
+.gpi-bw3__visitopts { display: inline-flex; align-items: center; gap: var(--space-24); flex-wrap: wrap; }
+.gpi-bw3__visithint { display: inline-flex; align-items: center; gap: var(--space-4); font-size: 12px; color: var(--text-muted); }
+.gpi-bw3__visithint svg { color: var(--text-muted); flex: 0 0 auto; }
+
+/* Radio option (atomic) — real <input> visually replaced by the shared .gpi-radio
+   ring (ring + pink dot). min-height keeps the clickable target >= 24px (WCAG 2.2
+   target-size / Rule 7) while the ring stays 20px. Focus-visible draws an offset ring. */
+.gpi-radiopt { display: inline-flex; align-items: center; gap: var(--space-8); min-height: var(--control-xs); cursor: pointer; }
+.gpi-radiopt.is-disabled { cursor: default; }
+.gpi-radiopt__input { position: absolute; width: 1px; height: 1px; opacity: 0; margin: 0; }
+.gpi-radiopt__label { font: 400 14px/20px var(--font-sans); color: var(--text-main); }
+.gpi-radiopt:not(.is-disabled):hover .gpi-radio { border-color: var(--border-strong); }
+.gpi-radiopt.is-checked .gpi-radio { border-color: var(--action-primary); }
+.gpi-radiopt.is-checked:not(.is-disabled):hover .gpi-radio { border-color: var(--action-primary); }
+/* Disabled: mute the whole option so a disabled (even checked) radio never reads active. */
+.gpi-radiopt.is-disabled .gpi-radio { background: var(--interactive-disabled-bg); border-color: var(--border-field); }
+.gpi-radiopt.is-disabled .gpi-radio__dot { background: var(--text-muted); }
+.gpi-radiopt.is-disabled .gpi-radiopt__label { color: var(--text-muted); }
+.gpi-radiopt__input:focus-visible + .gpi-radio { box-shadow: 0 0 0 var(--focus-ring-offset) var(--surface-card), 0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--border-focus); }
+
+/* State-C fallback banner — the returning patient's personal doctor has no free slot
+   within 7 days, so the list opens to same-clinic peers (warning tone, one-time). */
+.gpi-bw3__banner { display: flex; align-items: flex-start; gap: var(--space-8); padding: var(--space-12) var(--space-16); margin-bottom: var(--space-16); background: var(--status-warning-bg); border: 1px solid var(--status-warning-border); border-radius: var(--radius-md); font: 400 13px/18px var(--font-sans); color: var(--status-warning-fg); }
+.gpi-bw3__banner svg { color: var(--status-warning-fg); flex: 0 0 auto; margin-top: 1px; }
 
 /* Doctor row (slim, selectable) */
 /* Doctor row (design 104:8702): pill, transparent until selected; selected =
@@ -1056,11 +1129,13 @@
 .gpi-addins__manual { padding-top: var(--space-12); border-top: 1px dashed var(--border-default);
   font: 400 13px/1.5 var(--font-sans); color: var(--text-muted); }
 
-.gpi-field { display: flex; flex-direction: column; gap: var(--space-8); }
-.gpi-field__lbl { font: 500 13px/16px var(--font-sans); color: var(--text-main); }
+/* Field anatomy per the Figma Text Input spec: label↔field 8px, field↔helper 4px. */
+.gpi-field { display: flex; flex-direction: column; gap: var(--space-4); }
+.gpi-field__lbl { font: 500 13px/16px var(--font-sans); color: var(--text-main); margin-bottom: var(--space-4); }
 .gpi-field__req { color: var(--status-error-fg); margin-left: 2px; }
-.gpi-field__hint { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
-.gpi-input { width: 100%; height: 44px; box-sizing: border-box; padding: 0 var(--space-16);
+.gpi-field__hint { display: flex; align-items: flex-start; gap: var(--space-4); font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+.gpi-field__hint svg { flex: 0 0 auto; margin-top: 1px; }
+.gpi-input { width: 100%; height: var(--control-md); box-sizing: border-box; padding: 0 var(--space-16);
   border: var(--border-width-sm) solid var(--border-field); border-radius: var(--radius-lg);
   background: var(--surface-card); font: 400 14px/1 var(--font-sans); color: var(--text-main); }
 .gpi-input::placeholder { color: var(--text-muted); }
@@ -1133,7 +1208,9 @@
 .gpi-slotgroup__hd { display: inline-flex; align-items: center; gap: var(--space-8); font: 500 12px/16px var(--font-sans); color: var(--color-indigo-800); }
 .gpi-slotgroup__slots { display: flex; flex-direction: column; gap: var(--space-8); }
 /* Clinic colour dot — colour comes from the gpi-cl--{tone} class (--c token). */
-.gpi-cldot { width: 9px; height: 9px; border-radius: var(--radius-full); background: var(--c); box-sizing: border-box; flex: 0 0 auto; }
+/* Fallback to a neutral grey when the clinic has no tone (the many-clinic first-time
+   flow drops per-clinic colours) — avoids an invisible/broken gpi-cl--undefined dot. */
+.gpi-cldot { width: 9px; height: 9px; border-radius: var(--radius-full); background: var(--c, var(--border-strong)); box-sizing: border-box; flex: 0 0 auto; }
 /* Time slot (design 104:8774): full-width white pill rounded-32, centred semibold text/muted. */
 .gpi-slot2 { display: flex; align-items: center; justify-content: center; width: 100%; padding: var(--space-8) var(--space-16); border: 1px solid var(--border-strong); border-radius: 32px; background: var(--surface-card); font: 600 14px/24px var(--font-sans); color: var(--text-muted); box-shadow: 0 1px 2px rgba(17, 23, 34, 0.05); }
 .gpi-slot2:hover { border-color: var(--border-field-hover); }

@@ -34,14 +34,27 @@ export const instrumentalTypes = [
 export const directionsFor = (type) =>
   type === 'specialist' ? specialties : type === 'instrumental' ? instrumentalTypes : []
 
-/* Two clinics for the prototype — colours = link blue (tone 1) + brand purple (tone 2). */
+/* Clinics. The first two (Curatio Saburtalo/Vake) are COLOUR-CODED — tone = link blue
+   (1) / brand purple (2) — and are the ones the chip flows (returning personal +
+   specialist/instrumental) use, plus the calendar colour-coding. The rest have NO tone:
+   they exist to demo a many-clinic network and are surfaced ONLY in the first-time
+   personal DROPDOWN (which drops per-clinic calendar colours — too many to colour-code). */
 export const clinics = [
   { value: 'saburtalo', label: 'კურაციო საბურთალოზე', short: 'საბურთალო', address: 'თბილისი, ო. ლორთქიფანიძის ქ. #31', tone: 1 },
   { value: 'vake', label: 'კურაციო ვაკეში', short: 'ვაკე', address: 'თბილისი, ჭავჭავაძის გამზ. #37', tone: 2 },
+  { value: 'gldani', label: 'კურაციო გლდანი', short: 'გლდანი', address: 'თბილისი, ხიზანიშვილის ქ. #7' },
+  { value: 'isani', label: 'კურაციო ისანი', short: 'ისანი', address: 'თბილისი, ქეთევან წამებულის გამზ. #52' },
+  { value: 'didube', label: 'კურაციო დიდუბე', short: 'დიდუბე', address: 'თბილისი, ცერეთლის გამზ. #116' },
+  { value: 'varketili', label: 'კურაციო ვარკეთილი', short: 'ვარკეთილი', address: 'თბილისი, ჯავახეთის ქ. #21' },
+  { value: 'mukhiani', label: 'კურაციო მუხიანი', short: 'მუხიანი', address: 'თბილისი, მუხიანის დას. IVა მ/რ #4' },
+  { value: 'ortachala', label: 'კურაციო ორთაჭალა', short: 'ორთაჭალა', address: 'თბილისი, გორგასლის ქ. #93' },
 ]
 
 export const allClinicValues = clinics.map((c) => c.value)
 export const clinicByValue = (v) => clinics.find((c) => c.value === v)
+/* The colour-coded clinics the chip flows render (specialist/returning). Keeps the
+   chip row from overflowing with the full many-clinic list. */
+export const chipClinics = clinics.filter((c) => c.tone)
 
 /* type: personal | specialist | instrumental.
    `role` is the label shown on the slim doctor row. */
@@ -50,7 +63,14 @@ export const doctors = [
   { id: 'd2', name: 'მარიამ ნოზაძე', type: 'personal', role: 'პირადი ექიმი', clinics: ['vake'], languages: ['KA', 'EN'], experience: 8, rating: 4.7, reviews: 180, bio: 'ოჯახის ექიმი. პროფილაქტიკური გასინჯვები და ვაქცინაცია.', avatar: 16 },
   { id: 'd3', name: 'ანა ბერიძე', type: 'personal', role: 'პირადი ექიმი', clinics: ['saburtalo', 'vake'], languages: ['KA', 'RU'], experience: 15, rating: 4.9, reviews: 320, bio: 'ოჯახის ექიმი, 15 წლის გამოცდილება. შინაგანი მედიცინა.', avatar: 31 },
   { id: 'd4', name: 'გიორგი ტატიშვილი', type: 'personal', role: 'პირადი ექიმი', clinics: ['saburtalo'], languages: ['KA', 'EN', 'DE'], experience: 10, rating: 4.6, reviews: 95, bio: 'ოჯახის ექიმი. გერმანიაში გავლილი რეზიდენტურა.', avatar: 12 },
-  { id: 'd5', name: 'დავით კაპანაძე', type: 'personal', role: 'პირადი ექიმი', clinics: ['saburtalo'], languages: ['KA'], experience: 6, rating: 4.5, reviews: 60, bio: 'ოჯახის ექიმი. ახალგაზრდა სპეციალისტი.', avatar: 60 },
+  { id: 'd5', name: 'დავით კაპანაძე', type: 'personal', role: 'პირადი ექიმი', clinics: ['saburtalo'], languages: ['KA'], experience: 6, rating: 4.5, reviews: 60, bio: 'ოჯახის ექიმი. ახალგაზრდა სპეციალისტი.', avatar: 60, bookedOutDays: 10 },
+  /* ---- personal doctors at the additional clinics (first-time browse only) ---- */
+  { id: 'd27', name: 'ლალი ორბელაძე', type: 'personal', role: 'პირადი ექიმი', clinics: ['gldani'], languages: ['KA', 'RU'], experience: 9, rating: 4.6, reviews: 88, bio: 'ოჯახის ექიმი. პრევენცია და ქრონიკული დაავადებების მართვა.', avatar: 21 },
+  { id: 'd28', name: 'ზაალ მღებრიშვილი', type: 'personal', role: 'პირადი ექიმი', clinics: ['isani', 'didube'], languages: ['KA', 'EN'], experience: 13, rating: 4.7, reviews: 130, bio: 'ოჯახის ექიმი, შინაგანი მედიცინა.', avatar: 3 },
+  { id: 'd29', name: 'ეთერ ცქიტიშვილი', type: 'personal', role: 'პირადი ექიმი', clinics: ['didube'], languages: ['KA'], experience: 7, rating: 4.5, reviews: 54, bio: 'ოჯახის ექიმი. პროფილაქტიკური გასინჯვები.', avatar: 24 },
+  { id: 'd30', name: 'ბექა შონია', type: 'personal', role: 'პირადი ექიმი', clinics: ['varketili'], languages: ['KA', 'EN'], experience: 11, rating: 4.8, reviews: 142, bio: 'ოჯახის ექიმი. ქრონიკული დაავადებების მართვა.', avatar: 15 },
+  { id: 'd31', name: 'ია მელაძე', type: 'personal', role: 'პირადი ექიმი', clinics: ['mukhiani', 'gldani'], languages: ['KA', 'RU'], experience: 15, rating: 4.9, reviews: 205, bio: 'ოჯახის ექიმი, 15 წლის გამოცდილება.', avatar: 40 },
+  { id: 'd32', name: 'ვასილ ჯაფარიძე', type: 'personal', role: 'პირადი ექიმი', clinics: ['ortachala'], languages: ['KA', 'EN', 'RU'], experience: 10, rating: 4.6, reviews: 77, bio: 'ოჯახის ექიმი. პროფილაქტიკა და ვაქცინაცია.', avatar: 6 },
   { id: 'd6', name: 'თამარ კიკნაძე', type: 'specialist', specialtyValue: 'gynecology', role: 'გინეკოლოგი', clinics: ['vake', 'saburtalo'], languages: ['KA', 'EN'], experience: 11, rating: 4.8, reviews: 240, bio: 'გინეკოლოგი. ულტრაბგერითი დიაგნოსტიკა.', avatar: 9 },
   { id: 'd7', name: 'ლევან ჩხეიძე', type: 'specialist', specialtyValue: 'dermatology', role: 'დერმატოლოგი', clinics: ['vake'], languages: ['KA'], experience: 9, rating: 4.4, reviews: 70, bio: 'დერმატოლოგი. კანის დაავადებები.', avatar: 13 },
   { id: 'd8', name: 'ნანა გელაშვილი', type: 'specialist', specialtyValue: 'ophthalmology', role: 'ოფთალმოლოგი', clinics: ['saburtalo'], languages: ['KA', 'RU'], experience: 14, rating: 4.9, reviews: 210, bio: 'ოფთალმოლოგი. მხედველობის კორექცია.', avatar: 25 },
@@ -121,7 +141,13 @@ function availabilityFor(doctorId) {
     // Real dates from today through the end of NEXT month: the current month (from
     // today) + all of next month get availability; past days get none (non-bookable).
     const end = new Date(TODAY.getFullYear(), TODAY.getMonth() + 2, 0)
+    // A "booked-out" doctor has no free slots for the first N days (used to demo the
+    // returning-patient fallback: their personal doctor is full for the coming week).
+    const minDate = doctor.bookedOutDays
+      ? startOfDay(new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() + doctor.bookedOutDays))
+      : TODAY
     for (let dt = new Date(TODAY); dt <= end; dt.setDate(dt.getDate() + 1)) {
+      if (dt < minDate) continue
       const key = dateKeyOf(dt)
       // Which of the doctor's clinics are open that day (deterministic per real date).
       const openCls = doctor.clinics.filter((cl) => hash(`${doctorId}|${cl}|${key}`) % 5 < 2)
@@ -177,6 +203,21 @@ export function firstAvailableDate(doctorId, active = allClinicValues) {
   return dates.length ? dates.sort()[0] : null
 }
 
+/* Does the doctor have ANY free slot within `days` calendar days from today
+   (inclusive)? Drives the returning-patient rule: if the personal doctor has a
+   slot this week keep them locked; otherwise open the same-clinic alternatives. */
+export function hasAvailabilityWithin(doctorId, days, active = allClinicValues) {
+  const limit = dateKeyOf(new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() + days))
+  return availableDates(doctorId, active).some((k) => k <= limit)
+}
+
+/* Other personal doctors that work at any of the given clinics (the same-clinic
+   fallback pool when a returning patient's own doctor is booked out this week). */
+export function personalDoctorsAt(clinicValues, excludeId = null) {
+  return doctors.filter((d) => d.type === 'personal' && d.id !== excludeId &&
+    d.clinics.some((c) => clinicValues.includes(c)))
+}
+
 /* Earliest slot (and its clinic) for a doctor on a day (∩ active clinics). */
 export function firstSlotFor(doctorId, dateKey, active = allClinicValues) {
   if (!doctorId || !dateKey) return { slot: null, slotClinic: null }
@@ -228,17 +269,17 @@ export function editDraft(appt) {
 }
 
 /* Filter the doctor/service list by appointment type + direction + free-text query.
-   Specialist & instrumental REQUIRE a direction first (specialty / study type) →
-   empty until one is chosen. `specialty` holds the direction value for both. */
+   Search-by-name ALWAYS works: a query finds any doctor of the type regardless of
+   the specialty/study filter (selecting the doctor then back-fills the direction).
+   Without a query, specialist & instrumental require a direction first (specialty /
+   study type) → empty until one is chosen. `specialty` holds the direction value. */
 export function filterDoctors({ type, specialty, query }) {
-  if ((type === 'specialist' || type === 'instrumental') && !specialty) return []
+  const q = (query || '').trim().toLowerCase()
   let list = doctors.filter((d) => d.type === type)
+  if (q) return list.filter((d) => d.name.toLowerCase().includes(q))
+  if ((type === 'specialist' || type === 'instrumental') && !specialty) return []
   if (type === 'specialist') list = list.filter((d) => d.specialtyValue === specialty)
   if (type === 'instrumental') list = list.filter((d) => d.studyValue === specialty)
-  if (query) {
-    const q = query.trim().toLowerCase()
-    list = list.filter((d) => d.name.toLowerCase().includes(q))
-  }
   return list
 }
 

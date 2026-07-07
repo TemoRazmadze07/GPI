@@ -29,17 +29,27 @@ const STEP_PATHS = [
   '#/desktop/appointments/book/done',
 ]
 
-const newDraft = (type = 'personal') => ({
-  id: 'a' + Math.random().toString(36).slice(2, 8),
-  type,
-  city: 'tbilisi',
-  specialty: null,
-  activeClinics: [], // clinic FILTER — empty = no filter (show all clinics)
-  doctorId: null,
-  date: null,
-  slot: null,
-  slotClinic: null,
-})
+const newDraft = (type = 'personal', insured = null) => {
+  const d = {
+    id: 'a' + Math.random().toString(36).slice(2, 8),
+    type,
+    city: insured?.city || 'tbilisi',
+    specialty: null,
+    activeClinics: [], // clinic FILTER — empty = no filter (show all clinics)
+    doctorId: null,
+    date: null,
+    slot: null,
+    slotClinic: null,
+  }
+  // Returning patient: carry the assigned personal doctor + default visit type so
+  // the personal path locks to that doctor (set regardless of the initial type,
+  // since the card's type switch can move a fresh draft to "personal").
+  if (insured?.personalDoctorId) {
+    d.assignedDoctorId = insured.personalDoctorId
+    d.visit = 'inclinic'
+  }
+  return d
+}
 
 export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom = null, editFrom = null }) {
   const [stepIdx, setStepIdx] = useState(initialStep)
@@ -85,6 +95,21 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
   const insured = people.find((p) => p.id === selectedId)
   const owner = people.find((p) => p.relation === 'owner')
 
+  // Switching the insured on Step 1 must re-point an in-progress (unsaved, non-edit)
+  // draft at the new person's assigned personal doctor + city — otherwise the
+  // personal-doctor lock would keep the previous person's doctor. A personal draft
+  // also drops its current selection so the workspace re-locks; other types keep it.
+  const selectInsured = (id) => {
+    setSelectedId(id)
+    const p = people.find((x) => x.id === id)
+    setDraft((d) => {
+      if (!d || d.edit) return d
+      const patch = { ...d, assignedDoctorId: p?.personalDoctorId || null, city: p?.city || d.city }
+      if (d.type === 'personal') { patch.doctorId = null; patch.date = null; patch.slot = null; patch.slotClinic = null }
+      return patch
+    })
+  }
+
   // Newly added insured (via lookup or manual entry) is appended to the list
   // and auto-selected, so the user continues with the person they just added.
   const handleAddInsured = (person) => {
@@ -96,7 +121,7 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
 
   // Max one personal-doctor appointment per booking.
   const hasPersonal = (excludeId) => appointments.some((a) => a.type === 'personal' && a.id !== excludeId)
-  const startNewDraft = () => setDraft(newDraft(hasPersonal(null) ? 'specialist' : 'personal'))
+  const startNewDraft = () => setDraft(newDraft(hasPersonal(null) ? 'specialist' : 'personal', insured))
 
   // Landing on step 2 with an empty cart: the only possible next action is the
   // booking form, so open it immediately — no placeholder click. Fires on step
@@ -182,7 +207,7 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
             <h2 className="t-h3 gpi-insured__title">{ka.wizard.insured.title}</h2>
             <div className="gpi-insured__grid" role="radiogroup" aria-label={ka.wizard.insured.title}>
               {people.map((p) => (
-                <PersonCard key={p.id} person={p} selected={selectedId === p.id} onSelect={setSelectedId} />
+                <PersonCard key={p.id} person={p} selected={selectedId === p.id} onSelect={selectInsured} />
               ))}
             </div>
             <div className="gpi-insured__add">
@@ -257,6 +282,7 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
               const dr = doctors.find((d) => d.id === a.doctorId)
               const cl = clinicByValue(a.slotClinic)
               const direction = a.specialty ? directionsFor(a.type).find((o) => o.value === a.specialty) : null
+              const isRemote = a.type === 'personal' && a.visit === 'remote'
               return (
                 <ReviewSection
                   key={a.id}
@@ -272,8 +298,14 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
                     </ReviewRow>
                   )}
                   <ReviewRow label={ka.wizard.review.when}>{fmtDateLong(a.date)} · {a.slot}</ReviewRow>
-                  <ReviewRow label={ka.wizard.review.clinic}>{cl?.label}</ReviewRow>
-                  <ReviewRow label={ka.wizard.review.address}>{cl?.address}</ReviewRow>
+                  {isRemote ? (
+                    <ReviewRow label={ka.wizard.review.format}>{ka.wizard.visit.remote}</ReviewRow>
+                  ) : (
+                    <>
+                      <ReviewRow label={ka.wizard.review.clinic}>{cl?.label}</ReviewRow>
+                      <ReviewRow label={ka.wizard.review.address}>{cl?.address}</ReviewRow>
+                    </>
+                  )}
                 </ReviewSection>
               )
             })}

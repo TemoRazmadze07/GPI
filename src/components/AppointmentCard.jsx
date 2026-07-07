@@ -20,6 +20,8 @@ const typeOptions = (personalTaken) => [
 export default function AppointmentCard({ appt, expanded, index, onToggle, onChange, onSave, onRemove, canSave, personalTaken = false }) {
   const doctor = doctors.find((d) => d.id === appt.doctorId)
   const clinic = clinicByValue(appt.slotClinic)
+  const isRemote = appt.type === 'personal' && appt.visit === 'remote'
+  const placeLabel = isRemote ? ka.wizard.visit.remote : clinic?.label
 
   if (!expanded) {
     return (
@@ -35,7 +37,7 @@ export default function AppointmentCard({ appt, expanded, index, onToggle, onCha
           <span className="gpi-asum__date">{fmtDateLong(appt.date)}</span>
           <span className="gpi-asum__time">{appt.slot}</span>
         </div>
-        <div className="gpi-asum__clinic">{clinic?.label}</div>
+        <div className="gpi-asum__clinic">{placeLabel}</div>
         <div className="gpi-asum__acts">
           <IconButton icon="pencil" title={ka.actions.edit} onClick={onToggle} />
           <IconButton icon="trash" title={ka.actions.cancel} onClick={onRemove} />
@@ -60,12 +62,12 @@ export default function AppointmentCard({ appt, expanded, index, onToggle, onCha
       <BookingWorkspace value={appt} onChange={onChange} />
 
       <div className="gpi-appt__ft">
-        {doctor && appt.date && appt.slot && clinic ? (
+        {doctor && appt.date && appt.slot && (clinic || isRemote) ? (
           <div className="gpi-appt__ftsum">
             <Avatar name={doctor.name} seed={doctor.avatar} size={36} />
             <div className="gpi-appt__ftsumtxt">
               <span className="gpi-appt__ftname">{doctor.name}</span>
-              <span className="gpi-appt__ftmeta">{fmtDateLong(appt.date)} · {appt.slot} · {clinic.label}</span>
+              <span className="gpi-appt__ftmeta">{fmtDateLong(appt.date)} · {appt.slot} · {placeLabel}</span>
             </div>
           </div>
         ) : <span className="gpi-appt__ftsum" />}

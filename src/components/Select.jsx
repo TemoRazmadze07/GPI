@@ -1,14 +1,15 @@
 import { useState, useRef, useEffect } from 'react'
 import Icon from '../lib/Icon.jsx'
 
-/* Select — lightweight filter dropdown (trigger + menu of options).
-   Closes on outside-click / Escape. Composes our Menu Item visual. */
-export default function Select({ value, placeholder, options, onChange }) {
+/* Select — lightweight dropdown (trigger + menu of options), mirroring the
+   Figma Select component (node 69:148). Closes on outside-click / Escape.
+   Composes our Menu Item visual. `error` = red stroke (Figma Error variant). */
+export default function Select({ value, placeholder, options, onChange, disabled = false, error = false }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
   useEffect(() => {
-    if (!open) return
+    if (!open || disabled) return
     const onDoc = (e) => {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false)
     }
@@ -27,15 +28,17 @@ export default function Select({ value, placeholder, options, onChange }) {
     <div className="gpi-fsel" ref={ref}>
       <button
         type="button"
-        className={`gpi-fsel__btn ${open ? 'is-open' : ''}`}
-        onClick={() => setOpen((o) => !o)}
+        className={`gpi-fsel__btn ${open ? 'is-open' : ''} ${disabled ? 'is-disabled' : ''} ${error ? 'is-error' : ''}`}
+        onClick={() => { if (!disabled) setOpen((o) => !o) }}
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-disabled={disabled || undefined}
+        disabled={disabled}
       >
         <span className={selected ? '' : 'gpi-fsel__ph'}>{selected ? selected.label : placeholder}</span>
-        <Icon name="chevron-down" size={16} />
+        <Icon name={disabled ? 'lock' : 'chevron-down'} size={16} />
       </button>
-      {open && (
+      {open && !disabled && (
         <div className="gpi-fsel__menu" role="listbox">
           {options.map((o) => (
             <button

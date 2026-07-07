@@ -198,8 +198,15 @@ export default function B2BShell({ active = 'home', onNavigate, children }) {
               </button>
             )}
           </div>
-          <Button variant="primary" size="md" leadingIcon="plus">
-            {t.topbar.newRequest}
+          <Button
+            variant="primary"
+            size="md"
+            leadingIcon="plus"
+            onClick={() => {
+              window.location.hash = '#/b2b/insured/add'
+            }}
+          >
+            {t.topbar.addInsured}
           </Button>
           <button className="b2b-topbtn" aria-label={t.topbar.notifications}>
             <Icon name="bell" size={20} />

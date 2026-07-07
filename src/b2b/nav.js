@@ -1,5 +1,6 @@
-/* B2B sidebar navigation model (locked IA, 2026-07-01/02):
-   7 top-level items + bottom admin group. Max TWO levels — anything deeper
+/* B2B sidebar navigation model (locked IA, 2026-07-01/02; Service group
+   flattened 2026-07-06 → Guide + Offers are now top-level leaves):
+   8 top-level items + bottom admin group. Max TWO levels — anything deeper
    belongs to in-page tabs/filters, never a third nav level.
    Parents are toggle-only (never navigate); leaves navigate.
    `badge` = neutral count; `urgent` = red-dot bubble shown on the collapsed
@@ -33,15 +34,8 @@ export const NAV_MAIN = [
       { id: 'statement', label: t.statement },
     ],
   },
-  {
-    id: 'service',
-    label: t.service,
-    icon: 'graduation-cap',
-    children: [
-      { id: 'guide', label: t.guide },
-      { id: 'offers', label: t.offers },
-    ],
-  },
+  { id: 'guide', label: t.guide, icon: 'graduation-cap' },
+  { id: 'offers', label: t.offers, icon: 'tag' },
   {
     id: 'admin',
     label: t.admin,
