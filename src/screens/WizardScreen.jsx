@@ -5,6 +5,7 @@ import PromoCard from '../components/PromoCard.jsx'
 import WizardFooter from '../components/WizardFooter.jsx'
 import AppointmentCard from '../components/AppointmentCard.jsx'
 import AddInsuredModal from '../components/AddInsuredModal.jsx'
+import NotificationPeek from '../components/NotificationPeek.jsx'
 import Avatar from '../components/Avatar.jsx'
 import Icon from '../lib/Icon.jsx'
 import { Button } from '../components/Button.jsx'
@@ -357,6 +358,7 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
               </Button>
             </div>
           </section>
+          <NotificationPeek bookings={confirmed} />
         </div>
       )}
 

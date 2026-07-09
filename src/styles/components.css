@@ -1488,3 +1488,72 @@
   align-items: center;
   gap: var(--space-12);
 }
+
+/* ── Email preview (RESEARCH ARTIFACT — prototype-only) ──────────────────────
+   Faithful replica of GPI's CURRENT confirmation email inside Gmail, shown from
+   the booking success page so study participants can judge the live message.
+   Deliberate literals: Gmail chrome greys/blue + the live mail template's own
+   lavender/indigo are EXTERNAL surfaces being mimicked — NOT GPI DS tokens.
+   Only the modal shell + hint text use system tokens. */
+.gpi-modal--email { width: 760px; max-height: calc(100vh - 64px); display: flex; flex-direction: column; }
+.gpi-modal--email .gpi-modal__body { overflow-y: auto; min-height: 0; }
+.gpi-modal--email .gpi-email, .gpi-modal--email .gpi-email__hint { flex-shrink: 0; }
+.gpi-email__hint { margin: 0; font: 400 13px/20px var(--font-sans); color: var(--text-muted); }
+.gpi-email__tabs { display: flex; gap: var(--space-8); }
+.gpi-email__tab { padding: var(--space-4) var(--space-12); border: 1px solid var(--border-field); border-radius: var(--radius-full); background: var(--surface-card); font: 500 13px/20px var(--font-sans); color: var(--text-main); cursor: pointer; }
+.gpi-email__tab.is-active { border-color: var(--action-primary); background: var(--interactive-selected-bg); color: var(--text-brand); }
+.gpi-email { border: 1px solid #dadce0; border-radius: 8px; overflow: hidden; background: #fff; font-family: Roboto, Arial, var(--font-sans); }
+.gpi-email__subject { padding: 14px 16px 6px; font: 400 20px/26px Roboto, Arial, sans-serif; color: #202124; }
+.gpi-email__label { margin-left: 6px; padding: 1px 8px; border: 1px solid #dadce0; border-radius: 4px; font: 400 11px/16px Roboto, Arial, sans-serif; color: #5f6368; vertical-align: middle; }
+.gpi-email__sender { display: flex; gap: 10px; align-items: center; padding: 8px 16px 12px; font: 400 13px/18px Roboto, Arial, sans-serif; color: #202124; }
+.gpi-email__avatar { flex: 0 0 auto; width: 36px; height: 36px; border-radius: 50%; background: #5f6368; color: #fff; display: grid; place-items: center; font: 500 16px/1 Roboto, Arial, sans-serif; }
+.gpi-email__addr { color: #5f6368; font-size: 12px; }
+.gpi-email__date { margin-left: auto; color: #5f6368; font-size: 12px; }
+.gpi-email__calbar { margin: 0 16px 12px; padding: 12px 16px; border-radius: 8px; background: #f1f3f4; font: 400 12px/18px Roboto, Arial, sans-serif; color: #3c4043; }
+.gpi-email__calbtns { display: flex; gap: 8px; margin-top: 10px; }
+.gpi-email__calbtns button { padding: 6px 14px; border: 1px solid #dadce0; border-radius: 4px; background: #fff; font: 500 12px/16px Roboto, Arial, sans-serif; color: #3c4043; cursor: pointer; }
+.gpi-email__event { display: flex; margin: 0 16px 16px; border: 1px solid #dadce0; border-radius: 8px; overflow: hidden; }
+.gpi-email__tile { flex: 0 0 84px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; background: #f8f9fa; border-right: 1px solid #dadce0; padding: 12px 0; }
+.gpi-email__tile-mo { padding: 1px 10px; border-radius: 4px; background: #1a73e8; color: #fff; font: 500 11px/16px Roboto, Arial, sans-serif; }
+.gpi-email__tile-day { font: 400 26px/32px Roboto, Arial, sans-serif; color: #3c4043; }
+.gpi-email__tile-wk { font: 400 12px/16px Roboto, Arial, sans-serif; color: #5f6368; }
+.gpi-email__event-meta { padding: 12px 16px; font: 400 13px/20px Roboto, Arial, sans-serif; color: #3c4043; }
+.gpi-email__event-title { font-size: 15px; color: #202124; }
+.gpi-email__gcal { display: inline-block; margin-bottom: 8px; font-size: 12px; color: #1a73e8; text-decoration: none; }
+.gpi-email__event-row { display: flex; gap: 8px; }
+.gpi-email__event-row > span { flex: 0 0 44px; color: #5f6368; }
+.gpi-email__hero { display: grid; place-items: center; height: 132px; background: #292562; }
+.gpi-email__hero img { height: 44px; filter: brightness(0) invert(1); }
+.gpi-email__body { padding: 20px 24px; font: 400 14px/22px Roboto, Arial, sans-serif; color: #202124; }
+.gpi-email__body p { margin: 0 0 10px; }
+.gpi-email__h { color: #292562; font-weight: 700; }
+.gpi-email__chip { display: inline-block; margin-bottom: 10px; padding: 4px 10px; background: #dcdaf0; color: #292562; font: 500 13px/18px Roboto, Arial, sans-serif; }
+.gpi-email__rows p { margin: 0 0 4px; }
+.gpi-email__footer { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 16px; background: #dcdaf0; font: 400 13px/18px Roboto, Arial, sans-serif; color: #202124; }
+.gpi-email__footer img { height: 20px; }
+.gpi-email__footer a { color: #1a0dab; }
+.gpi-email__attach { border-top: 1px solid #dadce0; padding: 10px 16px 14px; font: 400 12px/18px Roboto, Arial, sans-serif; color: #5f6368; }
+.gpi-email__attach-hd strong { color: #3c4043; }
+.gpi-email__attach-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; color: #3c4043; }
+.gpi-email__attach-row a { color: #1a73e8; text-decoration: none; }
+
+/* ── Notification peek launcher (RESEARCH ARTIFACT — off-system, prototype-only) ──
+   Floating bottom-right launcher for the current-state email/SMS previews. Uses a
+   deliberately UNBRANDED violet (#7c3aed) + dashed frame so it reads as a demo/
+   research overlay bolted ON TOP of the product, NOT a GPI UI control. Do not
+   swap these literals for design-system tokens — being off-system is the point. */
+.gpi-peek { position: fixed; right: 24px; bottom: 24px; z-index: 30; display: flex; flex-direction: column; align-items: stretch; gap: 8px; padding: 10px; border: 1.5px dashed #7c3aed; border-radius: 14px; background: rgba(124, 58, 237, 0.06); backdrop-filter: blur(2px); }
+.gpi-peek__tag { font: 600 10px/1.4 var(--font-sans); letter-spacing: 0.4px; text-transform: uppercase; color: #6d28d9; text-align: center; margin-bottom: 2px; }
+.gpi-peek__btn { display: flex; align-items: center; gap: 8px; padding: 9px 14px; border: none; border-radius: 10px; background: #7c3aed; color: #fff; font: 500 13px/16px var(--font-sans); white-space: nowrap; cursor: pointer; box-shadow: 0 6px 16px rgba(124, 58, 237, 0.35); transition: background 0.12s ease, transform 0.12s ease; }
+.gpi-peek__btn:hover { background: #6d28d9; transform: translateY(-1px); }
+.gpi-peek__btn:active { transform: translateY(0); }
+.gpi-peek__btn:focus-visible { outline: 2px solid #4c1d95; outline-offset: 2px; }
+
+/* ── SMS preview (RESEARCH ARTIFACT — dark native-Messages chrome, off-system) ── */
+.gpi-modal--sms { width: 420px; }
+.gpi-sms__hint { margin: 0; font: 400 13px/20px var(--font-sans); color: var(--text-muted); }
+.gpi-phone { border-radius: 20px; overflow: hidden; background: #000; border: 1px solid #2c2c2e; }
+.gpi-phone__hd { padding: 14px 16px; text-align: center; font: 600 15px/20px var(--font-sans); color: #f2f2f7; background: #1c1c1e; border-bottom: 1px solid #2c2c2e; }
+.gpi-phone__thread { padding: 16px 14px 22px; display: flex; flex-direction: column; gap: 10px; min-height: 160px; }
+.gpi-phone__ts { text-align: center; font: 400 12px/16px var(--font-sans); color: #8e8e93; margin-bottom: 2px; }
+.gpi-phone__bubble { align-self: flex-start; max-width: 82%; padding: 10px 14px; border-radius: 18px; border-bottom-left-radius: 5px; background: #3a3a3c; color: #fff; font: 400 15px/21px var(--font-sans); }

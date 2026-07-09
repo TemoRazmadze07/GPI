@@ -95,6 +95,47 @@ export const ka = {
       note: 'მიდით კლინიკაში ვიზიტამდე 15 წუთით ადრე · გაუქმება ან ცვლილება შესაძლებელია ჯავშნების გვერდიდან',
       calendar: 'კალენდარში დამატება',
       toList: 'ჩემი ჯავშნები',
+      // Floating research launcher (off-system) — opens the current-state
+      // notifications the insured receives. NOT part of the product UI.
+      peek: {
+        tag: 'შეტყობინებების ნიმუში',
+        aria: 'გაგზავნილი შეტყობინებების ნიმუში — მხოლოდ კვლევისთვის',
+        email: 'ელფოსტა',
+        sms: 'SMS',
+      },
+      // Research artifact — mirrors GPI's LIVE booking SMS (real screenshot,
+      // 2026-06-17). Live SMS is transliterated Georgian; rendered here in
+      // Georgian script per the user. Assembled in SmsPreview.smsBody().
+      sms: {
+        modalTitle: 'გაგზავნილი SMS',
+        hint: 'ეს არის SMS-ის ნიმუში, რომელსაც დაზღვეული მიიღებს ჯავშნის დადასტურებისას.',
+        received: 'ოთხ, 17 ივნ 18:52',
+        hello: 'მოგესალმებით,',
+        lead: 'ვიზიტი ექიმთან',
+        leadRemote: 'დისტანციური კონსულტაცია ექიმთან',
+        booked: 'დაჯავშნილია',
+        at: 'საათზე.',
+        entrance: 'შემოსასვლელი',
+      },
+      // Research artifact — mirrors GPI's LIVE confirmation-email template
+      // (real Gmail screenshot, 2026-07-09). Keep the copy as-is: the study
+      // question is whether the CURRENT email is clear, not a redesign.
+      email: {
+        modalTitle: 'გაგზავნილი ელფოსტა',
+        hint: 'ეს არის ელფოსტის ნიმუში, რომელსაც დაზღვეული მიიღებს ჯავშნის დადასტურებისას.',
+        letter: 'წერილი',
+        subject: 'ექიმთან ვიზიტი',
+        hello: 'გამარჯობა',
+        intro: 'გაცნობებთ, რომ ვიზიტი კლინიკაში დაჯავშნილია.',
+        introRemote: 'გაცნობებთ, რომ დისტანციური კონსულტაცია დაჯავშნილია.',
+        detailsTitle: 'კონსულტაციის დეტალები:',
+        specialty: 'სპეციალობა',
+        doctor: 'ექიმი',
+        date: 'თარიღი',
+        time: 'დრო',
+        clinicName: 'კლინიკის დასახელება',
+        clinicAddress: 'კლინიკის მისამართი',
+      },
     },
     step2: {
       title: 'ექიმთან ჩაწერა',

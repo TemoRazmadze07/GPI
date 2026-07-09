@@ -6,7 +6,7 @@ import { ka } from '../i18n/strings.js'
    matching the doctor-details modal (design node 89:3546). Clicking the overlay,
    the × or pressing Escape all dismiss via onClose. Reused by DoctorBioModal and
    ConfirmDialog so every dialog shares one frame. */
-export default function Modal({ title, onClose, closeLabel, children, footer }) {
+export default function Modal({ title, onClose, closeLabel, children, footer, className }) {
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose()
     document.addEventListener('keydown', onKey)
@@ -15,7 +15,7 @@ export default function Modal({ title, onClose, closeLabel, children, footer }) 
 
   return (
     <div className="gpi-modal-overlay" onClick={onClose}>
-      <div className="gpi-modal" role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
+      <div className={`gpi-modal${className ? ` ${className}` : ''}`} role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
         <div className="gpi-modal__hd">
           <h3 className="gpi-modal__title">{title}</h3>
           <button className="gpi-modal__close" onClick={onClose} aria-label={closeLabel || ka.actions.close}>
