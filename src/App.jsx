@@ -67,9 +67,9 @@ function StudyFallback() {
   )
 }
 
-function Flow({ view, wizardStep, rescheduleFrom, editFrom, b2bSection }) {
+function Flow({ view, wizardStep, rescheduleFrom, editFrom, b2bSection, b2bContract }) {
   if (view === 'b2b') {
-    return <B2BApp section={b2bSection} />
+    return <B2BApp section={b2bSection} contract={b2bContract} />
   }
   return (
     <AppShell>
@@ -132,7 +132,8 @@ export default function App() {
   const q = parseHashQuery()
   const rescheduleFrom = q.get('from')
   const editFrom = q.get('edit')
-  const flowProps = { view, wizardStep, rescheduleFrom, editFrom, b2bSection }
+  const b2bContract = q.get('contract')
+  const flowProps = { view, wizardStep, rescheduleFrom, editFrom, b2bSection, b2bContract }
 
   if (STUDY) {
     if (view === 'map') {

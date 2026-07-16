@@ -1111,6 +1111,29 @@
    24px bottom padding supplies the gap above the buttons (so top padding = 0 here
    avoids a double gap). 16px between buttons. Matches Figma dev-mode spec. */
 .gpi-modal__ft { display: flex; gap: var(--space-16); justify-content: flex-end; padding: 0 var(--space-24) var(--space-24); }
+
+/* ---- Drawer (shared right-side detail panel, 2026-07-16) ----------------
+   Same shell anatomy as .gpi-modal (header title + × / body / footer) so
+   dialogs and drawers read as one family. z 900 sits above every popover
+   layer (actmenu 60) but below modals (1000) so a dialog can open on top. */
+.gpi-drawer-overlay { position: fixed; inset: 0; z-index: 900; background: var(--surface-overlay); }
+.gpi-drawer {
+  position: absolute; top: 0; right: 0; bottom: 0;
+  width: 440px; max-width: calc(100% - var(--space-40));
+  display: flex; flex-direction: column;
+  background: var(--surface-card);
+  border-radius: var(--radius-xl) 0 0 var(--radius-xl); /* outer card = 16 */
+  box-shadow: var(--elevation-modal);
+  animation: gpi-drawer-in 200ms ease-out;
+}
+@keyframes gpi-drawer-in { from { transform: translateX(48px); opacity: 0; } to { transform: none; opacity: 1; } }
+.gpi-drawer__hd { flex: 0 0 auto; display: flex; align-items: center; gap: var(--space-16); padding: var(--space-16) var(--space-24); border-bottom: 1px solid var(--border-default); }
+.gpi-drawer__title { flex: 1; margin: 0; font: 600 18px/32px var(--font-sans); color: var(--color-indigo-800); }
+.gpi-drawer__close { flex: 0 0 auto; display: grid; place-items: center; padding: var(--space-8); border: none; background: none; border-radius: var(--radius-lg); color: var(--color-indigo-800); cursor: pointer; }
+.gpi-drawer__close:hover { background: var(--interactive-hover-bg); }
+.gpi-drawer__body { flex: 1; overflow-y: auto; padding: var(--space-24); display: flex; flex-direction: column; gap: var(--space-24); }
+.gpi-drawer__ft { flex: 0 0 auto; display: flex; gap: var(--space-16); justify-content: flex-end; padding: var(--space-16) var(--space-24); border-top: 1px solid var(--border-default); }
+
 /* Doctor bio modal content */
 .gpi-bio__person { display: flex; gap: var(--space-12); align-items: center; }
 .gpi-bio__meta { min-width: 0; display: flex; flex-direction: column; gap: var(--space-2); }
@@ -1449,7 +1472,9 @@
   bottom: calc(100% + var(--space-4));
 }
 .gpi-actmenu__panel {
-  z-index: 30;
+  /* portaled to body (2026-07-16) — must clear the FAB/topbar (40) + filter
+     popover (50), stay under modals (1000). */
+  z-index: 60;
   min-width: 200px;
   padding: var(--space-8);
   background: var(--surface-card);
@@ -1557,3 +1582,375 @@
 .gpi-phone__thread { padding: 16px 14px 22px; display: flex; flex-direction: column; gap: 10px; min-height: 160px; }
 .gpi-phone__ts { text-align: center; font: 400 12px/16px var(--font-sans); color: #8e8e93; margin-bottom: 2px; }
 .gpi-phone__bubble { align-self: flex-start; max-width: 82%; padding: 10px 14px; border-radius: 18px; border-bottom-left-radius: 5px; background: #3a3a3c; color: #fff; font: 400 15px/21px var(--font-sans); }
+
+/* ---- Filter Bar + Filter Popover (design-system Filter Bar v1, 2026-07-15) --
+   Common table toolbar: [filter ▾ +count] [search] [CSV export] + applied-
+   filters chips row. Popover = single pane (no tabs): category rail · value
+   pane · footer (live staged count · clear · apply). */
+.gpi-filterbar__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+}
+.gpi-filterbar__anchor { position: relative; }
+.gpi-filterbar__btn { white-space: nowrap; }
+.gpi-filterbar__btn.has-active { border-color: var(--action-primary); }
+.gpi-filterbar__count,
+.gpi-fpop__catcount {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 var(--space-4);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--badge-brand-bg, var(--interactive-selected-bg));
+  color: var(--color-pink-700);
+  font: 500 12px/16px var(--font-sans); /* Caption, Label weight */
+}
+.gpi-filterbar__search { flex: 0 1 360px; min-width: 200px; }
+.gpi-filterbar__search .gpi-search { height: 40px; border-radius: var(--radius-lg); }
+.gpi-filterbar__applied {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+  margin-top: var(--space-12);
+}
+.gpi-fchip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-4) var(--space-4) var(--space-12);
+  border-radius: var(--radius-full);
+  background: var(--surface-sunken);
+  font: 400 13px/20px var(--font-sans); /* Body/Small */
+  color: var(--text-main);
+}
+.gpi-fchip__x {
+  width: 24px; /* WCAG 2.2 target */
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-full);
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.gpi-fchip__x:hover { background: var(--interactive-pressed-bg, #d3d7df); color: var(--text-main); }
+.gpi-fchip__x:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--border-focus); }
+.gpi-filterbar__clear {
+  border: none;
+  background: none;
+  padding: var(--space-4) var(--space-8);
+  font: 500 13px/20px var(--font-sans);
+  color: var(--text-link);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+.gpi-filterbar__clear:hover { color: var(--action-link-hover); }
+.gpi-filterbar__clear:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--border-focus); }
+
+.gpi-fpop {
+  position: absolute;
+  top: calc(100% + var(--space-8));
+  left: 0;
+  z-index: 50;
+  width: 720px;
+  background: var(--surface-card);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-xl); /* outer card 16 (radius ladder) */
+  box-shadow: var(--elevation-popover);
+}
+.gpi-fpop__body { display: flex; min-height: 280px; }
+.gpi-fpop__rail {
+  flex: 0 0 184px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-8);
+  border-right: var(--border-width-sm) solid var(--border-divider);
+}
+.gpi-fpop__cat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-12);
+  border: none;
+  border-radius: var(--radius-md); /* inset control 8 (radius ladder) */
+  background: none;
+  font: 400 14px/22px var(--font-sans); /* Body/Default */
+  color: var(--text-main);
+  text-align: left;
+  cursor: pointer;
+}
+.gpi-fpop__cat:hover { background: var(--interactive-hover-bg); }
+.gpi-fpop__cat.is-active { background: var(--interactive-selected-bg); color: var(--color-pink-700); font-weight: 500; }
+.gpi-fpop__cat:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--surface-page), 0 0 0 4px var(--action-primary); }
+.gpi-fpop__pane { flex: 1; padding: var(--space-16); min-width: 0; }
+.gpi-fpop__multisearch { margin-bottom: var(--space-12); }
+.gpi-fpop__multisearch .gpi-search { width: 100%; }
+.gpi-fpop__presets { margin-top: var(--space-12); } /* quick suggestions sit BELOW the calendar (BMLL) */
+.gpi-fpop__footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-12) var(--space-16);
+  border-top: var(--border-width-sm) solid var(--border-divider);
+}
+.gpi-fpop__count {
+  margin-right: auto;
+  font: 400 13px/20px var(--font-sans);
+  color: var(--text-muted);
+}
+
+/* Compact dual-month range calendar */
+.gpi-fcal { position: relative; display: flex; gap: var(--space-24); justify-content: center; }
+.gpi-fcal__nav { position: absolute; top: -2px; }
+.gpi-fcal__nav--prev { left: 0; }
+.gpi-fcal__nav--next { right: 0; }
+.gpi-fcal__month { width: 224px; }
+.gpi-fcal__title { text-align: center; font: 500 13px/20px var(--font-sans); color: var(--text-main); margin-bottom: var(--space-8); }
+.gpi-fcal__weekdays,
+.gpi-fcal__grid { display: grid; grid-template-columns: repeat(7, 32px); gap: var(--space-2) 0; justify-content: center; }
+.gpi-fcal__weekdays { margin-bottom: var(--space-4); }
+.gpi-fcal__weekdays span { font: 400 11px/16px var(--font-sans); color: var(--text-muted); text-align: center; }
+.gpi-fcal__day {
+  width: 32px;
+  height: 28px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: none;
+  font: 400 13px/20px var(--font-sans);
+  color: var(--text-main);
+  cursor: pointer;
+}
+.gpi-fcal__day:hover { background: var(--interactive-hover-bg); }
+.gpi-fcal__day:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--surface-page), 0 0 0 4px var(--action-primary); }
+/* Zero column-gap + no radius = one continuous, quiet band (not a pink wall) */
+.gpi-fcal__day.is-inrange { background: var(--interactive-selected-bg); border-radius: 0; color: var(--text-main); }
+.gpi-fcal__day.is-endpoint { background: var(--action-primary); color: var(--action-primary-fg); font-weight: 500; }
+.gpi-fcal__range { display: flex; align-items: center; gap: var(--space-8); margin-bottom: var(--space-12); }
+/* Editable date inputs (BMLL-aligned custom fields) */
+.gpi-fcal__bound {
+  flex: 0 0 auto;
+  width: 118px;
+  height: 32px;
+  padding: 0 var(--space-12);
+  border: var(--border-width-sm) solid var(--border-field);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  font: 400 13px/20px var(--font-sans);
+  color: var(--text-main);
+}
+.gpi-fcal__bound::placeholder { color: var(--text-muted); }
+.gpi-fcal__bound:hover { border-color: var(--border-field-hover); }
+.gpi-fcal__bound:focus { outline: none; border-color: var(--border-focus); }
+.gpi-fcal__bound.is-invalid { border-color: var(--status-error-fg); }
+.gpi-fcal__dash { color: var(--text-muted); }
+
+/* ---- Tabs — underline content switcher (design-system Tabs v1, 2026-07-15) --
+   Page-level dataset switcher (vs Segmented Control = in-card view toggle). */
+.gpi-tabs {
+  display: flex;
+  gap: var(--space-24);
+  border-bottom: var(--border-width-sm) solid var(--border-default);
+}
+.gpi-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-2) var(--space-12);
+  border: none;
+  background: none;
+  font: 500 14px/20px var(--font-sans); /* Button/Medium */
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.gpi-tab:hover { color: var(--text-main); }
+.gpi-tab:focus-visible {
+  outline: none;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 0 0 2px var(--surface-page), 0 0 0 4px var(--action-primary);
+}
+.gpi-tab.is-active { color: var(--color-pink-700); }
+.gpi-tab.is-active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  border-radius: var(--radius-full);
+  background: var(--action-primary);
+}
+.gpi-tab__count { font-weight: 400; color: var(--text-muted); }
+.gpi-tab.is-active .gpi-tab__count { color: var(--color-pink-600); }
+
+/* Policies page: tabs row + paginated table footer */
+.b2b-page__tabs { margin-bottom: var(--space-16); }
+.b2b-page__pagination { display: flex; justify-content: center; margin-top: var(--space-16); }
+
+/* Stacked table identifier cell — primary line + muted secondary (Data Table) */
+.gpi-table__stack { display: flex; flex-direction: column; gap: var(--space-2); }
+.gpi-table__sub { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+
+/* Sortable table headers (Data Table sorting, 2026-07-16) */
+.gpi-table__sortbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.gpi-table__sortbtn svg { color: var(--text-muted); flex: 0 0 auto; }
+.gpi-table__sortbtn:hover { color: var(--text-main); }
+.gpi-table__sortbtn:hover svg { color: var(--text-main); }
+.gpi-table__sortbtn.is-active { color: var(--text-main); font-weight: 500; }
+.gpi-table__sortbtn.is-active svg { color: var(--action-primary); }
+.gpi-table__sortbtn:focus-visible {
+  outline: none;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 0 0 2px var(--surface-page), 0 0 0 4px var(--action-primary);
+}
+
+/* Pinned-table behavior (Data Table v2, 2026-07-16, BMLL-pattern): wide tables
+   scroll HORIZONTALLY while the first (identifier) and last (actions) columns
+   stay pinned. Cells go single-line (nowrap) — multi-line info uses the
+   deliberate stacked cell instead of accidental wrapping. Scoped to the
+   shared DataTable via --pin so My-Cabinet's frozen tables are untouched. */
+.gpi-table--pin { overflow-x: auto; }
+.gpi-table--pin th,
+.gpi-table--pin td { white-space: nowrap; }
+.gpi-table--pin th:first-child,
+.gpi-table--pin td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--surface-card);
+}
+.gpi-table--pin th:last-child,
+.gpi-table--pin td:last-child {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  background: var(--surface-card);
+}
+/* Pinned-edge ELEVATION (no strokes, 2026-07-16, GPI Master 13300:108203):
+   a soft gradient strip cast onto the scrolling content, shown ONLY while
+   content is actually hidden behind that edge (classes set from scroll state
+   in DataTable). A table that fits shows a plain table. Gradient overlays —
+   box-shadow doesn't paint reliably on border-collapse table cells. */
+.gpi-table--pin.is-shadow-left th:first-child::after,
+.gpi-table--pin.is-shadow-left td:first-child::after,
+.gpi-table--pin.is-shadow-right th:last-child::before,
+.gpi-table--pin.is-shadow-right td:last-child::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 16px;
+  pointer-events: none;
+}
+.gpi-table--pin.is-shadow-left th:first-child::after,
+.gpi-table--pin.is-shadow-left td:first-child::after {
+  right: -16px;
+  background: linear-gradient(to right, var(--elevation-pinned), transparent);
+}
+.gpi-table--pin.is-shadow-right th:last-child::before,
+.gpi-table--pin.is-shadow-right td:last-child::before {
+  left: -16px;
+  background: linear-gradient(to left, var(--elevation-pinned), transparent);
+}
+.gpi-table--pin thead th:first-child,
+.gpi-table--pin thead th:last-child { background: var(--surface-page); }
+.gpi-table--pin tbody tr.is-clickable:hover td:first-child,
+.gpi-table--pin tbody tr.is-clickable:hover td:last-child { background: var(--interactive-hover-bg); }
+
+/* Customize-table (Column Customization v1, 2026-07-16): ✎ trigger in the
+   table's actions header + modal list (locked identifier row · draggable
+   checkbox rows). */
+.gpi-table__custbtn {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.gpi-table__custbtn:hover { color: var(--text-main); background: var(--interactive-hover-bg); }
+.gpi-table__custbtn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--surface-page), 0 0 0 4px var(--action-primary);
+}
+.gpi-modal--cols { width: 420px; }
+.gpi-colmodal__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+.gpi-colmodal__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-12);
+  border: var(--border-width-sm) solid var(--border-field);
+  border-radius: var(--radius-md); /* inset control inside the 16px modal */
+  background: var(--surface-card);
+}
+.gpi-colmodal__row.is-dragging { opacity: 0.5; border-style: dashed; }
+.gpi-colmodal__row.is-locked {
+  background: var(--surface-page);
+  border-color: var(--border-divider);
+  color: var(--text-muted);
+}
+.gpi-colmodal__handle {
+  display: inline-flex;
+  padding: var(--space-2);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-muted);
+  cursor: grab;
+}
+.gpi-colmodal__handle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--surface-page), 0 0 0 4px var(--action-primary);
+}
+.gpi-colmodal__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  cursor: pointer;
+}
+.gpi-colmodal__check {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--action-primary);
+}
+.gpi-colmodal__label { font: 400 14px/22px var(--font-sans); color: var(--text-main); }
+.gpi-colmodal__row.is-locked .gpi-colmodal__label { color: var(--text-muted); }
+.gpi-colmodal__hint { margin-left: auto; font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+
+/* Truncated long-text table cell (ellipsis + title tooltip) */
+.gpi-table__trunc {
+  display: inline-block;
+  max-width: 176px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}

@@ -12,16 +12,9 @@ const t = kaB2B.nav
 
 export const NAV_MAIN = [
   { id: 'home', label: t.home, icon: 'home' },
-  {
-    id: 'insured',
-    label: t.insured,
-    icon: 'users',
-    children: [
-      { id: 'persons', label: t.persons },
-      { id: 'vehicles', label: t.vehicles },
-      { id: 'objects', label: t.objects },
-    ],
-  },
+  /* Flattened 2026-07-15: the insured accordion (პირები/ავტომობილები/ობიექტები)
+     became ONE "პოლისები" leaf — the page's product tabs own that split now. */
+  { id: 'policies', label: t.policies, icon: 'users' },
   { id: 'contracts', label: t.contracts, icon: 'file-text' },
   { id: 'requests', label: t.requests, icon: 'arrow-right-left', badge: 7 },
   { id: 'claims', label: t.claims, icon: 'shield-check', badge: 3 },

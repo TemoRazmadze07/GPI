@@ -8,11 +8,11 @@ import Icon from '../lib/Icon.jsx'
    Both the weekday row and the day grid use the SAME 7×40px grid so the
    columns line up precisely. */
 
-const KA_MONTHS_FULL = [
+export const KA_MONTHS_FULL = [
   'იანვარი', 'თებერვალი', 'მარტი', 'აპრილი', 'მაისი', 'ივნისი',
   'ივლისი', 'აგვისტო', 'სექტემბერი', 'ოქტომბერი', 'ნოემბერი', 'დეკემბერი',
 ]
-const WEEKDAYS = ['ორშ', 'სამშ', 'ოთხ', 'ხუთ', 'პარ', 'შაბ', 'კვ']
+export const WEEKDAYS = ['ორშ', 'სამშ', 'ოთხ', 'ხუთ', 'პარ', 'შაბ', 'კვ']
 
 function ringBackground(tones) {
   if (!tones || !tones.length) return null

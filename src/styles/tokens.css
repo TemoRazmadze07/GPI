@@ -157,7 +157,11 @@
 
   --interactive-hover-bg: #eef0f4;
   --interactive-selected-bg: var(--color-pink-25); /* softened from pink/50 → pink/25 (system-wide) */
+  --interactive-pressed-bg: var(--color-neutral-200); /* Figma: interactive/pressed-bg */
   --interactive-disabled-bg: #eef0f4;
+
+  --badge-brand-bg: var(--color-pink-50); /* Figma: badge/brand/bg */
+  --badge-brand-fg: var(--color-pink-700); /* Figma: badge/brand/fg */
 
   /* Info alert (design 89:2625: blue-lavender bg + navy text). bg = link/25
      (the design's exact #f1f0ff — indigo/50 read too GREY, user wanted bluer);
@@ -238,6 +242,13 @@
   --elevation-dropdown: 0 2px 4px 0 rgba(17, 23, 34, 0.06), 0 4px 8px 0 rgba(17, 23, 34, 0.08);
   --elevation-popover: 0 2px 6px 0 rgba(17, 23, 34, 0.06), 0 8px 16px 0 rgba(17, 23, 34, 0.10);
   --elevation-modal: 0 4px 8px 0 rgba(17, 23, 34, 0.08), 0 16px 32px 0 rgba(17, 23, 34, 0.14);
+  /* Scroll-shadow for PINNED table columns (2026-07-16, per GPI Master node
+     13300:108203): a soft GRADIENT STRIP cast onto the scrolling content —
+     shown only while content is hidden behind that pinned edge, never a
+     stroke. Built as a gradient (box-shadow won't paint reliably on
+     border-collapse table cells). This is the gradient's start colour.
+     TODO: port as an Effect/gradient style to the Figma Elevation board. */
+  --elevation-pinned: rgba(17, 23, 34, 0.06); /* softened from .1 (user, 2026-07-16) */
   --elevation-toast: 0 4px 8px 0 rgba(17, 23, 34, 0.10), 0 12px 24px 0 rgba(17, 23, 34, 0.16);
 
   /* ---- Type families ------------------------------------------------------ */

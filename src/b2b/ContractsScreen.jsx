@@ -3,51 +3,120 @@ import ActionMenu from '../components/ActionMenu.jsx'
 import Badge from '../components/Badge.jsx'
 import { Button } from '../components/Button.jsx'
 import DataTable from '../components/DataTable.jsx'
-import FilterChips from '../components/FilterChips.jsx'
-import Icon from '../lib/Icon.jsx'
+import FilterBar from '../components/FilterBar.jsx'
+import { datePresets } from '../components/FilterPopover.jsx'
+import ContractDetailsDrawer from './ContractDetailsDrawer.jsx'
+import ProductTile from './ProductTile.jsx'
 import { kaB2B } from './strings.js'
 import { CONTRACTS, PRODUCTS, PRODUCT_ORDER } from './data/contracts.js'
 
-/* ContractsScreen — company-level contracts (CNT-…) as a Data Table with
-   product filter chips. Contract DETAIL page is deferred — row actions
-   are stubs until the detail flow exists. */
+/* ContractsScreen — company-level contracts (CNT-…) as a Data Table behind the
+   common Filter Bar (filter popover + search + CSV export, 2026-07-15).
+   Contract details open in the shared right-side Drawer (2026-07-16) — via
+   row click or ⋮ → დეტალურად; a dedicated page only if a record outgrows it. */
 
-const STATUS_BADGE = { active: 'success', preparing: 'warning', ended: 'neutral' }
+const STATUS_BADGE = { active: 'success', ended: 'neutral' }
 
-function ProductTile({ product }) {
-  const p = PRODUCTS[product]
-  return (
-    <span className="gpi-table__media" aria-hidden="true">
-      {p.img ? (
-        <img src={`${import.meta.env.BASE_URL}products/${p.img}`} alt="" />
-      ) : (
-        <Icon name="shield-check" size={24} />
-      )}
-    </span>
-  )
+const toDate = (s) => {
+  const [d, m, y] = s.split('.').map(Number)
+  return new Date(y, m - 1, d)
+}
+
+/* Period = OVERLAP semantics: a contract matches when its active period
+   intersects the selected range (answers "what was active in March?"). */
+function matches(r, f, q) {
+  if (f.status?.length && !f.status.includes(r.status)) return false
+  if (f.product?.length && !f.product.includes(r.product)) return false
+  if (f.period && !(toDate(r.start) <= f.period.to && toDate(r.end) >= f.period.from)) return false
+  if (q) {
+    const hay = `${r.id} ${PRODUCTS[r.product].label} ${PRODUCTS[r.product].chip}`.toLowerCase()
+    if (!hay.includes(q.toLowerCase())) return false
+  }
+  return true
 }
 
 export default function ContractsScreen() {
   const t = kaB2B
   const c = t.contracts
   const page = t.pages.contracts
-  const [filter, setFilter] = useState('all')
+  const [filters, setFilters] = useState({ status: [], product: [], period: null })
+  const [q, setQ] = useState('')
+  const [detail, setDetail] = useState(null)
 
-  const chips = [
-    { id: 'all', label: c.all, count: CONTRACTS.length },
-    ...PRODUCT_ORDER.map((p) => ({
-      id: p,
-      label: PRODUCTS[p].chip,
-      count: CONTRACTS.filter((r) => r.product === p).length,
-    })),
+  const rows = CONTRACTS.filter((r) => matches(r, filters, q))
+  const productCount = new Set(CONTRACTS.map((r) => r.product)).size
+  const clearAll = () => {
+    setFilters({ status: [], product: [], period: null })
+    setQ('')
+  }
+
+  const categories = [
+    {
+      id: 'status',
+      label: c.filterCats.status,
+      type: 'pills',
+      options: ['active', 'ended'].map((s) => ({
+        id: s,
+        label: c.status[s],
+        count: CONTRACTS.filter((r) => r.status === s).length,
+      })),
+    },
+    {
+      id: 'product',
+      label: c.filterCats.product,
+      type: 'multi',
+      searchPlaceholder: c.productSearch,
+      options: PRODUCT_ORDER.map((p) => ({
+        id: p,
+        label: PRODUCTS[p].chip,
+        count: CONTRACTS.filter((r) => r.product === p).length,
+      })),
+    },
+    {
+      id: 'period',
+      label: c.filterCats.period,
+      type: 'range',
+      presets: datePresets(t.filterBar.presets),
+    },
   ]
-  const rows = filter === 'all' ? CONTRACTS : CONTRACTS.filter((r) => r.product === filter)
 
-  const rowActions = [
-    { id: 'details', label: c.actions.details },
-    { id: 'deactivate', label: c.actions.deactivate },
-    { divider: true },
-    { id: 'revoke', label: c.actions.revoke, destructive: true },
+  /* Export = the FILTERED rows, not the whole dataset (agreed rule). BOM so
+     Excel opens the Georgian text as UTF-8. */
+  const exportCsv = () => {
+    const head = [c.cols.number, c.cols.product, c.cols.start, c.cols.end, c.cols.insured, c.cols.status]
+    const lines = rows.map((r) => [
+      r.id,
+      PRODUCTS[r.product].label,
+      r.start,
+      r.end,
+      r.insured == null ? '' : `${r.insured} ${PRODUCTS[r.product].unit}`,
+      c.status[r.status],
+    ])
+    const csv =
+      '\uFEFF' +
+      [head, ...lines].map((l) => l.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n')
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'contracts.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  /* Row actions are contextual (2026-07-16): view details (opens the drawer,
+     same as row click) + jump to this contract's policies. No activate/
+     deactivate or cancel — GPI has no such flows here. "View policies"
+     deep-links to the product's policy tab with the contract filter
+     pre-applied (?contract=CNT-…). */
+  const rowActionsFor = (r) => [
+    { id: 'details', label: c.actions.details, onSelect: () => setDetail(r) },
+    {
+      id: 'viewPolicies',
+      label: c.actions.viewPolicies,
+      onSelect: () => {
+        window.location.hash = `#/b2b/policies/${r.product}?contract=${r.id}`
+      },
+    },
   ]
 
   const columns = [
@@ -91,7 +160,7 @@ export default function ContractsScreen() {
       header: '',
       width: 64,
       align: 'right',
-      render: () => <ActionMenu items={rowActions} label={c.actions.menu} />,
+      render: (r) => <ActionMenu items={rowActionsFor(r)} label={c.actions.menu} />,
     },
   ]
 
@@ -100,32 +169,39 @@ export default function ContractsScreen() {
       <div className="b2b-page__head">
         <div>
           <h1 className="b2b-page__title">{page.title}</h1>
-          <div className="b2b-page__subtitle">{page.subtitle}</div>
+          <div className="b2b-page__subtitle">{c.subtitle(CONTRACTS.length, productCount)}</div>
         </div>
         <div className="b2b-page__actions">
-          <Button variant="secondary" size="md" leadingIcon="download">
-            {t.stub.export}
-          </Button>
           <Button variant="primary" size="md" leadingIcon="plus">
             {c.newContract}
           </Button>
         </div>
       </div>
       <div className="b2b-page__filters">
-        <FilterChips options={chips} value={filter} onChange={setFilter} label={c.filterLabel} />
+        <FilterBar
+          categories={categories}
+          value={filters}
+          onChange={setFilters}
+          countRows={(draft) => CONTRACTS.filter((r) => matches(r, draft, q)).length}
+          search={{ value: q, onChange: setQ, placeholder: c.searchPlaceholder }}
+          onExport={exportCsv}
+          t={t.filterBar}
+        />
       </div>
       <DataTable
         columns={columns}
         rows={rows}
         rowKey={(r) => r.id}
+        onRowClick={setDetail}
         empty={{
           icon: 'file-text',
           title: c.emptyTitle,
           hint: c.emptyHint,
           actionLabel: c.emptyAction,
-          onAction: () => setFilter('all'),
+          onAction: clearAll,
         }}
       />
+      {detail && <ContractDetailsDrawer contract={detail} onClose={() => setDetail(null)} />}
     </>
   )
 }

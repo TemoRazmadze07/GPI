@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { ASSETS } from '../lib/assets.js'
 import Icon from '../lib/Icon.jsx'
 import Avatar from '../components/Avatar.jsx'
 import { Button } from '../components/Button.jsx'
@@ -162,7 +163,7 @@ export default function B2BShell({ active = 'home', onNavigate, children }) {
           {/* CORPO product logo slot — client to provide the asset; GPI logo only until then.
               Links to the Flow Map hub (prototype nav aid; → CORPO home in production). */}
           <a className="b2b-brand__home" href="#/map" aria-label={t.topbar.home}>
-            <img className="b2b-brand__logo" src={`${import.meta.env.BASE_URL}logo.png`} alt="GPI" />
+            <img className="b2b-brand__logo" src={ASSETS.logo} alt="GPI" />
           </a>
           <span className="b2b-brand__divider" aria-hidden="true" />
           <span className="b2b-client" title={t.topbar.client}>

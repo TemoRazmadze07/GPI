@@ -533,7 +533,7 @@ export default function AddInsuredScreen({ step = 'method' }) {
         <>
           <div className="b2b-page__head">
             <div>
-              <Breadcrumbs items={[{ label: t.crumbParent }, { label: t.crumbPersons, href: '#/b2b/persons' }]} current={t.title} label={kaB2B.crumbsLabel} />
+              <Breadcrumbs items={[{ label: t.crumbParent, href: '#/b2b/policies' }]} current={t.title} label={kaB2B.crumbsLabel} />
               <h1 className="b2b-page__title">{t.title}</h1>
             </div>
             <Button variant="tertiary" size="md" leadingIcon="x" onClick={cancel}>

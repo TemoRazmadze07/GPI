@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ASSETS } from '../lib/assets.js'
 import Modal from './Modal.jsx'
 import Icon from '../lib/Icon.jsx'
 import { ka } from '../i18n/strings.js'
@@ -94,7 +95,7 @@ export default function EmailPreview({ bookings, onClose }) {
 
         {/* ── The GPI email body (faithful to the live template) ── */}
         <div className="gpi-email__hero">
-          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="GPI" />
+          <img src={ASSETS.logo} alt="GPI" />
         </div>
         <div className="gpi-email__body">
           {/* Deviation from the live template (which says a bare "გამარჯობა,"):
@@ -113,7 +114,7 @@ export default function EmailPreview({ bookings, onClose }) {
           </div>
         </div>
         <div className="gpi-email__footer">
-          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="" aria-hidden="true" />
+          <img src={ASSETS.logo} alt="" aria-hidden="true" />
           <a href="#" onClick={(e) => e.preventDefault()}>www.gpih.ge</a>
           <span>/ 032 2 505 111</span>
         </div>

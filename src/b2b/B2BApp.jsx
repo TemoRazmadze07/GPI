@@ -1,6 +1,8 @@
 import B2BShell from './B2BShell.jsx'
 import ContractsScreen from './ContractsScreen.jsx'
+import PoliciesScreen from './PoliciesScreen.jsx'
 import AddInsuredScreen from './AddInsuredScreen.jsx'
+import { PRODUCT_ORDER } from './data/contracts.js'
 import Breadcrumbs from '../components/Breadcrumbs.jsx'
 import { Button } from '../components/Button.jsx'
 import { kaB2B } from './strings.js'
@@ -42,7 +44,7 @@ function StubPage({ section }) {
   )
 }
 
-export default function B2BApp({ section = 'home' }) {
+export default function B2BApp({ section = 'home', contract = null }) {
   const navigate = (id) => {
     window.location.hash = id === 'home' ? '#/b2b' : `#/b2b/${id}`
   }
@@ -54,8 +56,23 @@ export default function B2BApp({ section = 'home' }) {
   const segs = section.split('/')
   if (segs[0] === 'insured' && segs[1] === 'add') {
     return (
-      <B2BShell active="persons" onNavigate={navigate}>
+      <B2BShell active="policies" onNavigate={navigate}>
         <AddInsuredScreen step={segs[2] || 'method'} />
+      </B2BShell>
+    )
+  }
+
+  /* Policies: #/b2b/policies/<product> — key remounts the screen per tab so
+     filter/search/page state starts clean on every product. Legacy kind-based
+     routes (persons/vehicles/objects) map to their product tab. */
+  const LEGACY_KIND = { persons: 'health', vehicles: 'auto', objects: 'property' }
+  if (segs[0] === 'policies' || LEGACY_KIND[segs[0]]) {
+    const product = LEGACY_KIND[segs[0]] || (PRODUCT_ORDER.includes(segs[1]) ? segs[1] : 'health')
+    /* key includes the deep-linked contract so arriving from a contract row
+       (?contract=CNT-…) remounts + reseeds the filter cleanly. */
+    return (
+      <B2BShell active="policies" onNavigate={navigate}>
+        <PoliciesScreen key={`${product}:${contract || ''}`} product={product} initialContract={contract} />
       </B2BShell>
     )
   }

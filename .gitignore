@@ -3,6 +3,11 @@ node_modules/
 
 # Build output (built in CI on deploy)
 dist/
+# Single-file share build (npm run build:share) — local artifact, not deployed
+dist-share/
+
+# Claude Code local session data — never publish
+.claude/
 
 # Logs
 *.log

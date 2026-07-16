@@ -770,18 +770,41 @@
 .b2b-wiz__donenote { font: 400 13px/20px var(--font-sans); color: var(--text-muted); }
 .b2b-wiz__doneactions { display: flex; gap: var(--space-12); margin-top: var(--space-16); }
 
-/* WizardFooter, repositioned for the viewport-locked shell: sticky band at the
-   canvas bottom (full-bleed over the canvas padding, rounded to match). */
+/* WizardFooter — INLINE at the end of the form (user, 2026-07-16; replaces the
+   earlier sticky band, dropped as overcomplex): a plain row after the last
+   input, scrolls with the page. Neutralizes the shared component's fixed
+   positioning; subtle top divider instead of the elevated band. */
 .b2b-canvas .gpi-wizard-footer {
-  position: sticky;
+  position: static;
   inset: auto;
-  bottom: 0;
-  z-index: 5;
-  margin: var(--space-24) calc(-1 * var(--space-32)) calc(-1 * var(--space-32));
-  border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
+  margin: var(--space-32) 0 0;
+  background: none;
+  border-top: var(--border-width-sm) solid var(--border-divider);
+  border-radius: 0;
+  box-shadow: none;
 }
 .b2b-canvas .gpi-wizard-footer__inner {
   max-width: none;
-  /* extra right clearance so the ContactLauncher FAB never covers the CTA */
-  padding: var(--space-12) calc(var(--space-32) + var(--space-64)) var(--space-12) var(--space-32);
+  /* right clearance keeps the CTA clear of the ContactLauncher FAB at scroll end */
+  padding: var(--space-16) var(--space-64) 0 0;
 }
+
+/* ---- Contract-details drawer content (shared Drawer shell, 2026-07-16) --- */
+.b2b-cdrawer__identity { display: flex; align-items: center; gap: var(--space-12); }
+.b2b-cdrawer__idmeta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.b2b-cdrawer__name { font: 600 14px/20px var(--font-sans); color: var(--text-main); }
+.b2b-cdrawer__facts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-16); margin: 0; padding: var(--space-16) 0; border-top: 1px solid var(--border-divider); border-bottom: 1px solid var(--border-divider); }
+.b2b-cdrawer__fact { display: flex; flex-direction: column; gap: var(--space-2); }
+.b2b-cdrawer__factlbl { font: 400 12px/16px var(--font-sans); color: var(--text-muted); margin: 0; }
+.b2b-cdrawer__factval { font: 400 14px/20px var(--font-sans); color: var(--text-main); margin: 0; }
+.b2b-cdrawer__sect { display: flex; flex-direction: column; gap: var(--space-8); }
+.b2b-cdrawer__secttitle { margin: 0; font: 600 13px/16px var(--font-sans); color: var(--text-muted); letter-spacing: 0.4px; }
+.b2b-cdrawer__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-8); }
+.b2b-cdrawer__item { display: flex; align-items: center; justify-content: space-between; gap: var(--space-16); padding: var(--space-12) var(--space-16); border: 1px solid var(--border-default); border-radius: var(--radius-lg); /* nested in the 16px drawer */ }
+.b2b-cdrawer__itemlbl { font: 400 14px/20px var(--font-sans); color: var(--text-main); }
+.b2b-cdrawer__itemmeta { font: 400 13px/16px var(--font-sans); color: var(--text-muted); white-space: nowrap; }
+.b2b-cdrawer__doc { display: flex; align-items: center; gap: var(--space-12); width: 100%; padding: var(--space-12) var(--space-16); border: 1px solid var(--border-default); border-radius: var(--radius-lg); background: none; font: inherit; color: var(--text-main); cursor: pointer; text-align: left; }
+.b2b-cdrawer__doc:hover { background: var(--interactive-hover-bg); }
+.b2b-cdrawer__doc > svg { color: var(--icon-muted); flex: 0 0 auto; }
+.b2b-cdrawer__doclbl { flex: 1; min-width: 0; font: 400 14px/20px var(--font-sans); }
+.b2b-cdrawer__docaction { display: inline-flex; align-items: center; gap: var(--space-4); font: 500 13px/16px var(--font-sans); color: var(--text-brand); white-space: nowrap; }

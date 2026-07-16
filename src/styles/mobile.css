@@ -1,0 +1,343 @@
+/* ==========================================================================
+   Mobile — ≤767px (layout/breakpoint/md768). ADDITIVE overrides only:
+   every rule (except the .gpi-burger base hide) lives inside the media
+   query, so desktop rendering stays byte-identical during research.
+   Same content, same steps — layout re-flows for a 390px canvas.
+   ========================================================================== */
+
+/* Burger exists in the DOM at every width — hidden until the mobile query. */
+.gpi-burger {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  /* ---- Shell: grid margin 24 (Grid/Mobile), compact top bar -------------- */
+  .gpi-topbar__inner,
+  .gpi-nav__inner,
+  .gpi-main__inner {
+    padding-inline: var(--space-24);
+  }
+  .gpi-topbar__inner {
+    min-height: 56px;
+  }
+  .gpi-logo__img {
+    height: 32px;
+  }
+  .gpi-topbar__utils {
+    gap: var(--space-12);
+  }
+  /* Utilities keep their function, drop their text — icons only. */
+  .gpi-lang span:not(.gpi-lang__flag),
+  .gpi-lang svg,
+  .gpi-user span,
+  .gpi-user svg {
+    display: none;
+  }
+
+  .gpi-burger {
+    display: grid;
+    place-items: center;
+    width: var(--control-md);
+    height: var(--control-md);
+    border: none;
+    border-radius: var(--radius-full);
+    background: none;
+    color: var(--text-main);
+  }
+
+  /* ---- Nav: horizontal bar → burger-toggled vertical drawer -------------- */
+  .gpi-shell {
+    position: relative;
+  }
+  .gpi-nav {
+    display: none;
+  }
+  /* Overlay panel below the 56px top bar (+1px border) — content doesn't jump. */
+  .gpi-shell.is-navopen .gpi-nav {
+    display: block;
+    position: absolute;
+    inset: 57px 0 auto 0;
+    z-index: 30;
+    box-shadow: var(--elevation-dropdown);
+  }
+  .gpi-shell.is-navopen .gpi-nav__inner {
+    flex-direction: column;
+    align-items: stretch;
+    height: auto;
+    padding-block: var(--space-8);
+    gap: var(--space-2);
+  }
+  .gpi-shell.is-navopen .gpi-nav__item {
+    justify-content: flex-start;
+    min-height: 44px;
+    padding: var(--space-12);
+    font-size: 14px;
+  }
+  .gpi-shell.is-navopen .gpi-nav__item:first-child {
+    padding-left: var(--space-12);
+  }
+
+  /* ---- Wizard chrome ------------------------------------------------------ */
+  .gpi-wizard {
+    gap: var(--space-16);
+  }
+
+  /* Stepper: compact — numbered circles + connector bars, label on the
+     ACTIVE step only. Same component, same semantics, ~half the width. */
+  .gpi-stepper {
+    padding: var(--space-8);
+    gap: var(--space-8);
+  }
+  .gpi-step {
+    gap: var(--space-8);
+  }
+  .gpi-step__num {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+  }
+  .gpi-step__label {
+    display: none;
+  }
+  .gpi-step--active .gpi-step__label {
+    display: inline;
+    font-size: 13px;
+  }
+  .gpi-step__bar {
+    min-width: var(--space-12);
+  }
+
+  /* Body: sidebar column stacks under the main content. */
+  .gpi-wizard__body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-16);
+  }
+
+  /* ---- Step 1: insured ---------------------------------------------------- */
+  .gpi-insured {
+    padding: var(--space-16);
+  }
+  .gpi-insured__grid {
+    grid-template-columns: 1fr;
+  }
+  .gpi-promo {
+    min-height: 160px;
+    padding: var(--space-16);
+  }
+
+  /* ---- Sticky footer: Continue stretches, Back hugs ----------------------- */
+  .gpi-wizard-footer__inner {
+    padding: var(--space-12) var(--space-24);
+    gap: var(--space-12);
+  }
+  .gpi-wizard-footer__inner .gpi-btn--primary {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  /* ---- Step 2: cart + appointment card ------------------------------------ */
+  .gpi-cart {
+    padding: var(--space-16);
+  }
+  .gpi-appt--open {
+    padding: var(--space-12);
+  }
+
+  /* Type tabs: three long Georgian labels can't share one ~280px row — the
+     segmented control stacks vertically (same component, labels stay whole). */
+  .gpi-appt--open .gpi-seg--indigo {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .gpi-appt--open .gpi-seg--indigo .gpi-seg__item {
+    text-align: center;
+  }
+
+  /* Collapsed appointment summary: 4-cell desktop row → 2 rows
+     (person + actions / date·time + clinic). */
+  .gpi-asum {
+    flex-wrap: wrap;
+    row-gap: var(--space-8);
+  }
+  .gpi-asum__person {
+    /* Row 1: fits beside the 88px action pair, but never beside the ~230px
+       date+time cell — so the name keeps ≥60% width everywhere. */
+    flex: 1 1 auto;
+    min-width: 60%;
+    order: 1;
+  }
+  .gpi-asum__acts {
+    order: 2;
+  }
+  .gpi-asum__when {
+    order: 3;
+    flex: 0 0 auto;
+    flex-direction: row;
+    align-items: baseline;
+    gap: var(--space-8);
+  }
+  .gpi-asum__clinic {
+    order: 4;
+    flex: 1 1 auto;
+    font-size: 13px;
+  }
+
+  /* Expanded-card footer: selection summary above, buttons full width below. */
+  .gpi-appt__ft {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-12);
+  }
+  .gpi-appt__ftsum:empty {
+    display: none;
+  }
+  .gpi-appt__ftbtns .gpi-btn {
+    flex: 1 1 0;
+    justify-content: center;
+  }
+
+  /* ---- Step 2: workspace --------------------------------------------------- */
+  .gpi-bw3__filters {
+    flex-wrap: wrap;
+    gap: var(--space-12);
+  }
+  .gpi-bw3__filters .gpi-search,
+  .gpi-bw3__filters .gpi-fsel {
+    flex: 1 1 100%;
+  }
+  .gpi-bw3__filters .gpi-clinicchips {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    gap: var(--space-8);
+  }
+  .gpi-clinicchip {
+    padding: var(--space-8) var(--space-12);
+  }
+
+  /* doctor · calendar · time: 3 columns → vertical stack, SAME order (keeps the
+     bidirectional model — every section stays reachable by scrolling). Height
+     unfixes; the doctor list and slots keep their own internal scroll. */
+  .gpi-bw3__cols {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    gap: var(--space-20);
+    padding: var(--space-16) var(--space-12);
+    margin: 0 calc(-1 * var(--space-12));
+  }
+  .gpi-bw3__col--div {
+    border-left: none;
+    padding-left: 0;
+    border-top: var(--border-width-sm) solid var(--border-default);
+    padding-top: var(--space-16);
+  }
+  /* Calendar/time column heads are blank desktop spacers — drop them. */
+  .gpi-bw3__col--div .gpi-bw3__colhd {
+    display: none;
+  }
+  .gpi-bw3__list {
+    flex: 0 0 auto;
+    max-height: 264px; /* ~3.5 rows visible → scroll affordance */
+  }
+
+  /* Doctor row: language tags crush the name off a 280px row — drop them to a
+     second line under the name (aligned past the avatar); ×/lock stays right. */
+  .gpi-drow {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    row-gap: var(--space-2);
+    padding-block: var(--space-8);
+  }
+  .gpi-drow__main {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .gpi-drow__x,
+  .gpi-drow__lock {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .gpi-drow__tags {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    padding-left: 52px; /* avatar 40 + gap 12 — tags align with the name */
+  }
+  .gpi-drow__tags:empty {
+    display: none;
+  }
+  .gpi-slots {
+    flex: 0 0 auto;
+    max-height: 312px;
+  }
+
+  /* Calendar: 7×36px columns fit the card interior; cells grow to 40px tall
+     (≥24px target, comfortable thumb). */
+  .gpi-cal {
+    width: 100%;
+  }
+  .gpi-cal__weekdays,
+  .gpi-cal__grid {
+    grid-template-columns: repeat(7, 36px);
+  }
+  .gpi-cal__day,
+  .gpi-cal__ring {
+    width: 36px;
+    height: 40px;
+  }
+
+  /* Slot chips: single column → 2-up grid ("10:00 - 10:30" needs ~130px). */
+  .gpi-slotgroup__slots {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-8);
+  }
+
+  /* ---- Step 3: review — label column stacks over values -------------------- */
+  .gpi-review {
+    padding: var(--space-16);
+  }
+  .gpi-rsec {
+    padding: var(--space-12) var(--space-16);
+  }
+  .gpi-rsec__body {
+    grid-template-columns: 1fr;
+    row-gap: var(--space-2);
+  }
+  .gpi-rsec__body .gpi-rrow__label:not(:first-child) {
+    margin-top: var(--space-8);
+  }
+
+  /* ---- Success -------------------------------------------------------------- */
+  .gpi-success {
+    padding: var(--space-16);
+  }
+  .gpi-success__acts {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  .gpi-success__acts .gpi-btn {
+    justify-content: center;
+  }
+
+  /* ---- Modals: tighter padding, single-column add-insured grid -------------- */
+  /* The overlay is a place-items:center grid, so the shell's max-width:100%
+     resolves circularly and fixed widths (520/420/760) win — cap explicitly. */
+  .gpi-modal {
+    width: calc(100vw - 32px);
+  }
+  .gpi-modal__hd {
+    padding: var(--space-12) var(--space-16);
+  }
+  .gpi-modal__body {
+    padding: var(--space-16);
+  }
+  .gpi-modal__ft {
+    padding: 0 var(--space-16) var(--space-16);
+    flex-wrap: wrap;
+  }
+  .gpi-addins__grid {
+    grid-template-columns: 1fr;
+  }
+}

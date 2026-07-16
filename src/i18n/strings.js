@@ -5,6 +5,7 @@ export const ka = {
   topbar: {
     language: 'English',
     user: 'მარი',
+    menu: 'მენიუ',
   },
   nav: {
     home: 'მთავარი',

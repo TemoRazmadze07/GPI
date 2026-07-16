@@ -1,6 +1,7 @@
 import CtaBanner from '../components/CtaBanner.jsx'
 import { Button } from '../components/Button.jsx'
 import { ka } from '../i18n/strings.js'
+import { ASSETS } from '../lib/assets.js'
 
 /* EmptyBookingsScreen — the All-Bookings page with no bookings yet. Starting
    point of the first-time booking flow (design node 89:1619). Reuses the CtaBanner
@@ -17,7 +18,7 @@ export default function EmptyBookingsScreen({ onStartBooking }) {
         <div className="gpi-empty">
           <img
             className="gpi-empty__illus"
-            src={`${import.meta.env.BASE_URL}illustrations/booking-empty.svg`}
+            src={ASSETS.bookingEmpty}
             alt=""
             aria-hidden="true"
           />
