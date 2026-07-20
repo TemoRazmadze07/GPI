@@ -808,3 +808,44 @@
 .b2b-cdrawer__doc > svg { color: var(--icon-muted); flex: 0 0 auto; }
 .b2b-cdrawer__doclbl { flex: 1; min-width: 0; font: 400 14px/20px var(--font-sans); }
 .b2b-cdrawer__docaction { display: inline-flex; align-items: center; gap: var(--space-4); font: 500 13px/16px var(--font-sans); color: var(--text-brand); white-space: nowrap; }
+
+/* ---- Statement: cost-split column header tints (grouping only; values stay
+   neutral text for AA) ------------------------------------------------------- */
+.b2b-stmt__co { color: var(--color-indigo-800); }
+.b2b-stmt__em { color: var(--text-brand); }
+
+/* ---- Invoices: summary strip ---------------------------------------------- */
+.b2b-page__summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-12); margin-bottom: var(--space-16); }
+
+/* Overdue relative hint in the due column (colour + label both carry it → AA) */
+.b2b-inv__overdue { font: 400 12px/16px var(--font-sans); color: var(--status-error-fg); }
+
+/* Row actions cell — surfaced "გადახდა" CTA + kebab, right-aligned (2026-07-20).
+   Pay is the primary action for unpaid invoices, so it lives in the row rather
+   than the ⋮ menu; the button stays on one line (nowrap inherited from .gpi-btn). */
+.b2b-inv__rowact { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-8); }
+
+/* ---- Invoice-details drawer (reuses .b2b-cdrawer__* + these extras) -------- */
+.b2b-idrawer__hero { display: flex; align-items: center; justify-content: space-between; gap: var(--space-16); padding: var(--space-16); border-radius: var(--radius-lg); }
+.b2b-idrawer__hero--danger { background: var(--status-error-bg); }
+.b2b-idrawer__hero--warning { background: var(--status-warning-bg); }
+.b2b-idrawer__hero--success { background: var(--status-success-bg); }
+.b2b-idrawer__hero--neutral { background: var(--surface-sunken); }
+.b2b-idrawer__herobody { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.b2b-idrawer__herolbl { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+.b2b-idrawer__heroamount { font: 600 28px/36px var(--font-sans); color: var(--text-main); font-variant-numeric: tabular-nums; }
+.b2b-idrawer__herometa { font: 400 13px/20px var(--font-sans); color: var(--text-muted); }
+.b2b-idrawer__hero--danger .b2b-idrawer__herolbl,
+.b2b-idrawer__hero--danger .b2b-idrawer__heroamount,
+.b2b-idrawer__hero--danger .b2b-idrawer__herometa { color: var(--status-error-fg); }
+.b2b-idrawer__hero--success .b2b-idrawer__heroamount { color: var(--status-success-fg); }
+
+.b2b-idrawer__illus { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text-disabled); }
+.b2b-idrawer__linesbox { border: 1px solid var(--border-default); border-radius: var(--radius-lg); overflow: hidden; }
+.b2b-idrawer__lines { width: 100%; border-collapse: collapse; }
+.b2b-idrawer__lines th { text-align: left; font: 400 12px/16px var(--font-sans); color: var(--text-muted); padding: var(--space-8) var(--space-12); background: var(--surface-sunken); }
+.b2b-idrawer__lines td { font: 400 14px/20px var(--font-sans); color: var(--text-main); padding: var(--space-8) var(--space-12); border-top: 1px solid var(--border-divider); }
+.b2b-idrawer__lines th.is-right, .b2b-idrawer__lines td.is-right { text-align: right; }
+.b2b-idrawer__lines .b2b-idrawer__qty { color: var(--text-muted); }
+.b2b-idrawer__lines .b2b-idrawer__credit { color: var(--status-success-fg); }
+.b2b-idrawer__lines .is-total td { font-weight: 600; background: var(--surface-page); border-top: 1px solid var(--border-default); }

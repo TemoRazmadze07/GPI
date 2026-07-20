@@ -1119,7 +1119,7 @@
 .gpi-drawer-overlay { position: fixed; inset: 0; z-index: 900; background: var(--surface-overlay); }
 .gpi-drawer {
   position: absolute; top: 0; right: 0; bottom: 0;
-  width: 440px; max-width: calc(100% - var(--space-40));
+  width: 720px; max-width: calc(100% - var(--space-40)); /* widened 440→720 globally (user 2026-07-20) */
   display: flex; flex-direction: column;
   background: var(--surface-card);
   border-radius: var(--radius-xl) 0 0 var(--radius-xl); /* outer card = 16 */
@@ -1133,6 +1133,20 @@
 .gpi-drawer__close:hover { background: var(--interactive-hover-bg); }
 .gpi-drawer__body { flex: 1; overflow-y: auto; padding: var(--space-24); display: flex; flex-direction: column; gap: var(--space-24); }
 .gpi-drawer__ft { flex: 0 0 auto; display: flex; gap: var(--space-16); justify-content: flex-end; padding: var(--space-16) var(--space-24); border-top: 1px solid var(--border-default); }
+
+/* ---- Stat Tile — compact metric/KPI summary tile ------------------------- */
+.gpi-stat { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-16); border-radius: var(--radius-lg); background: var(--surface-sunken); }
+.gpi-stat--danger { background: var(--status-error-bg); }
+.gpi-stat--warning { background: var(--status-warning-bg); }
+.gpi-stat--success { background: var(--status-success-bg); }
+.gpi-stat__label { display: inline-flex; align-items: center; gap: var(--space-4); font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+.gpi-stat__label > svg { flex: 0 0 auto; }
+.gpi-stat__value { font: 600 24px/32px var(--font-sans); color: var(--text-main); font-variant-numeric: tabular-nums; }
+.gpi-stat__meta { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+.gpi-stat--danger .gpi-stat__label,
+.gpi-stat--danger .gpi-stat__value,
+.gpi-stat--danger .gpi-stat__meta,
+.gpi-stat--danger .gpi-stat__label > svg { color: var(--status-error-fg); }
 
 /* Doctor bio modal content */
 .gpi-bio__person { display: flex; gap: var(--space-12); align-items: center; }

@@ -1,6 +1,8 @@
 import B2BShell from './B2BShell.jsx'
 import ContractsScreen from './ContractsScreen.jsx'
 import PoliciesScreen from './PoliciesScreen.jsx'
+import InvoicesScreen from './InvoicesScreen.jsx'
+import StatementScreen from './StatementScreen.jsx'
 import AddInsuredScreen from './AddInsuredScreen.jsx'
 import { PRODUCT_ORDER } from './data/contracts.js'
 import Breadcrumbs from '../components/Breadcrumbs.jsx'
@@ -8,7 +10,7 @@ import { Button } from '../components/Button.jsx'
 import { kaB2B } from './strings.js'
 import { NAV_MAIN, parentOf } from './nav.js'
 
-const SCREENS = { contracts: ContractsScreen }
+const SCREENS = { contracts: ContractsScreen, invoices: InvoicesScreen, statement: StatementScreen }
 
 /* B2BApp — routes #/b2b/<sectionId> to a stub page inside the shell.
    Real flows replace stubs one by one (per the agreed priority order). */
