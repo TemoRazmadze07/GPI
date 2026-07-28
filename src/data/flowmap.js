@@ -57,10 +57,24 @@ export const apps = [
     sub: 'consumer — iOS / Android',
     features: [
       {
+        id: 'curatio',
+        label: 'ჩემი კურაციო — Curatio',
+        status: 'in-progress',
+        flows: [
+          { id: 'mHealth',  path: 'mobile/health',  label: 'home — health dashboard',  status: 'in-progress', hash: '/mobile/health' },
+          { id: 'mHub',     path: 'mobile/curatio', label: 'Curatio hub',              status: 'in-progress', hash: '/mobile/curatio' },
+          { id: 'mTicket',  path: 'mobile/ticket',  label: 'e-ticket / queue (F-01)',  status: 'in-progress', hash: '/mobile/ticket' },
+          { id: 'mHistory', path: 'mobile/history', label: 'medical history (F-02)',   status: 'in-progress', hash: '/mobile/history' },
+        ],
+      },
+      {
         id: 'appointments-m',
         label: 'appointments',
-        status: 'planned',
+        status: 'in-progress',
         flows: [
+          // Same wizard route as desktop — the mobile UI lives in mobile.css (≤767).
+          // ?ui=flat is the de-boxed comparison variant (2026-07-27); open on a phone.
+          { id: 'book2Flat', path: '…/book/schedule?ui=flat', label: 'step 2 — de-boxed variant', status: 'in-progress', hash: '/desktop/appointments/book/schedule?ui=flat' },
           { id: 'bookM', path: 'mobile/appointments/book', label: 'book (mobile)', status: 'planned' },
         ],
       },
