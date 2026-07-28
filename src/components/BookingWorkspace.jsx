@@ -223,8 +223,12 @@ export default function BookingWorkspace({ value: v, onChange }) {
   const clinicValue = (v.activeClinics && v.activeClinics[0]) || ''
   const hasFilters = showSearch || showCity || needsDirection || showClinic
 
+  // Clinic-colour legend (mobile-only via CSS; desktop hidden — frozen for
+  // research). Explains the calendar's ring colours (research scenario #8).
+  const legendClinics = (remote || firstTimePersonal) ? [] : clinicList.filter((c) => c.tone)
+
   return (
-    <div className="gpi-bw3">
+    <div className={`gpi-bw3 ${awaitingDirection ? 'is-awaiting' : ''}`}>
       {isPersonal && (
         <div className="gpi-bw3__visit">
           <span id={`visit-lbl-${v.id}`} className="gpi-bw3__visitlbl">{ka.wizard.visit.label}</span>
@@ -242,6 +246,7 @@ export default function BookingWorkspace({ value: v, onChange }) {
           {showCity && <Select value={v.city} placeholder={ka.wizard.filters.city} options={cities} disabled={cityDisabled} onChange={(x) => onChange({ ...v, city: x })} />}
           {needsDirection && (
             <Select
+              className="gpi-fsel--dir"
               value={v.specialty}
               placeholder={v.type === 'instrumental' ? ka.wizard.filters.study : ka.wizard.filters.specialty}
               options={directionsFor(v.type)}
@@ -256,7 +261,22 @@ export default function BookingWorkspace({ value: v, onChange }) {
               onChange={selectClinic}
             />
           ) : (
-            <ClinicChips clinics={clinicList} active={v.activeClinics || []} selectedClinic={v.slotClinic} onToggle={toggleClinic} disabled={clinicDisabled} />
+            <>
+              <ClinicChips clinics={clinicList} active={v.activeClinics || []} selectedClinic={v.slotClinic} onToggle={toggleClinic} disabled={clinicDisabled} />
+              {/* MOBILE variant of the clinic control — a single-select dropdown
+                  (user request, 2026-07-17, evaluating uniform-dropdown filters;
+                  '' = all clinics keeps the soft cross-clinic behavior). Desktop
+                  keeps the colour-coded chips; CSS shows one per viewport. */}
+              <div className="gpi-bw3__clinicsel">
+                <Select
+                  value={clinicValue}
+                  placeholder={ka.wizard.filters.clinic}
+                  options={[{ value: '', label: ka.wizard.filters.allClinics }, ...clinicList.map((c) => ({ value: c.value, label: c.label }))]}
+                  onChange={selectClinic}
+                  disabled={clinicDisabled}
+                />
+              </div>
+            </>
           ))}
         </div>
       )}
@@ -276,7 +296,25 @@ export default function BookingWorkspace({ value: v, onChange }) {
               <DoctorRow key={d.id} doctor={d} selected={v.doctorId === d.id} onSelect={pickDoctor} onDeselect={dropDoctor} onInfo={setInfo} locked={locked} />
             ))}
             {awaitingDirection && (
-              <div className="gpi-bw3__empty">{v.type === 'instrumental' ? ka.wizard.book.pickStudy : ka.wizard.book.pickDirection}</div>
+              <>
+                <div className="gpi-bw3__empty">{v.type === 'instrumental' ? ka.wizard.book.pickStudy : ka.wizard.book.pickDirection}</div>
+                {/* FLAT-VARIANT twin (?ui=flat, mobile): the direction options as an
+                    in-place tappable list replacing the direction dropdown. Hidden by
+                    base CSS everywhere else — same render-both-hide-one pattern. */}
+                <div className="gpi-bw3__dirlist">
+                  {directionsFor(v.type).map((o) => (
+                    <button
+                      key={o.value}
+                      type="button"
+                      className="gpi-bw3__diritem"
+                      onClick={() => onChange({ ...v, specialty: o.value, doctorId: null, date: null, slot: null, slotClinic: null })}
+                    >
+                      <span>{o.label}</span>
+                      <Icon name="chevron-right" size={16} />
+                    </button>
+                  ))}
+                </div>
+              </>
             )}
             {!awaitingDirection && shown.length === 0 && <div className="gpi-bw3__empty">{ka.wizard.book.noDoctors}</div>}
           </div>
@@ -284,6 +322,16 @@ export default function BookingWorkspace({ value: v, onChange }) {
 
         <div className="gpi-bw3__col gpi-bw3__col--div">
           <div className="gpi-bw3__colhd" aria-hidden="true">{' '}</div>
+          {legendClinics.length > 0 && (
+            <div className="gpi-bw3__legend">
+              {legendClinics.map((c) => (
+                <span key={c.value} className={`gpi-bw3__legenditem gpi-cl--${c.tone}`}>
+                  <i className="gpi-bw3__legenddot" aria-hidden="true" />
+                  {c.short}
+                </span>
+              ))}
+            </div>
+          )}
           <MonthCalendar
             month={month}
             canPrev={!atMinMonth}

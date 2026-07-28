@@ -2,7 +2,11 @@ import { Fragment } from 'react'
 import Icon from '../lib/Icon.jsx'
 
 /* Stepper — horizontal progress for the booking wizard. Data-driven so the
-   journey can grow from 2 → N steps. `steps` = [{id, label}], `current` = index. */
+   journey can grow from 2 → N steps. `steps` = [{id, label}], `current` = index.
+   Desktop: numbered circles + labels + connectors. Mobile (≤767px, see mobile.css):
+   the SAME DOM restyles into thin segmented progress lines flush in the header
+   band (Figma 171:7154) — scales to any step count without labels fighting for
+   horizontal room. */
 export default function Stepper({ steps, current = 0 }) {
   return (
     <div className="gpi-stepper" role="list" aria-label="ნაბიჯები">

@@ -73,6 +73,25 @@ export const ka = {
       back: 'უკან',
       continue: 'გაგრძელება',
       confirm: 'დადასტურება',
+      finishDraft: 'დაასრულეთ მიმდინარე ჩანაწერი', // mobile: why continue is blocked
+    },
+    // Reservation hold countdown — appears only in the final minutes before the
+    // 15-min doctor hold is released. Tiered labels = calm → warning → urgent.
+    countdown: {
+      calm: 'სესიის დრო იწურება',
+      warning: 'სესიის დრო იწურება',
+      urgent: 'სესიის დრო იწურება',
+      aria: (t) => `ჩაწერის დასრულებამდე დარჩა ${t}`,
+      // Explanation shown when the user clicks the countdown (popover). DRAFT — refine.
+      info: {
+        title: 'სესიის დრო იწურება',
+        body: 'თუ ჩაწერას დროულად არ დაასრულებთ, დაჯავშნილი ექიმის დრო გათავისუფლდება. ის აღარ იქნება ხელმისაწვდომი და ჩაწერა თავიდან დაგჭირდებათ.',
+      },
+      expired: {
+        title: 'დრო ამოიწურა',
+        body: 'ექიმის დაჯავშნილი დრო გათავისუფლდა. დაზღვეული პირი შენახულია — უბრალოდ ხელახლა აირჩიეთ ექიმი და დაასრულეთ ჩაწერა.',
+        restart: 'ხელახლა დაწყება',
+      },
     },
     review: {
       heading: 'გადაამოწმე ინფორმაცია და დაადასტურე ჩანაწერი',

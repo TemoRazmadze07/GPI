@@ -12,13 +12,16 @@
 
 @media (max-width: 767px) {
   /* ---- Shell: grid margin 24 (Grid/Mobile), compact top bar -------------- */
-  .gpi-topbar__inner,
   .gpi-nav__inner,
   .gpi-main__inner {
     padding-inline: var(--space-24);
   }
   .gpi-topbar__inner {
     min-height: 56px;
+    /* header chrome hugs tighter than content: px-16 per the Figma mobile
+       header (171:7154) — logo/burger left-right edges align with the
+       stepper lines below. Content keeps the 24px grid margin. */
+    padding-inline: var(--space-16);
   }
   .gpi-logo__img {
     height: 32px;
@@ -82,30 +85,69 @@
     gap: var(--space-16);
   }
 
-  /* Stepper: compact — numbered circles + connector bars, label on the
-     ACTIVE step only. Same component, same semantics, ~half the width. */
+  /* Stepper: thin segmented progress LINES flush in the header band — 1:1 with
+     Figma mobile header 171:7154 (foundation file). Same DOM as desktop — numbers,
+     labels and connectors hide; each .gpi-step collapses to an equal 2px line
+     (pink up to & incl. the current step, muted after). Scales to any number of
+     steps — the fix for >3-4-step flows. NOT the desktop floating pill: the band
+     continues the topbar surface (negative margins cancel .gpi-main__inner's 24px
+     padding) and casts the header's elevation. Shadow = GRAY dropdown token, not
+     the mock's navy shadow (gray-shadows-only rule; user confirmed 2026-07-17). */
+  .gpi-shell:has(.gpi-wizard) .gpi-topbar {
+    /* hairline off while the stepper band extends the header (colour only —
+       keeps the 1px height, so the nav drawer's 57px inset stays true) */
+    border-bottom-color: transparent;
+  }
   .gpi-stepper {
-    padding: var(--space-8);
     gap: var(--space-8);
+    margin: calc(-1 * var(--space-24)) calc(-1 * var(--space-24)) 0;
+    /* top pad minus the topbar's 1px (transparent) border → logo→lines gap is
+       exactly 16 and the whole header lands on Figma's 70px (12+32+16+2+8). */
+    padding: calc(var(--space-4) - var(--border-width-sm)) var(--space-16) var(--space-8);
+    border-radius: 0;
+    box-shadow: var(--elevation-dropdown);
   }
   .gpi-step {
-    gap: var(--space-8);
+    flex: 1 1 0;
+    min-width: 0;
+    height: 2px;
+    gap: 0;
+    border-radius: var(--radius-full);
+    background: var(--border-default);
   }
-  .gpi-step__num {
-    width: 28px;
-    height: 28px;
-    font-size: 13px;
+  .gpi-step--done,
+  .gpi-step--active {
+    background: var(--color-pink-500);
   }
-  .gpi-step__label {
+  .gpi-step__num,
+  .gpi-step__label,
+  .gpi-step__bar {
     display: none;
   }
-  .gpi-step--active .gpi-step__label {
-    display: inline;
-    font-size: 13px;
+
+  /* Reservation countdown: the desktop floating pill becomes a full-width bar
+     in-flow directly under the header/stepper band (never covers content). */
+  .gpi-countdown-dock {
+    position: relative; /* in-flow bar under the header; still anchors the popover */
+    inset: auto;
+    z-index: 50;
+    width: 100%;
   }
-  .gpi-step__bar {
-    min-width: var(--space-12);
+  .gpi-countdown {
+    max-width: none;
+    width: 100%;
+    border-radius: var(--radius-lg);
+    box-shadow: none;
   }
+  .gpi-countdown-pop {
+    top: calc(100% + var(--space-8)); /* open below the bar on mobile */
+    bottom: auto;
+    left: 0;
+    right: 0;
+    width: auto;
+    max-width: none;
+  }
+  .gpi-countdown-pop::after { display: none; }
 
   /* Body: sidebar column stacks under the main content. */
   .gpi-wizard__body {
@@ -134,6 +176,19 @@
     flex: 1 1 auto;
     justify-content: center;
   }
+  /* While a draft blocks continue, swap the dead disabled button for a hint —
+     one pink CTA on screen at a time (the card's დამატება). Desktop keeps the
+     disabled button (hint stays display:none there via components.css). */
+  .gpi-wizard-footer__inner.has-hint .gpi-btn--primary {
+    display: none;
+  }
+  .gpi-wizard-footer__inner.has-hint .gpi-wizard-footer__hint {
+    display: block;
+    flex: 1 1 auto;
+    text-align: center;
+    font: 400 13px/18px var(--font-sans);
+    color: var(--text-muted);
+  }
 
   /* ---- Step 2: cart + appointment card ------------------------------------ */
   .gpi-cart {
@@ -143,14 +198,19 @@
     padding: var(--space-12);
   }
 
-  /* Type tabs: three long Georgian labels can't share one ~280px row — the
-     segmented control stacks vertically (same component, labels stay whole). */
+  /* Type selector: on mobile the segmented pill is replaced by its DROPDOWN
+     twin (uniform-dropdown evaluation, 2026-07-17) — every property on the
+     card (type / city / specialty / clinic) reads as the same Select control.
+     Desktop keeps the segmented pill. (Previous mobile variant = option cards;
+     spec in session_log if we revert.) */
   .gpi-appt--open .gpi-seg--indigo {
-    flex-direction: column;
-    align-items: stretch;
+    display: none;
   }
-  .gpi-appt--open .gpi-seg--indigo .gpi-seg__item {
-    text-align: center;
+  .gpi-appt__typesel {
+    display: block;
+  }
+  .gpi-appt__typesel .gpi-fsel {
+    width: 100%;
   }
 
   /* Collapsed appointment summary: 4-cell desktop row → 2 rows
@@ -195,11 +255,70 @@
     flex: 1 1 0;
     justify-content: center;
   }
+  /* Summary line wraps instead of truncating mid-word. */
+  .gpi-appt__ftmeta {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+  /* Once a slot is picked (card is-ready), the commit row pins above the fixed
+     wizard footer — saving never requires hunting below the calendar. Bleeds to
+     the card edges (negative margins cancel the card's 12px padding). */
+  .gpi-appt.is-ready .gpi-appt__ft {
+    position: sticky;
+    bottom: 65px; /* fixed wizard-footer height (12+40+12+1) */
+    z-index: 10;
+    background: var(--surface-card);
+    margin: var(--space-16) calc(-1 * var(--space-12)) calc(-1 * var(--space-12));
+    padding: var(--space-12);
+    border-top: var(--border-width-sm) solid var(--border-default);
+    box-shadow: 0 -2px 8px rgba(17, 23, 34, 0.06);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  }
 
   /* ---- Step 2: workspace --------------------------------------------------- */
+  /* Progressive disclosure: while a specialist/instrumental draft has no
+     direction picked yet, ONLY the pickers + prompt render — the dead grey
+     calendar and empty slot column stay hidden until there's data to show. */
+  .gpi-bw3.is-awaiting .gpi-bw3__col--div {
+    display: none;
+  }
+  /* Clinic-colour legend above the calendar (hidden on frozen desktop);
+     dot colour comes from the gpi-cl--{tone} class (--c). */
+  .gpi-bw3__legend {
+    display: flex;
+    align-items: center;
+    gap: var(--space-16);
+    padding-top: var(--space-8);
+  }
+  .gpi-bw3__legenditem {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-8);
+    font: 400 13px/18px var(--font-sans);
+    color: var(--text-muted);
+  }
+  .gpi-bw3__legenddot {
+    width: 10px;
+    height: 10px;
+    border-radius: var(--radius-full);
+    background: var(--c);
+  }
   .gpi-bw3__filters {
     flex-wrap: wrap;
     gap: var(--space-12);
+  }
+  /* Clinic control: chips → their dropdown twin on mobile (same evaluation);
+     the calendar legend above keeps teaching the ring colours. */
+  .gpi-bw3__filters .gpi-clinicchips {
+    display: none;
+  }
+  .gpi-bw3__clinicsel {
+    display: block;
+    flex: 1 1 100%;
+  }
+  .gpi-bw3__clinicsel .gpi-fsel {
+    width: 100%;
   }
   .gpi-bw3__filters .gpi-search,
   .gpi-bw3__filters .gpi-fsel {
@@ -241,13 +360,17 @@
   }
 
   /* Doctor row: language tags crush the name off a 280px row — drop them to a
-     second line under the name (aligned past the avatar); ×/lock stays right. */
+     second line under the name (aligned past the avatar); ×/lock stays right.
+     The desktop 56px pill radius is tuned for a one-line 48px row — on this
+     two-line card it reads as a broken stadium, so the card takes the shared
+     radius-lg + symmetric inset instead. */
   .gpi-drow {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     row-gap: var(--space-2);
-    padding-block: var(--space-8);
+    border-radius: var(--radius-lg);
+    padding: var(--space-8) var(--space-12);
   }
   .gpi-drow__main {
     grid-column: 1;
@@ -265,6 +388,13 @@
   }
   .gpi-drow__tags:empty {
     display: none;
+  }
+  /* Language chips take the design-system Tag md spec (pill, Body/Small,
+     4/8 inset) — the desktop 4px-radius rects read as stray squares here.
+     Desktop is frozen; flagging the same alignment for it later. */
+  .gpi-langtag {
+    border-radius: var(--radius-full);
+    padding: var(--space-4) var(--space-8);
   }
   .gpi-slots {
     flex: 0 0 auto;
@@ -339,5 +469,153 @@
   }
   .gpi-addins__grid {
     grid-template-columns: 1fr;
+  }
+
+  /* ==== FLAT VARIANT (?ui=flat in the hash query) — de-boxed step-2 MOCK ====
+     Comparison experiment, 2026-07-27 (Rule 4: new concept ≠ overwrite; the
+     default URL keeps the current stacked-dropdown UI). One container: the
+     page card. The draft loses its own box; city/clinic become chips; the
+     direction dropdown becomes an in-place list; the dead disabled commit
+     button hides until a slot is picked. */
+  .gpi-flat .gpi-appt--open {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+  }
+  .gpi-flat .gpi-appt--open .gpi-appt__hd {
+    margin-bottom: var(--space-4);
+  }
+  /* Type: full-width dropdown box → text-level control under the heading. */
+  .gpi-flat .gpi-appt__typesel {
+    margin-bottom: var(--space-16);
+  }
+  .gpi-flat .gpi-appt__typesel .gpi-fsel {
+    width: auto;
+    display: inline-block;
+  }
+  .gpi-flat .gpi-appt__typesel .gpi-fsel__btn {
+    width: auto;
+    height: auto;
+    border: none;
+    background: none;
+    box-shadow: none;
+    padding: 0;
+    gap: var(--space-4);
+    font: 600 14px/20px var(--font-sans);
+    color: var(--action-primary);
+  }
+  .gpi-flat .gpi-appt__typesel .gpi-fsel__btn svg {
+    color: currentColor;
+  }
+  /* Filters: search keeps its field; city + clinic shrink to chip pills. */
+  .gpi-flat .gpi-bw3__filters {
+    gap: var(--space-8);
+  }
+  .gpi-flat .gpi-bw3__filters .gpi-search {
+    flex: 1 1 100%;
+  }
+  .gpi-flat .gpi-bw3__filters .gpi-fsel,
+  .gpi-flat .gpi-bw3__clinicsel {
+    flex: 0 0 auto;
+    width: auto;
+  }
+  .gpi-flat .gpi-bw3__clinicsel .gpi-fsel {
+    width: auto;
+  }
+  .gpi-flat .gpi-bw3__filters .gpi-fsel__btn {
+    width: auto;
+    height: 36px;
+    border-radius: var(--radius-full);
+    padding: 0 var(--space-12);
+    gap: var(--space-4);
+    font-size: 13px;
+  }
+  /* A chosen direction reads as a filled chip (pink/25 + brand text). */
+  .gpi-flat .gpi-bw3__filters .gpi-fsel--dir .gpi-fsel__btn:not(:has(.gpi-fsel__ph)) {
+    border-color: var(--action-primary);
+    background: var(--interactive-selected-bg);
+    color: var(--color-pink-700);
+    font-weight: 600;
+  }
+  /* While awaiting a direction the dropdown hides — the in-place list below
+     (gpi-bw3__dirlist) is the picker; the __empty text acts as its label. */
+  .gpi-flat .gpi-bw3.is-awaiting .gpi-fsel--dir {
+    display: none;
+  }
+  .gpi-flat .gpi-bw3__dirlist {
+    display: flex;
+    flex-direction: column;
+  }
+  .gpi-flat .gpi-bw3.is-awaiting .gpi-bw3__empty {
+    padding-bottom: var(--space-4);
+  }
+  .gpi-flat .gpi-bw3__diritem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-8);
+    width: 100%;
+    min-height: 44px;
+    padding: var(--space-12) var(--space-2);
+    background: none;
+    border: none;
+    border-bottom: var(--border-width-sm) solid var(--border-divider);
+    text-align: left;
+    font: 500 14px/20px var(--font-sans);
+    color: var(--color-indigo-800);
+    cursor: pointer;
+  }
+  .gpi-flat .gpi-bw3__diritem:first-of-type {
+    border-top: var(--border-width-sm) solid var(--border-divider);
+  }
+  /* The commit block draws its own top divider — a closing line here too would
+     stack two hairlines a few px apart. */
+  .gpi-flat .gpi-bw3__diritem:last-of-type {
+    border-bottom: none;
+  }
+  .gpi-flat .gpi-bw3__diritem svg {
+    color: var(--text-muted);
+    flex: 0 0 auto;
+  }
+  /* The sunken grey workspace zone flattens into the card surface. */
+  .gpi-flat .gpi-bw3__cols {
+    background: transparent;
+    padding: var(--space-4) 0 0;
+    margin: 0;
+  }
+  /* Unselected doctor rows sit flat on the surface; only the SELECTED one
+     keeps its card (the one box that means something). */
+  .gpi-flat .gpi-drow:not(.is-selected) {
+    background: transparent;
+  }
+  /* No dead CTA: the primary commit button exists only once it can commit.
+     გაუქმება stays reachable for discarding the draft. */
+  .gpi-flat .gpi-appt--open:not(.is-ready) .gpi-appt__ftbtns .gpi-btn--primary {
+    display: none;
+  }
+  /* Commit block belongs to the MODULE, not to the viewport (user call,
+     2026-07-27): committing is the LAST thing you do after scrolling the whole
+     form, so a bar that follows you just costs ~90px on top of the wizard
+     footer. Un-sticks and lands at the end of the card, after the summary. */
+  .gpi-flat .gpi-appt__ft,
+  .gpi-flat .gpi-appt.is-ready .gpi-appt__ft {
+    position: static;
+    z-index: auto;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    border-top: var(--border-width-sm) solid var(--border-divider);
+    margin: var(--space-24) 0 0;
+    padding: var(--space-20) 0 0;
+    gap: var(--space-20);
+  }
+  /* Buttons get room to read as two distinct choices, and a full-height
+     (48 = control-lg) target for the terminal action of the step. */
+  .gpi-flat .gpi-appt__ftbtns {
+    gap: var(--space-16);
+  }
+  .gpi-flat .gpi-appt__ftbtns .gpi-btn {
+    min-height: var(--control-lg);
   }
 }

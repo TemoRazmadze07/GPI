@@ -985,6 +985,16 @@
 .gpi-appt__ftname { font: 600 14px/20px var(--font-sans); color: var(--color-indigo-800); }
 .gpi-appt__ftmeta { font: 400 13px/18px var(--font-sans); color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+/* Clinic-colour legend + footer block-hint are MOBILE-ONLY affordances
+   (mobile.css shows them); desktop stays frozen for usability research. */
+.gpi-bw3__legend { display: none; }
+.gpi-wizard-footer__hint { display: none; }
+/* Mobile dropdown twins of the type segmented-control and clinic chips
+   (2026-07-17 uniform-dropdown evaluation) — hidden on desktop. */
+.gpi-appt__typesel { display: none; }
+.gpi-bw3__clinicsel { display: none; }
+.gpi-fsel__opt.is-disabled { color: var(--text-disabled); cursor: not-allowed; }
+
 /* Workspace shell */
 .gpi-bw3 { position: relative; margin-top: var(--space-8); }
 /* Single row (no wrap); selects shrink-to-fit so the clinic chips stay on the same line. */
@@ -1016,6 +1026,8 @@
 .gpi-bw3__listmeta { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted); margin: var(--space-8) 0; }
 .gpi-bw3__list { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: var(--space-8); overflow-y: auto; padding-right: var(--space-4); }
 .gpi-bw3__empty { font-size: 13px; color: var(--text-muted); padding: var(--space-12) 0; }
+/* Flat-variant twin (?ui=flat, mobile-only) — hidden everywhere by default. */
+.gpi-bw3__dirlist { display: none; }
 
 /* Search field */
 .gpi-search { display: flex; align-items: center; gap: var(--space-8); height: 38px; padding: 0 var(--space-12); border: var(--border-width-sm) solid var(--border-field); border-radius: var(--radius-md); background: var(--surface-card); }
@@ -1968,3 +1980,178 @@
   text-overflow: ellipsis;
   vertical-align: middle;
 }
+
+/* ==========================================================================
+   Reservation countdown — floating hold reminder (desktop pill / mobile bar).
+   Renders only in the final minutes of the 15-min doctor hold. Tone escalates
+   calm (info) → warning (amber) → urgent (error); all AA on their tints.
+   ========================================================================== */
+.gpi-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Fixed dock: bottom-right corner, 24px above the 65px sticky wizard footer
+   (footer height 65 = pad 12 + btn 40 + pad 12 + border 1, per mobile.css).
+   Also the containing block for the click-to-explain popover. */
+.gpi-countdown-dock {
+  position: fixed;
+  bottom: calc(65px + var(--space-24));
+  right: var(--space-24);
+  z-index: 50; /* above content + footer (20), below modals (1000) */
+}
+/* The countdown card is itself a button — clicking it opens the explanation. */
+.gpi-countdown {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  max-width: 300px;
+  margin: 0;
+  padding: var(--space-12);
+  font-family: var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-xl); /* 16 card — concentric with the 8px icon tile */
+  background: var(--surface-card);
+  box-shadow: var(--elevation-popover);
+  animation: gpi-cd-in 0.28s ease both;
+  transition: border-color 0.15s ease;
+}
+.gpi-countdown:hover { border-color: var(--border-strong); }
+.gpi-countdown:focus-visible {
+  outline: var(--focus-ring-width) solid var(--action-secondary);
+  outline-offset: var(--focus-ring-offset);
+}
+/* Clock / alert glyph sits in a rounded-square tinted tile (concentric ladder:
+   16 card → 8 tile). The tile carries the tone tint, keeping the card clean. */
+.gpi-countdown__frame {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+}
+.gpi-countdown__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.gpi-countdown__label {
+  color: var(--text-muted); /* font from .t-label */
+}
+.gpi-countdown__time {
+  font: 600 20px/24px var(--font-sans); /* metric-scale, tabular so digits don't jump */
+  font-variant-numeric: tabular-nums;
+  color: var(--text-main);
+}
+
+/* Tone escalation lives in the icon tile + the time colour; the card stays a
+   clean white surface and only tints red at the final, urgent stage. */
+.gpi-countdown--calm .gpi-countdown__frame {
+  background: var(--alert-info-bg);
+  color: var(--alert-info-fg);
+}
+.gpi-countdown--calm .gpi-countdown__time { color: var(--alert-info-fg); }
+
+.gpi-countdown--warning { border-color: var(--status-warning-border); }
+.gpi-countdown--warning .gpi-countdown__frame {
+  background: var(--status-warning-bg);
+  color: var(--status-warning-fg);
+}
+.gpi-countdown--warning .gpi-countdown__time { color: var(--status-warning-fg); }
+
+.gpi-countdown--urgent {
+  background: var(--status-error-bg);
+  border-color: var(--status-error-border);
+}
+.gpi-countdown--urgent .gpi-countdown__frame {
+  background: var(--surface-card);
+  color: var(--status-error-fg);
+  animation: gpi-cd-pulse 1s ease-in-out infinite;
+}
+.gpi-countdown--urgent .gpi-countdown__label { color: var(--status-error-fg); }
+.gpi-countdown--urgent .gpi-countdown__time { color: var(--status-error-fg); }
+
+@keyframes gpi-cd-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes gpi-cd-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gpi-countdown { animation: none; }
+  .gpi-countdown--urgent .gpi-countdown__frame { animation: none; }
+  .gpi-countdown-pop { animation: none; }
+}
+
+/* Click-to-explain popover — opens above the card, explains what happens when
+   the hold expires (before it actually does). Arrow points down to the card. */
+.gpi-countdown-pop {
+  position: absolute;
+  bottom: calc(100% + var(--space-8));
+  right: 0;
+  width: 300px;
+  max-width: calc(100vw - 2 * var(--space-24));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-16);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  box-shadow: var(--elevation-popover);
+  animation: gpi-cd-in 0.16s ease both;
+}
+.gpi-countdown-pop__title { color: var(--text-main); }
+.gpi-countdown-pop__body { color: var(--text-muted); }
+.gpi-countdown-pop::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  right: var(--space-24);
+  width: 12px;
+  height: 12px;
+  margin-top: -6px;
+  background: var(--surface-card);
+  border-right: var(--border-width-sm) solid var(--border-default);
+  border-bottom: var(--border-width-sm) solid var(--border-default);
+  transform: rotate(45deg);
+}
+
+/* Expired → forced release dialog (reuses the modal-overlay backdrop; no close). */
+.gpi-cdexpire {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-12);
+  max-width: 360px;
+  padding: var(--space-24);
+  text-align: center;
+  background: var(--surface-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--elevation-modal);
+}
+.gpi-cdexpire__icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg); /* rounded-square, matching the pill's icon tile */
+  background: var(--status-error-bg);
+  color: var(--status-error-fg);
+}
+/* type comes from .t-h4 / .t-body utilities on the elements */
+.gpi-cdexpire__title { margin: 0; color: var(--text-main); }
+.gpi-cdexpire__body { margin: 0; color: var(--text-muted); }

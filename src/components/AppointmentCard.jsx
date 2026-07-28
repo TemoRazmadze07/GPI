@@ -1,4 +1,5 @@
 import SegmentedControl from './SegmentedControl.jsx'
+import Select from './Select.jsx'
 import BookingWorkspace from './BookingWorkspace.jsx'
 import Avatar from './Avatar.jsx'
 import { Button, IconButton } from './Button.jsx'
@@ -47,7 +48,8 @@ export default function AppointmentCard({ appt, expanded, index, onToggle, onCha
   }
 
   return (
-    <div className="gpi-appt gpi-appt--open">
+    // is-ready (slot picked, savable) drives the MOBILE sticky commit bar.
+    <div className={`gpi-appt gpi-appt--open ${canSave ? 'is-ready' : ''}`}>
       <div className="gpi-appt__hd">
         <span className="gpi-appt__title">{ka.wizard.step2.entry} {index}</span>
       </div>
@@ -58,6 +60,16 @@ export default function AppointmentCard({ appt, expanded, index, onToggle, onCha
         onChange={(t) => onChange({ ...appt, type: t, specialty: null, doctorId: null, date: null, slot: null, slotClinic: null })}
         options={typeOptions(personalTaken)}
       />
+      {/* MOBILE variant of the same control — a dropdown (user request, 2026-07-17,
+          evaluating uniform-dropdown filters). Desktop keeps the segmented pill;
+          CSS shows exactly one of the two per viewport. */}
+      <div className="gpi-appt__typesel">
+        <Select
+          value={appt.type}
+          options={typeOptions(personalTaken)}
+          onChange={(t) => onChange({ ...appt, type: t, specialty: null, doctorId: null, date: null, slot: null, slotClinic: null })}
+        />
+      </div>
 
       <BookingWorkspace value={appt} onChange={onChange} />
 

@@ -6,6 +6,7 @@ import WizardFooter from '../components/WizardFooter.jsx'
 import AppointmentCard from '../components/AppointmentCard.jsx'
 import AddInsuredModal from '../components/AddInsuredModal.jsx'
 import NotificationPeek from '../components/NotificationPeek.jsx'
+import ReservationCountdown from '../components/ReservationCountdown.jsx'
 import Avatar from '../components/Avatar.jsx'
 import Icon from '../lib/Icon.jsx'
 import { Button } from '../components/Button.jsx'
@@ -60,6 +61,9 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
   const [appointments, setAppointments] = useState([])
   const [draft, setDraft] = useState(null)
   const [confirmed, setConfirmed] = useState([])
+  // Reservation hold: the server holds the doctor for 15 min from the moment the
+  // FIRST appointment lands in the cart. One timer covers the whole session.
+  const [holdStartedAt, setHoldStartedAt] = useState(null)
 
   // Deep-link entry from a table row — seed ONCE, pre-select the insured person
   // and open Step 2 with a pre-filled draft:
@@ -81,7 +85,9 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
   // Reflect the wizard step in the URL (silent) so Flow Map share/dev links can
   // deep-link to a specific step and the address bar tracks navigation.
   useEffect(() => {
-    window.history.replaceState(null, '', STEP_PATHS[stepIdx] || STEP_PATHS[0])
+    // Keep the ?ui=flat variant flag (de-boxed mobile mock) across the rewrite.
+    const flat = /[?&]ui=flat/.test(window.location.hash) ? '?ui=flat' : ''
+    window.history.replaceState(null, '', (STEP_PATHS[stepIdx] || STEP_PATHS[0]) + flat)
   }, [stepIdx])
 
   // Sync when an external deep-link changes the target step (e.g. pasting /review).
@@ -147,6 +153,21 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
     setDraft(null)
   }
 
+  // Start the 15-min hold the first time an appointment reaches the cart; never
+  // resets on later edits (one session timer). Cleared only by confirm / restart.
+  useEffect(() => {
+    if (appointments.length > 0 && holdStartedAt === null) setHoldStartedAt(Date.now())
+  }, [appointments.length, holdStartedAt])
+
+  // Hold expired → release everything but keep the insured person, and reopen a
+  // fresh doctor selection on Step 2 (exactly what the release dialog promises).
+  const restartBooking = () => {
+    setAppointments([])
+    setDraft(newDraft('personal', insured))
+    setHoldStartedAt(null)
+    setStepIdx(1)
+  }
+
   const ContextBand = () => (
     <section className="gpi-card gpi-ctxband">
       <div className="gpi-ctx__group">
@@ -194,13 +215,17 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
 
   const footer = stepIdx < 3 ? [
     { back: onExit, cont: () => setStepIdx(1), label: ka.wizard.footer.continue, icon: 'arrow-right', can: true },
-    { back: () => setStepIdx(0), cont: () => setStepIdx(2), label: ka.wizard.footer.continue, icon: 'arrow-right', can: appointments.length > 0 && !draft },
+    { back: () => setStepIdx(0), cont: () => setStepIdx(2), label: ka.wizard.footer.continue, icon: 'arrow-right', can: appointments.length > 0 && !draft, hint: draft ? ka.wizard.footer.finishDraft : null },
     { back: () => setStepIdx(1), cont: confirm, label: ka.wizard.footer.confirm, icon: 'check', can: appointments.length > 0 },
   ][stepIdx] : null
 
   return (
     <div className="gpi-wizard">
       <Stepper steps={STEPS} current={stepIdx} />
+
+      {holdStartedAt !== null && (stepIdx === 1 || stepIdx === 2) && (
+        <ReservationCountdown startedAt={holdStartedAt} onRestart={restartBooking} />
+      )}
 
       {stepIdx === 0 && (
         <div className="gpi-wizard__body">
@@ -224,7 +249,9 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
       {stepIdx === 1 && (
         <div className="gpi-wizard__stack">
           {/* Patient context band hidden for now — restore <ContextBand /> to bring it back. */}
-          <section className="gpi-card gpi-cart">
+          {/* ?ui=flat (in the hash query) turns on the DE-BOXED mobile mock —
+              comparison variant, 2026-07-27; default URL keeps the current UI. */}
+          <section className={`gpi-card gpi-cart${/[?&]ui=flat/.test(window.location.hash) ? ' gpi-flat' : ''}`}>
             <div className="gpi-cart__hd">
               <div className="t-h3">{ka.wizard.step2.title}</div>
               <div className="t-body gpi-muted">{ka.wizard.step2.subtitle}</div>
@@ -369,6 +396,7 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
           canContinue={footer.can}
           continueLabel={footer.label}
           continueIcon={footer.icon}
+          hint={footer.hint}
         />
       )}
 

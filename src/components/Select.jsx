@@ -4,7 +4,7 @@ import Icon from '../lib/Icon.jsx'
 /* Select — lightweight dropdown (trigger + menu of options), mirroring the
    Figma Select component (node 69:148). Closes on outside-click / Escape.
    Composes our Menu Item visual. `error` = red stroke (Figma Error variant). */
-export default function Select({ value, placeholder, options, onChange, disabled = false, error = false }) {
+export default function Select({ value, placeholder, options, onChange, disabled = false, error = false, className = '' }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
@@ -25,7 +25,7 @@ export default function Select({ value, placeholder, options, onChange, disabled
   const selected = options.find((o) => o.value === value)
 
   return (
-    <div className="gpi-fsel" ref={ref}>
+    <div className={`gpi-fsel${className ? ` ${className}` : ''}`} ref={ref}>
       <button
         type="button"
         className={`gpi-fsel__btn ${open ? 'is-open' : ''} ${disabled ? 'is-disabled' : ''} ${error ? 'is-error' : ''}`}
@@ -45,8 +45,11 @@ export default function Select({ value, placeholder, options, onChange, disabled
               key={o.value}
               role="option"
               aria-selected={o.value === value}
-              className={`gpi-fsel__opt ${o.value === value ? 'is-sel' : ''}`}
+              aria-disabled={o.disabled || undefined}
+              className={`gpi-fsel__opt ${o.value === value ? 'is-sel' : ''} ${o.disabled ? 'is-disabled' : ''}`}
+              title={o.disabled ? o.disabledReason : undefined}
               onClick={() => {
+                if (o.disabled) return
                 onChange(o.value)
                 setOpen(false)
               }}
