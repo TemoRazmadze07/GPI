@@ -1,7 +1,7 @@
 import Avatar from './Avatar.jsx'
 import Icon from '../lib/Icon.jsx'
 import { langTag } from '../data/booking.js'
-import { ka } from '../i18n/strings.js'
+import { t } from '../i18n/index.js'
 
 /* DoctorRow — selectable list item (design 104:8702): avatar · name · role ·
    language tags. Clicking the row selects the doctor; the NAME is a link that
@@ -33,8 +33,8 @@ export default function DoctorRow({ doctor, selected, onSelect, onDeselect, onIn
               type="button"
               className="gpi-drow__info"
               onClick={(e) => { e.stopPropagation(); onInfo(doctor) }}
-              aria-label={ka.wizard.book.info}
-              title={ka.wizard.book.info}
+              aria-label={t.wizard.book.info}
+              title={t.wizard.book.info}
             >
               <Icon name="info" size={16} />
             </button>
@@ -48,12 +48,12 @@ export default function DoctorRow({ doctor, selected, onSelect, onDeselect, onIn
         ))}
       </div>
       {selected && !locked && (
-        <button className="gpi-drow__x" onClick={onDeselect} aria-label="ექიმის მოხსნა">
+        <button className="gpi-drow__x" onClick={onDeselect} aria-label={t.a11y.removeDoctor}>
           <Icon name="x" size={16} />
         </button>
       )}
       {selected && locked && (
-        <span className="gpi-drow__lock" title={ka.wizard.book.doctorLocked}>
+        <span className="gpi-drow__lock" title={t.wizard.book.doctorLocked}>
           <Icon name="lock" size={16} />
         </span>
       )}

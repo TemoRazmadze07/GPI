@@ -3,12 +3,12 @@ import Badge from './Badge.jsx'
 import Icon from '../lib/Icon.jsx'
 import { IconButton } from './Button.jsx'
 import { groupByDate } from '../data/appointments.js'
-import { ka } from '../i18n/strings.js'
+import { t as strings } from '../i18n/index.js'
 
 const STATUS_COLOR = { ongoing: 'success', finished: 'neutral', cancelled: 'error' }
 
 function StatusBadge({ status }) {
-  return <Badge color={STATUS_COLOR[status]} size="md">{ka.status[status]}</Badge>
+  return <Badge color={STATUS_COLOR[status]} size="md">{strings.status[status]}</Badge>
 }
 
 function RowActions({ status, onReschedule, onEdit, onCancel }) {
@@ -17,21 +17,20 @@ function RowActions({ status, onReschedule, onEdit, onCancel }) {
     // cancel (trash) → confirmation modal, then mark the row cancelled.
     return (
       <div className="gpi-row__actions">
-        <IconButton icon="pencil" tone="neutral" title={ka.actions.edit} onClick={onEdit} />
-        <IconButton icon="trash" tone="danger" title={ka.actions.cancel} onClick={onCancel} />
+        <IconButton icon="pencil" tone="neutral" title={strings.actions.edit} onClick={onEdit} />
+        <IconButton icon="trash" tone="danger" title={strings.actions.cancel} onClick={onCancel} />
       </div>
     )
   }
   // finished / cancelled → reschedule/rebook: deep-link into the wizard pre-filled.
   return (
     <div className="gpi-row__actions">
-      <IconButton icon="rotate-ccw" tone="neutral" title={ka.actions.rebook} onClick={onReschedule} />
+      <IconButton icon="rotate-ccw" tone="neutral" title={strings.actions.rebook} onClick={onReschedule} />
     </div>
   )
 }
 
 function Row({ a, onReschedule, onEdit, onCancel }) {
-  const t = ka
   return (
     <div className="gpi-row">
       {/* Doctor */}
@@ -43,14 +42,18 @@ function Row({ a, onReschedule, onEdit, onCancel }) {
         </div>
       </div>
 
-      {/* Date & time */}
-      <div className="gpi-cell">
-        <span className="t-body gpi-strong">{a.dateLabel}</span>
-        <span className="t-body-sm gpi-muted">{a.time}</span>
+      {/* Date & time. The date repeats the group separator above it — mobile
+          hides it there (the separator goes sticky instead) and promotes the
+          time, so the card never spends a line on a duplicate. */}
+      <div className="gpi-cell gpi-cell--datetime">
+        <Icon name="clock" size={16} className="gpi-cell__mico" />
+        <span className="t-body gpi-strong gpi-dt__date">{a.dateLabel}</span>
+        <span className="t-body-sm gpi-muted gpi-dt__time">{a.time}</span>
       </div>
 
       {/* Clinic */}
-      <div className="gpi-cell">
+      <div className="gpi-cell gpi-cell--clinic">
+        <Icon name={a.clinic.isPhone ? 'phone' : 'map-pin'} size={16} className="gpi-cell__mico" />
         <span className="t-body gpi-clinic__name">
           {a.clinic.isPhone && <Icon name="phone" size={16} className="gpi-clinic__icon" />}
           {a.clinic.name}
@@ -63,8 +66,10 @@ function Row({ a, onReschedule, onEdit, onCancel }) {
         <StatusBadge status={a.status} />
       </div>
 
-      {/* Patient (insured person) */}
-      <div className="gpi-cell">
+      {/* Patient (insured person). Two person names sit on one mobile card with
+          no column headers to separate them — the leading icons do that job. */}
+      <div className="gpi-cell gpi-cell--patient">
+        <Icon name="user" size={16} className="gpi-cell__mico" />
         <span className="t-body">{a.patient.name}</span>
       </div>
 
@@ -82,7 +87,7 @@ function Row({ a, onReschedule, onEdit, onCancel }) {
 }
 
 export default function AppointmentsTable({ items, onReschedule, onEdit, onCancel }) {
-  const t = ka.table
+  const t = strings.table
   const groups = groupByDate(items)
   return (
     <div className="gpi-table">

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Icon from '../lib/Icon.jsx'
-import { ka } from '../i18n/strings.js'
+import { t } from '../i18n/index.js'
 
 /* Collapsible review section — the buying-flow review pattern (outlined box,
    header = icon · title · collapsed one-line summary · edit pencil · chevron;
@@ -30,7 +30,7 @@ export default function ReviewSection({ icon, title, summary, onEdit, defaultOpe
         <span className="gpi-rsec__title">{title}</span>
         {!open && summary && <span className="gpi-rsec__summary">{summary}</span>}
         {onEdit && (
-          <button className="gpi-rsec__edit" aria-label={editLabel || ka.actions.edit} onClick={onEdit}>
+          <button className="gpi-rsec__edit" aria-label={editLabel || t.actions.edit} onClick={onEdit}>
             <Icon name="pencil" size={16} />
           </button>
         )}

@@ -283,6 +283,12 @@
   align-items: center;
   gap: var(--space-12);
 }
+/* Leading meta icons + action labels ship in the row markup but only render at
+   ≤767px, where the row re-flows into a card and loses its column headers. */
+.gpi-cell__mico,
+.gpi-iconbtn__label {
+  display: none;
+}
 .gpi-cell--status,
 .gpi-cell--actions {
   align-items: flex-start;
@@ -2155,3 +2161,19 @@
 /* type comes from .t-h4 / .t-body utilities on the elements */
 .gpi-cdexpire__title { margin: 0; color: var(--text-main); }
 .gpi-cdexpire__body { margin: 0; color: var(--text-muted); }
+
+/* ── English-only typography corrections ───────────────────────────────────
+   Georgian Mkhedruli is a unicase script, so `text-transform: uppercase` is a
+   no-op in the ka build — which is why these rules read fine there and only
+   misbehave once Latin text renders. Scoped to [lang='en'] so the Georgian
+   build is byte-identical and this is a one-line revert if caps are wanted.
+     · modal titles — "ADD INSURED PERSON" at 600/18px also sits on the wrap
+       threshold in a 320px modal, and the button-label spirit says one line.
+     · doctor names — a person's name should never be shouted, and caps costs
+       legibility on exactly the string users scan for.
+   .gpi-cal__dow stays uppercase on purpose: "MON TUE WED" is the normal
+   calendar convention and measures inside the 36px cell. */
+:root[lang='en'] .gpi-modal__title,
+:root[lang='en'] .gpi-bio__name {
+  text-transform: none;
+}

@@ -1,10 +1,10 @@
 import Icon from '../lib/Icon.jsx'
 import { Button } from './Button.jsx'
-import { ka } from '../i18n/strings.js'
+import { t as strings } from '../i18n/index.js'
 
 /* CtaBanner — entry-point card for starting the booking wizard. */
 export default function CtaBanner({ onStart }) {
-  const t = ka.banner
+  const t = strings.banner
   return (
     <div className="gpi-banner">
       <div className="gpi-banner__lead">

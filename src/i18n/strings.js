@@ -134,7 +134,10 @@ export const ka = {
         lead: 'ვიზიტი ექიმთან',
         leadRemote: 'დისტანციური კონსულტაცია ექიმთან',
         booked: 'დაჯავშნილია',
-        at: 'საათზე.',
+        // The date+time clause is a function because the two languages order it
+        // differently: Georgian საათზე is a POSTposition (and carries the full stop),
+        // English needs "at" before the time. A bare preposition string cannot express both.
+        when: (date, time) => `${date}, ${time} საათზე.`,
         entrance: 'შემოსასვლელი',
       },
       // Research artifact — mirrors GPI's LIVE confirmation-email template
@@ -281,5 +284,34 @@ export const ka = {
       experience: 'წ. გამოცდილება',
       reviews: 'შეფასება',
     },
+  },
+  /* Screen-reader labels for icon-only controls. These were previously hardcoded in
+     the components; they live here so both locales stay in one place. */
+  a11y: {
+    prevMonth: 'წინა თვე',
+    nextMonth: 'შემდეგი თვე',
+    // The day strip scrolls a RANGE of days, so it is deliberately not "წინა/შემდეგი"
+    // — that would collide with the calendar's month chevrons for a screen-reader user.
+    prevDays: 'წინა დღეები',
+    nextDays: 'შემდეგი დღეები',
+    calendar: 'კალენდარი',
+    doctorDetails: 'ექიმის დეტალები',
+    removeDoctor: 'ექიმის მოხსნა',
+    close: 'დახურვა',
+    steps: 'ნაბიჯები',
+    messages: 'შეტყობინებები',
+    switchLanguage: 'ენის შეცვლა',
+  },
+  /* Strings rendered outside the screens themselves. */
+  misc: {
+    appTitle: 'GPI — ჩემი კაბინეტი',
+    // SUMMARY line of the .ics file from "კალენდარში დამატება" — the doctor's name
+    // is appended, so this is the prefix only.
+    calendarEvent: 'ექიმთან ვიზიტი',
+    // Empty state on a doctor result row (distinct from book.noSlots, which is the
+    // empty state for the whole day column).
+    noSlotsDoctor: 'ამ დღეს თავისუფალი დრო არ აქვს',
+    // Research scaffolding: shown when ?study= is opened without a valid route.
+    studyFallback: 'გამოიყენეთ თქვენთვის გაზიარებული ბმული პროტოტიპის გასახსნელად.',
   },
 }

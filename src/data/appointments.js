@@ -7,7 +7,7 @@
 
 import { doctors, clinicByValue, availableDates, slotGroupsFor, fmtDateLong, dateKeyOf } from './booking.js'
 import { insuredPersons } from './insured.js'
-import { ka } from '../i18n/strings.js'
+import { t } from '../i18n/index.js'
 
 /* Dates are RELATIVE to real today so the list stays coherent with the live
    booking calendar: ongoing rows land on real future dates via bookedSlot();
@@ -92,7 +92,7 @@ export function confirmBooking(insuredId, drafts) {
       specialty: d.specialty ?? (dr.specialtyValue || dr.studyValue || null),
       doctor: { name: dr.name, specialty: dr.role, avatar: dr.avatar },
       clinic: isRemote
-        ? { name: ka.wizard.visit.remote, address: null, isPhone: true }
+        ? { name: t.wizard.visit.remote, address: null, isPhone: true }
         : { name: cl.label, address: cl.address, isPhone: false },
       patient: { name: pt.name, relation: pt.relation },
     }

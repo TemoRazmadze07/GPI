@@ -1,6 +1,7 @@
 import Avatar from './Avatar.jsx'
 import Icon from '../lib/Icon.jsx'
 import { clinics } from '../data/booking.js'
+import { t } from '../i18n/index.js'
 
 /* DoctorResultCard — a doctor row carrying their own slot chips for the
    selected day. Booking = tap a slot chip. "i" opens the doctor info. */
@@ -21,12 +22,12 @@ export default function DoctorResultCard({ doctor, slots, selectedSlot, onSelect
             {doctor.specialty} · {clinic?.label} · {doctor.languages.join('·')}
           </span>
         </div>
-        <button className="gpi-docres__info" onClick={() => onInfo(doctor)} aria-label="ექიმის დეტალები">
+        <button className="gpi-docres__info" onClick={() => onInfo(doctor)} aria-label={t.a11y.doctorDetails}>
           <Icon name="info" size={20} />
         </button>
       </div>
       {slots.length === 0 ? (
-        <div className="gpi-docres__empty">ამ დღეს თავისუფალი დრო არ აქვს</div>
+        <div className="gpi-docres__empty">{t.misc.noSlotsDoctor}</div>
       ) : (
         <div className="gpi-docres__slots">
           {shown.map((s) => (

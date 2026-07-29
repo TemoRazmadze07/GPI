@@ -15,7 +15,7 @@ import {
   listAvailableDates, listDayTones, listSlotsOn, doctorsOnDate, doctorsWithSlot,
   doctorOffersSlot, doctorClinicForSlot, hasAvailabilityWithin, personalDoctorsAt, chipClinics,
 } from '../data/booking.js'
-import { ka } from '../i18n/strings.js'
+import { t } from '../i18n/index.js'
 
 /* BookingWorkspace — the on-page booking surface (design 104:8241): a filter
    row (search · city · clinic chips) over three columns — doctor list · month
@@ -231,24 +231,24 @@ export default function BookingWorkspace({ value: v, onChange }) {
     <div className={`gpi-bw3 ${awaitingDirection ? 'is-awaiting' : ''}`}>
       {isPersonal && (
         <div className="gpi-bw3__visit">
-          <span id={`visit-lbl-${v.id}`} className="gpi-bw3__visitlbl">{ka.wizard.visit.label}</span>
+          <span id={`visit-lbl-${v.id}`} className="gpi-bw3__visitlbl">{t.wizard.visit.label}</span>
           <div className="gpi-bw3__visitopts" role="radiogroup" aria-labelledby={`visit-lbl-${v.id}`}>
-            <Radio name={`visit-${v.id}`} value="inclinic" checked={(v.visit || 'inclinic') === 'inclinic'} onChange={setVisit} label={ka.wizard.visit.inclinic} />
-            <Radio name={`visit-${v.id}`} value="remote" checked={v.visit === 'remote'} onChange={setVisit} label={ka.wizard.visit.remote} />
+            <Radio name={`visit-${v.id}`} value="inclinic" checked={(v.visit || 'inclinic') === 'inclinic'} onChange={setVisit} label={t.wizard.visit.inclinic} />
+            <Radio name={`visit-${v.id}`} value="remote" checked={v.visit === 'remote'} onChange={setVisit} label={t.wizard.visit.remote} />
           </div>
-          {remote && <span className="gpi-bw3__visithint"><Icon name="phone" size={14} />{ka.wizard.visit.remoteHint}</span>}
+          {remote && <span className="gpi-bw3__visithint"><Icon name="phone" size={14} />{t.wizard.visit.remoteHint}</span>}
         </div>
       )}
 
       {hasFilters && (
         <div className="gpi-bw3__filters">
-          {showSearch && <SearchField value={query} onChange={setQuery} placeholder={ka.wizard.filters.searchDoctor} />}
-          {showCity && <Select value={v.city} placeholder={ka.wizard.filters.city} options={cities} disabled={cityDisabled} onChange={(x) => onChange({ ...v, city: x })} />}
+          {showSearch && <SearchField value={query} onChange={setQuery} placeholder={t.wizard.filters.searchDoctor} />}
+          {showCity && <Select value={v.city} placeholder={t.wizard.filters.city} options={cities} disabled={cityDisabled} onChange={(x) => onChange({ ...v, city: x })} />}
           {needsDirection && (
             <Select
               className="gpi-fsel--dir"
               value={v.specialty}
-              placeholder={v.type === 'instrumental' ? ka.wizard.filters.study : ka.wizard.filters.specialty}
+              placeholder={v.type === 'instrumental' ? t.wizard.filters.study : t.wizard.filters.specialty}
               options={directionsFor(v.type)}
               onChange={(x) => onChange({ ...v, specialty: x, doctorId: null, date: null, slot: null, slotClinic: null })}
             />
@@ -256,8 +256,8 @@ export default function BookingWorkspace({ value: v, onChange }) {
           {showClinic && (firstTimePersonal ? (
             <Select
               value={clinicValue}
-              placeholder={ka.wizard.filters.clinic}
-              options={[{ value: '', label: ka.wizard.filters.allClinics }, ...clinics.map((c) => ({ value: c.value, label: c.label }))]}
+              placeholder={t.wizard.filters.clinic}
+              options={[{ value: '', label: t.wizard.filters.allClinics }, ...clinics.map((c) => ({ value: c.value, label: c.label }))]}
               onChange={selectClinic}
             />
           ) : (
@@ -270,8 +270,8 @@ export default function BookingWorkspace({ value: v, onChange }) {
               <div className="gpi-bw3__clinicsel">
                 <Select
                   value={clinicValue}
-                  placeholder={ka.wizard.filters.clinic}
-                  options={[{ value: '', label: ka.wizard.filters.allClinics }, ...clinicList.map((c) => ({ value: c.value, label: c.label }))]}
+                  placeholder={t.wizard.filters.clinic}
+                  options={[{ value: '', label: t.wizard.filters.allClinics }, ...clinicList.map((c) => ({ value: c.value, label: c.label }))]}
                   onChange={selectClinic}
                   disabled={clinicDisabled}
                 />
@@ -284,20 +284,20 @@ export default function BookingWorkspace({ value: v, onChange }) {
       {fallbackC && (
         <div className="gpi-bw3__banner">
           <Icon name="alert-triangle" size={16} />
-          <span>{ka.wizard.book.fallbackWeek}</span>
+          <span>{t.wizard.book.fallbackWeek}</span>
         </div>
       )}
 
       <div className="gpi-bw3__cols">
         <div className="gpi-bw3__col">
-          <div className="gpi-bw3__colhd">{ka.wizard.types[v.type]}</div>
+          <div className="gpi-bw3__colhd">{t.wizard.types[v.type]}</div>
           <div className="gpi-bw3__list">
             {!awaitingDirection && shown.map((d) => (
               <DoctorRow key={d.id} doctor={d} selected={v.doctorId === d.id} onSelect={pickDoctor} onDeselect={dropDoctor} onInfo={setInfo} locked={locked} />
             ))}
             {awaitingDirection && (
               <>
-                <div className="gpi-bw3__empty">{v.type === 'instrumental' ? ka.wizard.book.pickStudy : ka.wizard.book.pickDirection}</div>
+                <div className="gpi-bw3__empty">{v.type === 'instrumental' ? t.wizard.book.pickStudy : t.wizard.book.pickDirection}</div>
                 {/* FLAT-VARIANT twin (?ui=flat, mobile): the direction options as an
                     in-place tappable list replacing the direction dropdown. Hidden by
                     base CSS everywhere else — same render-both-hide-one pattern. */}
@@ -316,7 +316,7 @@ export default function BookingWorkspace({ value: v, onChange }) {
                 </div>
               </>
             )}
-            {!awaitingDirection && shown.length === 0 && <div className="gpi-bw3__empty">{ka.wizard.book.noDoctors}</div>}
+            {!awaitingDirection && shown.length === 0 && <div className="gpi-bw3__empty">{t.wizard.book.noDoctors}</div>}
           </div>
         </div>
 
@@ -350,7 +350,7 @@ export default function BookingWorkspace({ value: v, onChange }) {
           {awaitingDirection ? null : v.date && slotCount ? (
             <SlotList groups={slotGroups} selected={v.slot ? { slot: v.slot, clinic: v.slotClinic } : null} onSelect={pickSlot} />
           ) : (
-            <div className="gpi-bw3__empty">{v.date ? ka.wizard.book.noSlots : ka.wizard.book.pickDay}</div>
+            <div className="gpi-bw3__empty">{v.date ? t.wizard.book.noSlots : t.wizard.book.pickDay}</div>
           )}
         </div>
       </div>

@@ -1,4 +1,6 @@
 import Icon from '../lib/Icon.jsx'
+import { MONTHS_FULL, WEEKDAYS } from '../data/booking.js'
+import { t } from '../i18n/index.js'
 
 /* MonthCalendar — rebuilt to match the Step-2 design (Calendar instance
    I104:8769) exactly: 7 fixed 40px-wide cells with 2px gaps (=292px), each day
@@ -8,15 +10,9 @@ import Icon from '../lib/Icon.jsx'
    Both the weekday row and the day grid use the SAME 7×40px grid so the
    columns line up precisely. */
 
-export const KA_MONTHS_FULL = [
-  'იანვარი', 'თებერვალი', 'მარტი', 'აპრილი', 'მაისი', 'ივნისი',
-  'ივლისი', 'აგვისტო', 'სექტემბერი', 'ოქტომბერი', 'ნოემბერი', 'დეკემბერი',
-]
-export const WEEKDAYS = ['ორშ', 'სამშ', 'ოთხ', 'ხუთ', 'პარ', 'შაბ', 'კვ']
-
 function ringBackground(tones) {
   if (!tones || !tones.length) return null
-  const colors = tones.map((t) => `var(--clinic-${t})`)
+  const colors = tones.map((tone) => `var(--clinic-${tone})`)
   if (colors.length === 1) return colors[0]
   const seg = 100 / colors.length
   const stops = colors.map((c, i) => `${c} ${i * seg}% ${(i + 1) * seg}%`).join(', ')
@@ -37,9 +33,9 @@ export default function MonthCalendar({ month, onPrevMonth, onNextMonth, isAvail
   return (
     <div className="gpi-cal">
       <div className="gpi-cal__hd">
-        <button className="gpi-cal__nav" onClick={onPrevMonth} disabled={!canPrev} aria-label="წინა თვე"><Icon name="chevron-left" size={20} /></button>
-        <span className="gpi-cal__title">{KA_MONTHS_FULL[m]} {year}</span>
-        <button className="gpi-cal__nav" onClick={onNextMonth} disabled={!canNext} aria-label="შემდეგი თვე"><Icon name="chevron-right" size={20} /></button>
+        <button className="gpi-cal__nav" onClick={onPrevMonth} disabled={!canPrev} aria-label={t.a11y.prevMonth}><Icon name="chevron-left" size={20} /></button>
+        <span className="gpi-cal__title">{MONTHS_FULL[m]} {year}</span>
+        <button className="gpi-cal__nav" onClick={onNextMonth} disabled={!canNext} aria-label={t.a11y.nextMonth}><Icon name="chevron-right" size={20} /></button>
       </div>
 
       <div className="gpi-cal__weekdays">

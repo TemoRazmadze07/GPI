@@ -1,5 +1,5 @@
 import Modal from './Modal.jsx'
-import { ka } from '../i18n/strings.js'
+import { t } from '../i18n/index.js'
 
 /* SmsPreview — RESEARCH ARTIFACT, prototype-only (not a design-system component).
    Replicates GPI's CURRENT-STATE booking SMS (real screenshot, 2026-06-17). The
@@ -21,13 +21,13 @@ const startTime = (slot) => (slot.match(/\d{1,2}:\d{2}/) || ['15:00'])[0]
    "მოგესალმებით, ვიზიტი ექიმთან {doctor} დაჯავშნილია {dd.mm.yyyy}, {time} საათზე.
     შემოსასვლელი {clinic address}." (entrance line dropped for remote visits). */
 function smsBody(r) {
-  const s = ka.wizard.success.sms
-  const head = `${s.hello} ${r.clinic.isPhone ? s.leadRemote : s.lead} ${r.doctor.name} ${s.booked} ${fmtDMY(r.dateKey)}, ${startTime(r.time)} ${s.at}`
+  const s = t.wizard.success.sms
+  const head = `${s.hello} ${r.clinic.isPhone ? s.leadRemote : s.lead} ${r.doctor.name} ${s.booked} ${s.when(fmtDMY(r.dateKey), startTime(r.time))}`
   return r.clinic.isPhone ? head : `${head} ${s.entrance} ${r.clinic.address}.`
 }
 
 export default function SmsPreview({ bookings, onClose }) {
-  const s = ka.wizard.success.sms
+  const s = t.wizard.success.sms
   return (
     <Modal title={s.modalTitle} onClose={onClose} className="gpi-modal--sms">
       <p className="gpi-sms__hint">{s.hint}</p>

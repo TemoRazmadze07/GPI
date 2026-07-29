@@ -5,7 +5,7 @@ import Avatar from './Avatar.jsx'
 import Icon from '../lib/Icon.jsx'
 import { Button } from './Button.jsx'
 import { lookupByPersonalId, lookupByPolicy } from '../data/insured.js'
-import { ka } from '../i18n/strings.js'
+import { t as strings } from '../i18n/index.js'
 
 /* AddInsuredModal — Step-1 "add insured person" dialog. Two lookup methods
    (personal data · policy number), a search → confirm → add flow, and a
@@ -13,7 +13,7 @@ import { ka } from '../i18n/strings.js'
    the shared Modal shell + Segmented Control + Button + Avatar. Content/UX per
    the 2026-07-05 agreed spec. */
 export default function AddInsuredModal({ existingIds = [], onAdd, onClose }) {
-  const t = ka.wizard.addInsured
+  const t = strings.wizard.addInsured
   const [method, setMethod] = useState('personal') // personal | policy
   const [mode, setMode] = useState('search') // search | confirmed | manual
   const [personalId, setPersonalId] = useState('')

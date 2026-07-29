@@ -15,12 +15,12 @@ import { insuredPersons, defaultInsuredId } from '../data/insured.js'
 import { doctors, clinicByValue, fmtDate, fmtDateLong, directionsFor, rescheduleDraft, editDraft } from '../data/booking.js'
 import { appointmentById, confirmBooking } from '../data/appointments.js'
 import { downloadIcs } from '../lib/ics.js'
-import { ka } from '../i18n/strings.js'
+import { t } from '../i18n/index.js'
 
 const STEPS = [
-  { id: 'insured', label: ka.wizard.steps.insured },
-  { id: 'booking', label: ka.wizard.steps.booking },
-  { id: 'review', label: ka.wizard.steps.review },
+  { id: 'insured', label: t.wizard.steps.insured },
+  { id: 'booking', label: t.wizard.steps.booking },
+  { id: 'review', label: t.wizard.steps.review },
 ]
 
 // URL per wizard step — mirrors the Flow Map hierarchy (see App.jsx router).
@@ -171,15 +171,15 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
   const ContextBand = () => (
     <section className="gpi-card gpi-ctxband">
       <div className="gpi-ctx__group">
-        <span className="gpi-ctx__label">{ka.wizard.step2.patient}</span>
+        <span className="gpi-ctx__label">{t.wizard.step2.patient}</span>
         <div className="gpi-ctx__person">
           <Avatar name={insured.name} seed={insured.avatar} size={36} />
           <div className="gpi-ctx__meta">
             <span className="gpi-ctx__name">{insured.name}</span>
             <span className="gpi-ctx__id">{insured.policyId}</span>
           </div>
-          <span className="gpi-badge gpi-badge--sm gpi-badge--neutral">{ka.wizard.relation[insured.relation]}</span>
-          <button className="gpi-ctx__edit" aria-label={ka.actions.edit} onClick={() => setStepIdx(0)}>
+          <span className="gpi-badge gpi-badge--sm gpi-badge--neutral">{t.wizard.relation[insured.relation]}</span>
+          <button className="gpi-ctx__edit" aria-label={t.actions.edit} onClick={() => setStepIdx(0)}>
             <Icon name="pencil" size={16} />
           </button>
         </div>
@@ -189,7 +189,7 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
         <>
           <span className="gpi-ctx__div" />
           <div className="gpi-ctx__group">
-            <span className="gpi-ctx__label">{ka.wizard.step2.policyOwner}</span>
+            <span className="gpi-ctx__label">{t.wizard.step2.policyOwner}</span>
             <div className="gpi-ctx__person">
               <Avatar name={owner.name} seed={owner.avatar} size={36} />
               <div className="gpi-ctx__meta">
@@ -203,7 +203,7 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
 
       <div className="gpi-ctx__note">
         <Icon name="info" size={16} />
-        <span>{ka.wizard.step2.note}</span>
+        <span>{t.wizard.step2.note}</span>
       </div>
     </section>
   )
@@ -214,9 +214,9 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
   }
 
   const footer = stepIdx < 3 ? [
-    { back: onExit, cont: () => setStepIdx(1), label: ka.wizard.footer.continue, icon: 'arrow-right', can: true },
-    { back: () => setStepIdx(0), cont: () => setStepIdx(2), label: ka.wizard.footer.continue, icon: 'arrow-right', can: appointments.length > 0 && !draft, hint: draft ? ka.wizard.footer.finishDraft : null },
-    { back: () => setStepIdx(1), cont: confirm, label: ka.wizard.footer.confirm, icon: 'check', can: appointments.length > 0 },
+    { back: onExit, cont: () => setStepIdx(1), label: t.wizard.footer.continue, icon: 'arrow-right', can: true },
+    { back: () => setStepIdx(0), cont: () => setStepIdx(2), label: t.wizard.footer.continue, icon: 'arrow-right', can: appointments.length > 0 && !draft, hint: draft ? t.wizard.footer.finishDraft : null },
+    { back: () => setStepIdx(1), cont: confirm, label: t.wizard.footer.confirm, icon: 'check', can: appointments.length > 0 },
   ][stepIdx] : null
 
   return (
@@ -230,15 +230,15 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
       {stepIdx === 0 && (
         <div className="gpi-wizard__body">
           <section className="gpi-card gpi-insured">
-            <h2 className="t-h3 gpi-insured__title">{ka.wizard.insured.title}</h2>
-            <div className="gpi-insured__grid" role="radiogroup" aria-label={ka.wizard.insured.title}>
+            <h2 className="t-h3 gpi-insured__title">{t.wizard.insured.title}</h2>
+            <div className="gpi-insured__grid" role="radiogroup" aria-label={t.wizard.insured.title}>
               {people.map((p) => (
                 <PersonCard key={p.id} person={p} selected={selectedId === p.id} onSelect={selectInsured} />
               ))}
             </div>
             <div className="gpi-insured__add">
               <Button variant="tertiary" size="md" leadingIcon="user-plus" onClick={() => setShowAddInsured(true)}>
-                {ka.wizard.insured.add}
+                {t.wizard.insured.add}
               </Button>
             </div>
           </section>
@@ -253,8 +253,8 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
               comparison variant, 2026-07-27; default URL keeps the current UI. */}
           <section className={`gpi-card gpi-cart${/[?&]ui=flat/.test(window.location.hash) ? ' gpi-flat' : ''}`}>
             <div className="gpi-cart__hd">
-              <div className="t-h3">{ka.wizard.step2.title}</div>
-              <div className="t-body gpi-muted">{ka.wizard.step2.subtitle}</div>
+              <div className="t-h3">{t.wizard.step2.title}</div>
+              <div className="t-body gpi-muted">{t.wizard.step2.subtitle}</div>
             </div>
             {appointments
               .filter((a) => a.id !== draft?.id)
@@ -283,7 +283,7 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
             {!draft && (
               <button className="gpi-cart__add" onClick={startNewDraft}>
                 <Icon name="plus" size={20} />
-                {appointments.length === 0 ? ka.wizard.step2.add : ka.wizard.step2.addMore}
+                {appointments.length === 0 ? t.wizard.step2.add : t.wizard.step2.addMore}
               </button>
             )}
           </section>
@@ -293,17 +293,17 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
       {stepIdx === 2 && (
         <div className="gpi-wizard__stack">
           <section className="gpi-card gpi-review">
-            <h2 className="t-h3 gpi-review__heading">{ka.wizard.review.heading}</h2>
+            <h2 className="t-h3 gpi-review__heading">{t.wizard.review.heading}</h2>
 
             <ReviewSection
               icon="user"
-              title={ka.wizard.review.insured}
+              title={t.wizard.review.insured}
               summary={`${insured.name} · ${insured.policyId}`}
               onEdit={() => setStepIdx(0)}
             >
-              <ReviewRow label={ka.wizard.review.name}>{insured.name}</ReviewRow>
-              <ReviewRow label={ka.wizard.review.policy}>{insured.policyId}</ReviewRow>
-              <ReviewRow label={ka.wizard.review.relation}>{ka.wizard.relation[insured.relation]}</ReviewRow>
+              <ReviewRow label={t.wizard.review.name}>{insured.name}</ReviewRow>
+              <ReviewRow label={t.wizard.review.policy}>{insured.policyId}</ReviewRow>
+              <ReviewRow label={t.wizard.review.relation}>{t.wizard.relation[insured.relation]}</ReviewRow>
             </ReviewSection>
 
             {appointments.map((a, i) => {
@@ -315,23 +315,23 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
                 <ReviewSection
                   key={a.id}
                   icon="stethoscope"
-                  title={`${ka.wizard.step2.entry} ${i + 1} — ${ka.wizard.types[a.type]}`}
+                  title={`${t.wizard.step2.entry} ${i + 1} — ${t.wizard.types[a.type]}`}
                   summary={`${dr?.name} · ${fmtDate(a.date)} · ${a.slot}`}
                   onEdit={() => { setDraft({ ...a }); setStepIdx(1) }}
                 >
-                  <ReviewRow label={ka.wizard.review.doctor}>{dr?.name}</ReviewRow>
+                  <ReviewRow label={t.wizard.review.doctor}>{dr?.name}</ReviewRow>
                   {direction && (
-                    <ReviewRow label={a.type === 'instrumental' ? ka.wizard.review.study : ka.wizard.review.direction}>
+                    <ReviewRow label={a.type === 'instrumental' ? t.wizard.review.study : t.wizard.review.direction}>
                       {direction.label}
                     </ReviewRow>
                   )}
-                  <ReviewRow label={ka.wizard.review.when}>{fmtDateLong(a.date)} · {a.slot}</ReviewRow>
+                  <ReviewRow label={t.wizard.review.when}>{fmtDateLong(a.date)} · {a.slot}</ReviewRow>
                   {isRemote ? (
-                    <ReviewRow label={ka.wizard.review.format}>{ka.wizard.visit.remote}</ReviewRow>
+                    <ReviewRow label={t.wizard.review.format}>{t.wizard.visit.remote}</ReviewRow>
                   ) : (
                     <>
-                      <ReviewRow label={ka.wizard.review.clinic}>{cl?.label}</ReviewRow>
-                      <ReviewRow label={ka.wizard.review.address}>{cl?.address}</ReviewRow>
+                      <ReviewRow label={t.wizard.review.clinic}>{cl?.label}</ReviewRow>
+                      <ReviewRow label={t.wizard.review.address}>{cl?.address}</ReviewRow>
                     </>
                   )}
                 </ReviewSection>
@@ -340,7 +340,7 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
 
             <div className="gpi-alert">
               <Icon name="info" size={20} />
-              <span>{ka.wizard.review.note}</span>
+              <span>{t.wizard.review.note}</span>
             </div>
           </section>
         </div>
@@ -352,8 +352,8 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
             <div className="gpi-success__icon">
               <Icon name="check" size={28} />
             </div>
-            <h2 className="t-h3 gpi-success__title">{ka.wizard.success.title}</h2>
-            <p className="gpi-success__sub">{ka.wizard.success.subtitle}</p>
+            <h2 className="t-h3 gpi-success__title">{t.wizard.success.title}</h2>
+            <p className="gpi-success__sub">{t.wizard.success.subtitle}</p>
             <div className="gpi-success__rows">
               {confirmed.map((r) => (
                 <div className="gpi-asum" key={r.id}>
@@ -374,14 +374,14 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
             </div>
             <div className="gpi-alert">
               <Icon name="info" size={20} />
-              <span>{ka.wizard.success.note}</span>
+              <span>{t.wizard.success.note}</span>
             </div>
             <div className="gpi-success__acts">
               <Button variant="primary" size="md" trailingIcon="arrow-right" onClick={onExit}>
-                {ka.wizard.success.toList}
+                {t.wizard.success.toList}
               </Button>
               <Button variant="secondary" size="md" leadingIcon="calendar" onClick={() => downloadIcs(confirmed)}>
-                {ka.wizard.success.calendar}
+                {t.wizard.success.calendar}
               </Button>
             </div>
           </section>

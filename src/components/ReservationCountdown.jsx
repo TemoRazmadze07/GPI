@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Icon from '../lib/Icon.jsx'
 import { Button } from './Button.jsx'
-import { ka } from '../i18n/strings.js'
+import { t } from '../i18n/index.js'
 
 /* ReservationCountdown — the doctor's slot is held server-side for 15 minutes
    once the first appointment is added. This is an EXCEPTION handler, not chrome:
@@ -56,10 +56,10 @@ export default function ReservationCountdown({ startedAt, onRestart }) {
   useEffect(() => {
     if (!bucket || announced.current === bucket) return
     announced.current = bucket
-    setLiveMsg(ka.wizard.countdown.aria(fmt(remaining)))
+    setLiveMsg(t.wizard.countdown.aria(fmt(remaining)))
   }, [bucket]) // eslint-disable-line react-hooks/exhaustive-deps -- announce once per threshold
 
-  const c = ka.wizard.countdown
+  const c = t.wizard.countdown
 
   // The common case: plenty of time left → render nothing at all.
   if (remaining > SHOW_S) return null

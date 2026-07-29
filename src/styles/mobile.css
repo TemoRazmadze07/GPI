@@ -36,6 +36,17 @@
   .gpi-user svg {
     display: none;
   }
+  /* Stripped to a bare 18px flag the language toggle was a 26×22 hit area — under the
+     24px floor (Rule 7 / WCAG 2.2 target size). Give it the same 40px square the burger
+     next to it uses, so the whole utility row has one consistent target. */
+  .gpi-lang {
+    display: grid;
+    place-items: center;
+    width: var(--control-md);
+    height: var(--control-md);
+    padding: 0;
+    border-radius: var(--radius-full);
+  }
 
   .gpi-burger {
     display: grid;
@@ -78,6 +89,179 @@
   }
   .gpi-shell.is-navopen .gpi-nav__item:first-child {
     padding-left: var(--space-12);
+  }
+
+  /* ---- Screen 1: CTA banner ------------------------------------------------
+     Desktop packs icon + copy + button into one row. At 342px that starved the
+     copy to ~90px (8 wrapped lines) and left the icon floating mid-block. Only
+     the CTA drops to its own full-width line — the icon keeps its pairing with
+     the title, top-aligned so it reads as the title's mark, not a stray tile. */
+  .gpi-banner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-16);
+    padding: var(--space-20);
+  }
+  .gpi-banner__lead {
+    align-items: flex-start;
+    gap: var(--space-12);
+  }
+  .gpi-banner__icon {
+    width: 44px;
+    height: 44px;
+  }
+  .gpi-banner__text h2 {
+    font-size: 19px;
+    line-height: 26px;
+  }
+  .gpi-banner .gpi-btn {
+    width: 100%;
+  }
+
+  /* ---- Screen 1: appointments — table rows become cards ---------------------
+     The 6-column grid measures 1014px; inside a 294px card everything from the
+     clinic rightwards was clipped off-screen, including both action buttons.
+     Each row re-flows into a card: identity + status on top, meta lines stacked
+     under a hairline with leading icons, actions labelled in a footer row. */
+  .gpi-card--table {
+    padding: var(--space-20) var(--space-16);
+  }
+  .gpi-table__head {
+    display: none; /* no columns left to label */
+  }
+  .gpi-table__heading {
+    margin-bottom: 0;
+  }
+
+  /* Sticky is scoped to .gpi-table__group, so each date pins only while its own
+     cards are on screen — the card can drop its duplicate date and still never
+     show a bare time. Needs an opaque fill to cover cards passing underneath. */
+  .gpi-table__date {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    margin: 0 0 var(--space-12);
+    padding: var(--space-16) 0 var(--space-8);
+    background: var(--surface-card);
+  }
+
+  .gpi-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: var(--space-8);
+    padding: var(--space-16);
+  }
+  /* Touch has no hover — the lift would only ever fire as a tap artefact. */
+  .gpi-row:hover {
+    border-color: var(--border-default);
+    box-shadow: none;
+  }
+  /* Identity takes the full width. Sharing the row with the status badge cost
+     the name up to 112px (`დასრულებული`), breaking long Georgian names onto a
+     second line — a status word must not decide how a person's name renders.
+     The badge moves down to the time line, where it also reads better: the
+     status IS about that slot. Divider rides this cell so it stays unbroken by
+     the column gap below. */
+  .gpi-cell--doctor {
+    grid-area: 1 / 1 / auto / -1;
+    align-items: flex-start;
+    gap: var(--space-8);
+    padding-bottom: var(--space-12);
+    border-bottom: var(--border-width-sm) solid var(--border-divider);
+  }
+  .gpi-cell--status {
+    grid-area: 2 / 2;
+    align-items: flex-end;
+  }
+  /* Badge steps down to the sm spec (Badge/sm: 12/16, inline space-8) — same
+     token values as .gpi-badge--sm, not an ad-hoc size. */
+  .gpi-cell--status .gpi-badge--md {
+    padding: 2px var(--space-8);
+    font: 400 12px/16px var(--font-sans);
+  }
+  .gpi-cell--datetime {
+    grid-area: 2 / 1;
+    margin-top: var(--space-4);
+  }
+  .gpi-cell--clinic {
+    grid-area: 3 / 1 / auto / -1;
+    margin-top: var(--space-4);
+  }
+  .gpi-cell--patient {
+    grid-area: 4 / 1 / auto / -1;
+  }
+  .gpi-cell--actions {
+    grid-area: 5 / 1 / auto / -1;
+    align-items: stretch;
+    margin-top: var(--space-8);
+  }
+
+  /* Meta lines: 16px icon gutter + text column. The icon spans the cell's rows
+     so a two-line clinic (name + address) stays aligned to one marker. */
+  .gpi-cell--datetime,
+  .gpi-cell--clinic,
+  .gpi-cell--patient {
+    display: grid;
+    grid-template-columns: var(--icon-sm) minmax(0, 1fr);
+    column-gap: var(--space-8);
+    row-gap: var(--space-2);
+  }
+  .gpi-cell__mico {
+    display: block;
+    grid-row: 1 / -1;
+    align-self: start;
+    margin-top: 3px;
+    color: var(--text-disabled);
+  }
+  /* Everything but the marker belongs in the text column — without this the
+     clinic's second line (the address) auto-places into the 16px gutter and
+     wraps one word per row. */
+  .gpi-cell--datetime > :not(.gpi-cell__mico),
+  .gpi-cell--clinic > :not(.gpi-cell__mico),
+  .gpi-cell--patient > :not(.gpi-cell__mico) {
+    grid-column: 2;
+  }
+  /* The leading marker already carries the phone/in-person distinction. */
+  .gpi-clinic__name .gpi-clinic__icon {
+    display: none;
+  }
+  /* Date lives on the sticky separator; the time becomes the cell's lead line. */
+  .gpi-dt__date {
+    display: none;
+  }
+  .gpi-dt__time {
+    color: var(--text-main);
+    font-weight: 500;
+  }
+
+  /* Actions: labelled, one line each (button-label rule — never two lines).
+     They grow to fill the footer but never shrink below their own content, so
+     below ~360px the pair wraps and each takes a full-width line instead of
+     clipping its label. */
+  .gpi-row__actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: var(--space-8);
+  }
+  .gpi-row__actions .gpi-iconbtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 auto;
+    width: auto;
+    height: var(--control-md);
+    gap: var(--space-8);
+    padding-inline: var(--space-12);
+    font: 600 13px/16px var(--font-sans); /* Button/Small */
+    color: var(--text-main);
+    white-space: nowrap;
+  }
+  .gpi-row__actions .gpi-iconbtn--danger {
+    color: var(--status-error-fg);
+    border-color: var(--status-error-border);
+  }
+  .gpi-row__actions .gpi-iconbtn__label {
+    display: inline;
   }
 
   /* ---- Wizard chrome ------------------------------------------------------ */

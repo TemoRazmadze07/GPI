@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ASSETS } from '../lib/assets.js'
 import Icon from '../lib/Icon.jsx'
 import Avatar from './Avatar.jsx'
-import { ka } from '../i18n/strings.js'
+import { t, otherLang, setLang } from '../i18n/index.js'
 
 /* AppShell — top bar (logo + utilities) and horizontal primary nav.
    Reused by every My-Cabinet screen. Page content goes in `children`.
@@ -27,7 +27,6 @@ function NavItem({ children, active = false, hasMenu = false }) {
 }
 
 export default function AppShell({ children }) {
-  const t = ka
   const [navOpen, setNavOpen] = useState(false)
   return (
     <div className={`gpi-shell ${navOpen ? 'is-navopen' : ''}`}>
@@ -35,12 +34,19 @@ export default function AppShell({ children }) {
         <div className="gpi-topbar__inner">
           <Logo />
           <div className="gpi-topbar__utils">
-            <button className="gpi-lang">
-              <span className="gpi-lang__flag" aria-hidden="true">🇬🇧</span>
+            {/* Two locales, so this is a straight toggle: the label names the language
+                you switch TO. ≤767px only the flag survives (see mobile.css), which is
+                why the accessible name has to come from aria-label rather than the text. */}
+            <button
+              className="gpi-lang"
+              onClick={() => setLang(otherLang)}
+              aria-label={`${t.a11y.switchLanguage} — ${t.topbar.language}`}
+            >
+              <span className="gpi-lang__flag" aria-hidden="true">{otherLang === 'en' ? '🇬🇧' : '🇬🇪'}</span>
               <span>{t.topbar.language}</span>
               <Icon name="chevron-down" size={16} />
             </button>
-            <button className="gpi-iconcircle" aria-label="messages">
+            <button className="gpi-iconcircle" aria-label={t.a11y.messages}>
               <Icon name="mail" size={20} />
             </button>
             <button className="gpi-user">

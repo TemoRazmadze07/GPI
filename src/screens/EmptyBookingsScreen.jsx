@@ -1,6 +1,6 @@
 import CtaBanner from '../components/CtaBanner.jsx'
 import { Button } from '../components/Button.jsx'
-import { ka } from '../i18n/strings.js'
+import { t as strings } from '../i18n/index.js'
 import { ASSETS } from '../lib/assets.js'
 
 /* EmptyBookingsScreen — the All-Bookings page with no bookings yet. Starting
@@ -9,12 +9,12 @@ import { ASSETS } from '../lib/assets.js'
    book. The booking logic (first-time doctor selection) is layered in later —
    this screen just leads into the existing wizard for now. */
 export default function EmptyBookingsScreen({ onStartBooking }) {
-  const t = ka.bookings
+  const t = strings.bookings
   return (
     <div className="gpi-page-stack">
       <CtaBanner onStart={onStartBooking} />
       <section className="gpi-card gpi-bookings">
-        <h2 className="t-h3 gpi-table__heading">{ka.table.heading}</h2>
+        <h2 className="t-h3 gpi-table__heading">{strings.table.heading}</h2>
         <div className="gpi-empty">
           <img
             className="gpi-empty__illus"

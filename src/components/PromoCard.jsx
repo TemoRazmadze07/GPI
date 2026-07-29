@@ -1,9 +1,9 @@
-import { ka } from '../i18n/strings.js'
+import { t as strings } from '../i18n/index.js'
 
 /* PromoCard — cross-sell card shown beside the insured-selection step.
    Marketing image is a placeholder; swap for the real creative later. */
 export default function PromoCard() {
-  const t = ka.wizard.promo
+  const t = strings.wizard.promo
   return (
     <aside
       className="gpi-promo"

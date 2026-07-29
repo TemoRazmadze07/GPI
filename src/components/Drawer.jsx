@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import Icon from '../lib/Icon.jsx'
-import { ka } from '../i18n/strings.js'
+import { t } from '../i18n/index.js'
 
 /* Drawer — shared right-side detail panel (overlay · panel: header title + ×
    close · scrollable body · footer actions). The header stays GENERIC (e.g.
@@ -21,7 +21,7 @@ export default function Drawer({ title, onClose, closeLabel, children, footer })
       <aside className="gpi-drawer" role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
         <div className="gpi-drawer__hd">
           <h3 className="gpi-drawer__title">{title}</h3>
-          <button className="gpi-drawer__close" onClick={onClose} aria-label={closeLabel || ka.actions.close}>
+          <button className="gpi-drawer__close" onClick={onClose} aria-label={closeLabel || t.actions.close}>
             <Icon name="x" size={24} />
           </button>
         </div>

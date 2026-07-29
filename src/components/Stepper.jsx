@@ -1,5 +1,6 @@
 import { Fragment } from 'react'
 import Icon from '../lib/Icon.jsx'
+import { t } from '../i18n/index.js'
 
 /* Stepper — horizontal progress for the booking wizard. Data-driven so the
    journey can grow from 2 → N steps. `steps` = [{id, label}], `current` = index.
@@ -9,7 +10,7 @@ import Icon from '../lib/Icon.jsx'
    horizontal room. */
 export default function Stepper({ steps, current = 0 }) {
   return (
-    <div className="gpi-stepper" role="list" aria-label="ნაბიჯები">
+    <div className="gpi-stepper" role="list" aria-label={t.a11y.steps}>
       {steps.map((s, i) => {
         const state = i < current ? 'done' : i === current ? 'active' : 'todo'
         return (

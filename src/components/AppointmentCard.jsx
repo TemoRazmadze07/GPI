@@ -4,14 +4,14 @@ import BookingWorkspace from './BookingWorkspace.jsx'
 import Avatar from './Avatar.jsx'
 import { Button, IconButton } from './Button.jsx'
 import { doctors, clinicByValue, fmtDateLong } from '../data/booking.js'
-import { ka } from '../i18n/strings.js'
+import { t } from '../i18n/index.js'
 
 /* Only one personal-doctor appointment is allowed per booking. When one already
    exists (in another card), the "personal" type is disabled here. */
 const typeOptions = (personalTaken) => [
-  { value: 'personal', label: ka.wizard.typeSeg.personal, disabled: personalTaken, disabledReason: ka.wizard.step2.personalTaken },
-  { value: 'specialist', label: ka.wizard.typeSeg.specialist },
-  { value: 'instrumental', label: ka.wizard.typeSeg.instrumental },
+  { value: 'personal', label: t.wizard.typeSeg.personal, disabled: personalTaken, disabledReason: t.wizard.step2.personalTaken },
+  { value: 'specialist', label: t.wizard.typeSeg.specialist },
+  { value: 'instrumental', label: t.wizard.typeSeg.instrumental },
 ]
 
 /* AppointmentCard — an item in the Step-2 list (design node 104:8241).
@@ -22,7 +22,7 @@ export default function AppointmentCard({ appt, expanded, index, onToggle, onCha
   const doctor = doctors.find((d) => d.id === appt.doctorId)
   const clinic = clinicByValue(appt.slotClinic)
   const isRemote = appt.type === 'personal' && appt.visit === 'remote'
-  const placeLabel = isRemote ? ka.wizard.visit.remote : clinic?.label
+  const placeLabel = isRemote ? t.wizard.visit.remote : clinic?.label
 
   if (!expanded) {
     return (
@@ -40,8 +40,8 @@ export default function AppointmentCard({ appt, expanded, index, onToggle, onCha
         </div>
         <div className="gpi-asum__clinic">{placeLabel}</div>
         <div className="gpi-asum__acts">
-          <IconButton icon="pencil" title={ka.actions.edit} onClick={onToggle} />
-          <IconButton icon="trash" title={ka.actions.cancel} onClick={onRemove} />
+          <IconButton icon="pencil" title={t.actions.edit} onClick={onToggle} />
+          <IconButton icon="trash" title={t.actions.cancel} onClick={onRemove} />
         </div>
       </div>
     )
@@ -51,13 +51,13 @@ export default function AppointmentCard({ appt, expanded, index, onToggle, onCha
     // is-ready (slot picked, savable) drives the MOBILE sticky commit bar.
     <div className={`gpi-appt gpi-appt--open ${canSave ? 'is-ready' : ''}`}>
       <div className="gpi-appt__hd">
-        <span className="gpi-appt__title">{ka.wizard.step2.entry} {index}</span>
+        <span className="gpi-appt__title">{t.wizard.step2.entry} {index}</span>
       </div>
 
       <SegmentedControl
         variant="indigo"
         value={appt.type}
-        onChange={(t) => onChange({ ...appt, type: t, specialty: null, doctorId: null, date: null, slot: null, slotClinic: null })}
+        onChange={(nextType) => onChange({ ...appt, type: nextType, specialty: null, doctorId: null, date: null, slot: null, slotClinic: null })}
         options={typeOptions(personalTaken)}
       />
       {/* MOBILE variant of the same control — a dropdown (user request, 2026-07-17,
@@ -67,7 +67,7 @@ export default function AppointmentCard({ appt, expanded, index, onToggle, onCha
         <Select
           value={appt.type}
           options={typeOptions(personalTaken)}
-          onChange={(t) => onChange({ ...appt, type: t, specialty: null, doctorId: null, date: null, slot: null, slotClinic: null })}
+          onChange={(nextType) => onChange({ ...appt, type: nextType, specialty: null, doctorId: null, date: null, slot: null, slotClinic: null })}
         />
       </div>
 
@@ -84,8 +84,8 @@ export default function AppointmentCard({ appt, expanded, index, onToggle, onCha
           </div>
         ) : <span className="gpi-appt__ftsum" />}
         <div className="gpi-appt__ftbtns">
-          <Button variant="tertiary" size="md" onClick={onRemove}>{ka.wizard.book.cancel}</Button>
-          <Button variant="primary" size="md" onClick={onSave} disabled={!canSave}>{ka.wizard.book.add}</Button>
+          <Button variant="tertiary" size="md" onClick={onRemove}>{t.wizard.book.cancel}</Button>
+          <Button variant="primary" size="md" onClick={onSave} disabled={!canSave}>{t.wizard.book.add}</Button>
         </div>
       </div>
     </div>

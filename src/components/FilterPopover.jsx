@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Icon from '../lib/Icon.jsx'
 import SearchField from './SearchField.jsx'
 import { Button } from './Button.jsx'
-import { KA_MONTHS_FULL, WEEKDAYS } from './MonthCalendar.jsx'
+import { MONTHS_FULL, WEEKDAYS } from '../data/booking.js'
 
 /* FilterPopover — single-pane filter panel (design-system Filter Popover v1,
    BMLL-pattern, no-tabs variant agreed 2026-07-15). Left category rail +
@@ -112,7 +112,7 @@ function RangeMonth({ year, month, range, onPick }) {
   const { from, to } = range || {}
   return (
     <div className="gpi-fcal__month">
-      <div className="gpi-fcal__title">{KA_MONTHS_FULL[month]} {year}</div>
+      <div className="gpi-fcal__title">{MONTHS_FULL[month]} {year}</div>
       <div className="gpi-fcal__weekdays">
         {WEEKDAYS.map((w) => <span key={w}>{w}</span>)}
       </div>

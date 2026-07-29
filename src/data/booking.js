@@ -5,30 +5,49 @@
    - A doctor works at ONE OR MORE clinics (cross-clinic availability).
    - Availability is per (doctor, date, clinic) → a list of slot RANGES.
    - Clinic colour is a categorical `tone` (1|2|3) → clinic/* tokens (tokens.css).
-   - Availability is generated deterministically so the prototype is stable. */
+   - Availability is generated deterministically so the prototype is stable.
 
-export const cities = [
+   Localisation: the Georgian labels below are the source of truth for STRUCTURE and
+   IDs. When the session runs in English, `./booking.en.js` supplies replacement
+   labels keyed by the same IDs and `loc()` merges them in at module load. The
+   availability engine hashes on IDs, never on labels, so it is language-agnostic and
+   both locales generate identical slots. */
+
+import { lang } from '../i18n/index.js'
+import * as EN from './booking.en.js'
+
+const isEn = lang === 'en'
+
+/* Merge an English label map (keyed by the row's `value`/`id`) over a data array.
+   In Georgian this is the identity function — the ka data is returned untouched. */
+const loc = (rows, map, key = 'value') =>
+  isEn ? rows.map((r) => ({ ...r, ...(map[r[key]] || {}) })) : rows
+
+/* English label maps store `label` for the simple lists. */
+const asLabel = (m) => Object.fromEntries(Object.entries(m).map(([k, v]) => [k, { label: v }]))
+
+export const cities = loc([
   { value: 'tbilisi', label: 'თბილისი' },
   { value: 'batumi', label: 'ბათუმი' },
   { value: 'kutaisi', label: 'ქუთაისი' },
-]
+], asLabel(EN.cityLabels))
 
 /* Specialist "direction" = medical specialty/profession. */
-export const specialties = [
+export const specialties = loc([
   { value: 'ophthalmology', label: 'ოფთალმოლოგი' },
   { value: 'gynecology', label: 'გინეკოლოგი' },
   { value: 'dermatology', label: 'დერმატოლოგი' },
   { value: 'cardiology', label: 'კარდიოლოგი' },
   { value: 'neurology', label: 'ნევროლოგი' },
-]
+], asLabel(EN.specialtyLabels))
 
 /* Instrumental "direction" = type of study/procedure. */
-export const instrumentalTypes = [
+export const instrumentalTypes = loc([
   { value: 'ultrasound', label: 'ექოსკოპია (ულტრაბგერა)' },
   { value: 'ecg', label: 'ელექტროკარდიოგრამა (ეკგ)' },
   { value: 'xray', label: 'რენტგენი' },
   { value: 'mri', label: 'მაგნიტურ-რეზონანსული (მრტ)' },
-]
+], asLabel(EN.studyLabels))
 
 /* Options for the direction selector, by appointment type. */
 export const directionsFor = (type) =>
@@ -39,7 +58,7 @@ export const directionsFor = (type) =>
    specialist/instrumental) use, plus the calendar colour-coding. The rest have NO tone:
    they exist to demo a many-clinic network and are surfaced ONLY in the first-time
    personal DROPDOWN (which drops per-clinic calendar colours — too many to colour-code). */
-export const clinics = [
+export const clinics = loc([
   { value: 'saburtalo', label: 'კურაციო საბურთალოზე', short: 'საბურთალო', address: 'თბილისი, ო. ლორთქიფანიძის ქ. #31', tone: 1 },
   { value: 'vake', label: 'კურაციო ვაკეში', short: 'ვაკე', address: 'თბილისი, ჭავჭავაძის გამზ. #37', tone: 2 },
   { value: 'gldani', label: 'კურაციო გლდანი', short: 'გლდანი', address: 'თბილისი, ხიზანიშვილის ქ. #7' },
@@ -48,7 +67,7 @@ export const clinics = [
   { value: 'varketili', label: 'კურაციო ვარკეთილი', short: 'ვარკეთილი', address: 'თბილისი, ჯავახეთის ქ. #21' },
   { value: 'mukhiani', label: 'კურაციო მუხიანი', short: 'მუხიანი', address: 'თბილისი, მუხიანის დას. IVა მ/რ #4' },
   { value: 'ortachala', label: 'კურაციო ორთაჭალა', short: 'ორთაჭალა', address: 'თბილისი, გორგასლის ქ. #93' },
-]
+], EN.clinicLabels)
 
 export const allClinicValues = clinics.map((c) => c.value)
 export const clinicByValue = (v) => clinics.find((c) => c.value === v)
@@ -58,7 +77,7 @@ export const chipClinics = clinics.filter((c) => c.tone)
 
 /* type: personal | specialist | instrumental.
    `role` is the label shown on the slim doctor row. */
-export const doctors = [
+export const doctors = loc([
   { id: 'd1', name: 'ნინო ნინოშვილი', type: 'personal', role: 'პირადი ექიმი', clinics: ['saburtalo', 'vake'], languages: ['KA', 'EN', 'RU'], experience: 12, rating: 4.8, reviews: 214, bio: 'ოჯახის ექიმი, თბილისის სახელმწიფო სამედიცინო უნივერსიტეტი. პრევენციული მედიცინა და ქრონიკული დაავადებების მართვა.', avatar: 5 },
   { id: 'd2', name: 'მარიამ ნოზაძე', type: 'personal', role: 'პირადი ექიმი', clinics: ['vake'], languages: ['KA', 'EN'], experience: 8, rating: 4.7, reviews: 180, bio: 'ოჯახის ექიმი. პროფილაქტიკური გასინჯვები და ვაქცინაცია.', avatar: 16 },
   { id: 'd3', name: 'ანა ბერიძე', type: 'personal', role: 'პირადი ექიმი', clinics: ['saburtalo', 'vake'], languages: ['KA', 'RU'], experience: 15, rating: 4.9, reviews: 320, bio: 'ოჯახის ექიმი, 15 წლის გამოცდილება. შინაგანი მედიცინა.', avatar: 31 },
@@ -96,9 +115,11 @@ export const doctors = [
   { id: 'd24', name: 'ზაზა ლომიძე', type: 'instrumental', studyValue: 'ecg', role: 'ფუნქციური დიაგნოსტიკა', clinics: ['saburtalo'], languages: ['KA'], experience: 11, rating: 4.5, reviews: 54, bio: 'ფუნქციური დიაგნოსტიკა — ჰოლტერ მონიტორინგი.', avatar: 56 },
   { id: 'd25', name: 'ნინო ხარაძე', type: 'instrumental', studyValue: 'xray', role: 'რადიოლოგი', clinics: ['vake'], languages: ['KA'], experience: 10, rating: 4.4, reviews: 39, bio: 'რადიოლოგი — კიდურების რენტგენოგრაფია.', avatar: 58 },
   { id: 'd26', name: 'ანა წერეთელი', type: 'instrumental', studyValue: 'mri', role: 'რადიოლოგი', clinics: ['saburtalo'], languages: ['KA', 'EN'], experience: 13, rating: 4.9, reviews: 95, bio: 'რადიოლოგი — ხერხემლის მრტ.', avatar: 67 },
-]
+], EN.doctorLabels, 'id')
 
-export const langLabels = { KA: 'ქართული', EN: 'ინგლისური', RU: 'რუსული', DE: 'გერმანული' }
+export const langLabels = isEn
+  ? EN.langLabels
+  : { KA: 'ქართული', EN: 'ინგლისური', RU: 'რუსული', DE: 'გერმანული' }
 /* Short tag shown on the doctor row (matches the design's "Geo"/"Eng" tags). */
 export const langTag = { KA: 'Geo', EN: 'Eng', RU: 'Rus', DE: 'Deu' }
 
@@ -108,7 +129,21 @@ export const langTag = { KA: 'Geo', EN: 'Eng', RU: 'Rus', DE: 'Deu' }
 const startOfDay = (dt) => new Date(dt.getFullYear(), dt.getMonth(), dt.getDate())
 const TODAY = startOfDay(new Date())
 export const bookingMonth = new Date(TODAY.getFullYear(), TODAY.getMonth(), 1) // first of the current month
-const KA_MONTHS = ['იან', 'თებ', 'მარ', 'აპრ', 'მაი', 'ივნ', 'ივლ', 'აგვ', 'სექ', 'ოქტ', 'ნოე', 'დეკ']
+const MONTHS = isEn
+  ? EN.MONTHS
+  : ['იან', 'თებ', 'მარ', 'აპრ', 'მაი', 'ივნ', 'ივლ', 'აგვ', 'სექ', 'ოქტ', 'ნოე', 'დეკ']
+
+/* Calendar vocabulary. Full month names appear ONLY in the calendar header
+   ("July 2026"); everywhere else uses the abbreviations above. Exported from here
+   rather than from MonthCalendar so both the calendar and the filter popover read
+   the same locale-resolved source. WEEKDAYS is Monday-first in both locales. */
+export const MONTHS_FULL = isEn
+  ? EN.MONTHS_FULL
+  : ['იანვარი', 'თებერვალი', 'მარტი', 'აპრილი', 'მაისი', 'ივნისი',
+     'ივლისი', 'აგვისტო', 'სექტემბერი', 'ოქტომბერი', 'ნოემბერი', 'დეკემბერი']
+export const WEEKDAYS = isEn
+  ? EN.WEEKDAYS
+  : ['ორშ', 'სამშ', 'ოთხ', 'ხუთ', 'პარ', 'შაბ', 'კვ']
 
 const RANGES = [
   '10:00 - 10:30', '10:30 - 11:00', '11:00 - 11:30', '11:30 - 12:00',
@@ -341,12 +376,15 @@ export function doctorClinicForSlot(doctorId, dateKey, slot, active = allClinicV
 export function fmtDate(dateKey) {
   if (!dateKey) return ''
   const [, m, d] = dateKey.split('-').map(Number)
-  return `${d} ${KA_MONTHS[m - 1]}`
+  return `${d} ${MONTHS[m - 1]}`
 }
 
-/* Long form for the collapsed summary row — e.g. "12 ივლ, 2026". */
+/* Long form for the collapsed summary row — e.g. "12 ივლ, 2026" / "12 Jul 2026".
+   English drops the comma before the year (D MMM YYYY is the unambiguous form); the
+   Georgian output is unchanged. This feeds the appointment-list date group headers
+   and the cancel-confirmation summary, so it is the most-rendered date in the flow. */
 export function fmtDateLong(dateKey) {
   if (!dateKey) return ''
   const [y, m, d] = dateKey.split('-').map(Number)
-  return `${d} ${KA_MONTHS[m - 1]}, ${y}`
+  return isEn ? `${d} ${MONTHS[m - 1]} ${y}` : `${d} ${MONTHS[m - 1]}, ${y}`
 }

@@ -1,5 +1,5 @@
 import { Button } from './Button.jsx'
-import { ka } from '../i18n/strings.js'
+import { t as strings } from '../i18n/index.js'
 
 /* WizardFooter — sticky bottom action bar for the booking wizard.
    Full-bleed; inner content aligns to the 1280 grid. */
@@ -11,7 +11,7 @@ export default function WizardFooter({
   continueIcon = 'arrow-right',
   hint = null,
 }) {
-  const t = ka.wizard.footer
+  const t = strings.wizard.footer
   // Hint explains WHY continue is blocked (e.g. an unfinished draft). MOBILE
   // swaps the dead disabled button for the hint (see mobile.css); desktop keeps
   // the disabled button and never shows the hint (base CSS hides it).

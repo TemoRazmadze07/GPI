@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Icon from '../lib/Icon.jsx'
 import EmailPreview from './EmailPreview.jsx'
 import SmsPreview from './SmsPreview.jsx'
-import { ka } from '../i18n/strings.js'
+import { t as strings } from '../i18n/index.js'
 
 /* NotificationPeek — RESEARCH ARTIFACT, prototype-only. A floating launcher pinned
    bottom-right of the booking success page that opens the CURRENT-STATE email / SMS
@@ -12,7 +12,7 @@ import { ka } from '../i18n/strings.js'
    Kept out of the page's main content for exactly that reason. */
 export default function NotificationPeek({ bookings }) {
   const [open, setOpen] = useState(null) // 'email' | 'sms' | null
-  const t = ka.wizard.success.peek
+  const t = strings.wizard.success.peek
 
   return (
     <>

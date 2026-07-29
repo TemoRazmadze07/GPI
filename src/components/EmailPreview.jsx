@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ASSETS } from '../lib/assets.js'
 import Modal from './Modal.jsx'
 import Icon from '../lib/Icon.jsx'
-import { ka } from '../i18n/strings.js'
+import { t } from '../i18n/index.js'
 
 /* EmailPreview — RESEARCH ARTIFACT, prototype-only (not a design-system component).
    Replicates GPI's CURRENT-STATE booking-confirmation email (real Gmail screenshot,
@@ -38,7 +38,7 @@ const gmailWhen = (iso, slot) => {
 export default function EmailPreview({ bookings, onClose }) {
   const [idx, setIdx] = useState(0)
   const r = bookings[idx]
-  const em = ka.wizard.success.email
+  const em = t.wizard.success.email
   const d = new Date(r.dateKey + 'T00:00:00')
   const remote = r.clinic.isPhone
 

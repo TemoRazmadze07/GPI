@@ -23,7 +23,10 @@ export function Button({
 }
 
 /* IconButton — square quick-action button used in table rows.
-   tone: neutral | danger. */
+   tone: neutral | danger.
+   The label ships in the DOM but is hidden by default (see .gpi-iconbtn__label).
+   Mobile opts it back in where the button becomes a labelled card action: touch
+   has no `title` tooltip, so an icon-only destructive action reads as a guess. */
 export function IconButton({ icon, tone = 'neutral', title, ...rest }) {
   return (
     <button
@@ -33,6 +36,7 @@ export function IconButton({ icon, tone = 'neutral', title, ...rest }) {
       {...rest}
     >
       <Icon name={icon} size={16} />
+      {title && <span className="gpi-iconbtn__label">{title}</span>}
     </button>
   )
 }

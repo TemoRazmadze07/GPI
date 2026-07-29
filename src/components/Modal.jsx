@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import Icon from '../lib/Icon.jsx'
-import { ka } from '../i18n/strings.js'
+import { t } from '../i18n/index.js'
 
 /* Modal — shared dialog shell (frame · header title + × close · body · footer),
    matching the doctor-details modal (design node 89:3546). Clicking the overlay,
@@ -18,7 +18,7 @@ export default function Modal({ title, onClose, closeLabel, children, footer, cl
       <div className={`gpi-modal${className ? ` ${className}` : ''}`} role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
         <div className="gpi-modal__hd">
           <h3 className="gpi-modal__title">{title}</h3>
-          <button className="gpi-modal__close" onClick={onClose} aria-label={closeLabel || ka.actions.close}>
+          <button className="gpi-modal__close" onClick={onClose} aria-label={closeLabel || t.actions.close}>
             <Icon name="x" size={24} />
           </button>
         </div>

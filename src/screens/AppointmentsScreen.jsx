@@ -4,7 +4,7 @@ import AppointmentsTable from '../components/AppointmentsTable.jsx'
 import Pagination from '../components/Pagination.jsx'
 import ConfirmDialog from '../components/ConfirmDialog.jsx'
 import { appointments as seedAppointments } from '../data/appointments.js'
-import { ka } from '../i18n/strings.js'
+import { t } from '../i18n/index.js'
 
 /* Screen 1 — All Appointments (entry point to the booking wizard). */
 export default function AppointmentsScreen({ onStartBooking, onReschedule, onEdit }) {
@@ -32,11 +32,11 @@ export default function AppointmentsScreen({ onStartBooking, onReschedule, onEdi
 
       {cancelTarget && (
         <ConfirmDialog
-          title={ka.cancelModal.title}
-          body={ka.cancelModal.body}
+          title={t.cancelModal.title}
+          body={t.cancelModal.body}
           appt={cancelTarget}
-          confirmLabel={ka.cancelModal.confirm}
-          keepLabel={ka.cancelModal.keep}
+          confirmLabel={t.cancelModal.confirm}
+          keepLabel={t.cancelModal.keep}
           onConfirm={confirmCancel}
           onClose={() => setCancelId(null)}
         />

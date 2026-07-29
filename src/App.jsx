@@ -6,6 +6,7 @@ import WizardScreen from './screens/WizardScreen.jsx'
 import MapScreen from './screens/MapScreen.jsx'
 import B2BApp from './b2b/B2BApp.jsx'
 import MobileApp from './mobile/MobileApp.jsx'
+import { t } from './i18n/index.js'
 
 /* Tiny hash-router. URLs mirror the Flow Map hierarchy: app → feature → flow.
      #/map                                      → Flow Map console (internal hub)
@@ -63,7 +64,7 @@ function StudyFallback() {
   return (
     <div className="gpi-fmap" style={{ paddingTop: 80, textAlign: 'center' }}>
       <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
-        გამოიყენეთ თქვენთვის გაზიარებული ბმული პროტოტიპის გასახსნელად.
+        {t.misc.studyFallback}
       </p>
     </div>
   )
