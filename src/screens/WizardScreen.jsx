@@ -5,10 +5,13 @@ import PromoCard from '../components/PromoCard.jsx'
 import WizardFooter from '../components/WizardFooter.jsx'
 import AppointmentCard from '../components/AppointmentCard.jsx'
 import AddInsuredModal from '../components/AddInsuredModal.jsx'
+import ManageInsuredModal from '../components/ManageInsuredModal.jsx'
+import ConfirmDialog from '../components/ConfirmDialog.jsx'
 import NotificationPeek from '../components/NotificationPeek.jsx'
 import ReservationCountdown from '../components/ReservationCountdown.jsx'
 import Avatar from '../components/Avatar.jsx'
 import Icon from '../lib/Icon.jsx'
+import useIsMobile from '../lib/useIsMobile.js'
 import { Button } from '../components/Button.jsx'
 import ReviewSection, { ReviewRow } from '../components/ReviewSection.jsx'
 import { insuredPersons, defaultInsuredId } from '../data/insured.js'
@@ -54,10 +57,13 @@ const newDraft = (type = 'personal', insured = null) => {
 }
 
 export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom = null, editFrom = null }) {
+  const isMobile = useIsMobile()
   const [stepIdx, setStepIdx] = useState(initialStep)
   const [people, setPeople] = useState(insuredPersons)
   const [selectedId, setSelectedId] = useState(defaultInsuredId)
   const [showAddInsured, setShowAddInsured] = useState(false)
+  const [showManageInsured, setShowManageInsured] = useState(false)
+  const [pendingRemove, setPendingRemove] = useState(null)
   const [appointments, setAppointments] = useState([])
   const [draft, setDraft] = useState(null)
   const [confirmed, setConfirmed] = useState([])
@@ -124,6 +130,28 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
     setSelectedId(person.id)
     setShowAddInsured(false)
   }
+
+  // Removing the person the booking is FOR would orphan the cart, so selection
+  // falls back to the policy holder and the cart is released (the confirm dialog
+  // says so, but only when there is actually something to lose).
+  const removeInsured = (person) => {
+    setPeople((prev) => prev.filter((p) => p.id !== person.id))
+    if (selectedId === person.id) {
+      setSelectedId(defaultInsuredId)
+      setAppointments([])
+      setDraft(null)
+      setHoldStartedAt(null)
+    }
+    setPendingRemove(null)
+    // Nothing left to manage → close the modal with the trigger that opened it.
+    if (people.filter((p) => p.relation !== 'owner' && p.id !== person.id).length === 0) setShowManageInsured(false)
+  }
+
+  // Everyone except the POLICY HOLDER — whose cabinet this is — can be removed
+  // from the list. The holder is the account itself, so removing them is not a
+  // thing the portal can offer.
+  const removable = people.filter((p) => p.relation !== 'owner')
+  const removeLosesCart = !!pendingRemove && pendingRemove.id === selectedId && (appointments.length > 0 || !!draft)
   const canSaveDraft = !!(draft && draft.doctorId && draft.date && draft.slot)
 
   // Max one personal-doctor appointment per booking.
@@ -236,10 +264,28 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
                 <PersonCard key={p.id} person={p} selected={selectedId === p.id} onSelect={selectInsured} />
               ))}
             </div>
+            {/* Desktop: both actions are quiet tertiaries sitting under the grid.
+                Mobile: they stack, and two identical ghosts read as an unranked
+                pair — so "add" is promoted to the outlined SECONDARY while
+                "manage" stays a ghost, which restores the hierarchy. Real
+                design-system variants, not a mobile-only restyle. */}
             <div className="gpi-insured__add">
-              <Button variant="tertiary" size="md" leadingIcon="user-plus" onClick={() => setShowAddInsured(true)}>
+              <Button
+                variant={isMobile ? 'secondary' : 'tertiary'}
+                size="md"
+                leadingIcon="user-plus"
+                className="gpi-insured__addbtn"
+                onClick={() => setShowAddInsured(true)}
+              >
                 {t.wizard.insured.add}
               </Button>
+              {/* Everyone except the policy holder is removable, so a list of
+                  just the holder has nothing to manage — hide the trigger. */}
+              {removable.length > 0 && (
+                <Button variant="tertiary" size="md" leadingIcon="settings" onClick={() => setShowManageInsured(true)}>
+                  {t.wizard.insured.manage}
+                </Button>
+              )}
             </div>
           </section>
           <PromoCard />
@@ -405,6 +451,27 @@ export default function WizardScreen({ onExit, initialStep = 0, rescheduleFrom =
           existingIds={people.map((p) => p.id)}
           onAdd={handleAddInsured}
           onClose={() => setShowAddInsured(false)}
+        />
+      )}
+
+      {showManageInsured && (
+        <ManageInsuredModal
+          people={people}
+          onRemove={setPendingRemove}
+          onClose={() => setShowManageInsured(false)}
+        />
+      )}
+
+      {pendingRemove && (
+        <ConfirmDialog
+          title={t.wizard.insured.removeConfirm.title}
+          body={(removeLosesCart ? t.wizard.insured.removeConfirm.bodyCart : t.wizard.insured.removeConfirm.body)(
+            pendingRemove.name,
+          )}
+          confirmLabel={t.wizard.insured.removeConfirm.confirm}
+          keepLabel={t.wizard.insured.removeConfirm.keep}
+          onConfirm={() => removeInsured(pendingRemove)}
+          onClose={() => setPendingRemove(null)}
         />
       )}
     </div>

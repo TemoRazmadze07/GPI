@@ -433,6 +433,15 @@
 }
 .gpi-btn--danger:hover { background: var(--action-danger-hover); }
 .gpi-btn--danger:active { background: var(--color-red-800); }
+/* Danger Tertiary — ghost red. Ports the Figma Button set's "Danger Tertiary"
+   emphasis (see figma_structure.md) for destructive actions that must stay quiet
+   inside a list, where a solid danger button would dominate the row. */
+.gpi-btn--danger-tertiary {
+  background: transparent;
+  color: var(--action-danger);
+}
+.gpi-btn--danger-tertiary:hover { background: var(--status-error-bg); }
+.gpi-btn--danger-tertiary:active { background: var(--color-red-100); }
 .gpi-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .gpi-btn--primary:disabled:hover { background: var(--action-primary); }
 
@@ -629,16 +638,60 @@
   grid-template-columns: 1fr 1fr;
   gap: var(--space-12);
 }
+/* List actions row: brand "add" + the quieter neutral "manage" beside it.
+   Wraps so the pair stacks rather than clipping on a narrow screen. */
 .gpi-insured__add {
   margin-top: var(--space-16);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  flex-wrap: wrap;
 }
-.gpi-insured__add .gpi-btn--tertiary {
-  color: var(--text-brand);
+/* Both actions share the same reduced left padding so their icons sit on one
+   left edge — they stack on a narrow screen, where an 8px/16px mismatch reads
+   as a broken indent. */
+.gpi-insured__add .gpi-btn {
   padding-left: var(--space-8);
 }
-.gpi-insured__add .gpi-btn--tertiary:hover {
+/* Colour is scoped to the add button only — "manage" stays a neutral tertiary
+   so the primary action keeps the brand colour to itself. */
+.gpi-insured__addbtn {
+  color: var(--text-brand);
+}
+.gpi-insured__addbtn:hover {
   background: var(--interactive-selected-bg);
 }
+
+/* Manage-insured modal — list of the people the user added themselves. */
+.gpi-manage__intro,
+.gpi-manage__note {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.gpi-manage__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.gpi-manage__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-12) 0;
+  border-bottom: var(--border-width-sm) solid var(--border-divider);
+}
+.gpi-manage__row:last-child { border-bottom: none; }
+.gpi-manage__meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.gpi-manage__name { color: var(--text-main); font-weight: 500; }
+.gpi-manage__id { color: var(--text-muted); }
+.gpi-manage__row .gpi-btn { flex: none; }
 
 /* Person card */
 .gpi-person {

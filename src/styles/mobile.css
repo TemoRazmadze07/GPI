@@ -346,6 +346,39 @@
   .gpi-insured__grid {
     grid-template-columns: 1fr;
   }
+  /* The two list actions can't fit side by side (~343px needed inside ~326px),
+     so stack them deliberately instead of letting flex-wrap do it — an explicit
+     column keeps them left-aligned and tightly grouped. Both go full-width so
+     the outlined "add" reads as a real button rather than a stray box, and the
+     ghost "manage" sits squarely beneath it. */
+  .gpi-insured__add {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-8);
+  }
+  /* "add" is a bordered secondary here, so the desktop 8px optical trim (right
+     for a bare text link) is wrong — restore the standard control padding so
+     both buttons' boxes AND icons share one left edge. */
+  .gpi-insured__add .gpi-btn {
+    padding-left: var(--space-16);
+    justify-content: flex-start;
+  }
+  /* The brand-pink label belongs to the desktop TEXT-LINK presentation. As an
+     outlined secondary the button is indigo-bordered, so the label must be
+     indigo too — pink text in an indigo box is not a variant the system has. */
+  .gpi-insured__addbtn {
+    color: var(--action-secondary);
+  }
+  .gpi-insured__addbtn:hover {
+    background: var(--color-indigo-50);
+  }
+  /* Manage modal: the policy/ID line is dropped on narrow screens so each row is
+     one compact line of identity — the delete button already eats ~96px, and the
+     name alone is enough to tell the family apart. It stays in the DOM (and on
+     desktop) because it's the only disambiguator for two people sharing a name. */
+  .gpi-manage__id {
+    display: none;
+  }
   .gpi-promo {
     min-height: 160px;
     padding: var(--space-16);

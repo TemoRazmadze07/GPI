@@ -85,6 +85,24 @@ export const en = {
     insured: {
       title: 'Choose the insured person',
       add: 'Add insured person',
+      manage: 'Manage',
+      modal: {
+        title: 'Manage insured people',
+        intro: "Deleting someone from the list doesn't cancel their insurance — they simply stop appearing when you book.",
+        remove: 'Delete',
+        removeLabel: (name) => `Delete ${name} from the list`,
+        holder: (name) => `The policy holder (${name}) can't be deleted — this cabinet belongs to them.`,
+        close: 'Close',
+      },
+      removeConfirm: {
+        title: 'Delete from the list?',
+        body: (name) =>
+          `${name} will no longer appear in your list of insured people. Their insurance stays active and you can add them back at any time.`,
+        bodyCart: (name) =>
+          `${name} will no longer appear in your list of insured people, and the appointments you prepared for them will be discarded. Their insurance stays active and you can add them back at any time.`,
+        confirm: 'Delete',
+        keep: 'Cancel',
+      },
     },
     promo: {
       line: 'Insure a family member and get',

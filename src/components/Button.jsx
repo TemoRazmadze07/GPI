@@ -1,7 +1,10 @@
 import Icon from '../lib/Icon.jsx'
 
 /* Button — token-driven, mirrors the Figma Button component.
-   variant: primary | secondary | tertiary. size: sm | md | lg. */
+   variant: primary | secondary | tertiary | danger | danger-tertiary. size: sm | md | lg.
+   `className` is ADDITIVE (appended, never replacing the base classes) — same
+   additive pattern as Select, so a caller can scope one instance without
+   losing gpi-btn/variant/size. */
 const ICON_BY_SIZE = { sm: 16, md: 20, lg: 24 } // icon/sm · icon/md · icon/lg tokens
 
 export function Button({
@@ -9,12 +12,13 @@ export function Button({
   size = 'md',
   leadingIcon,
   trailingIcon,
+  className,
   children,
   ...rest
 }) {
   const iconSize = ICON_BY_SIZE[size] || 20
   return (
-    <button className={`gpi-btn gpi-btn--${variant} gpi-btn--${size}`} {...rest}>
+    <button className={`gpi-btn gpi-btn--${variant} gpi-btn--${size}${className ? ` ${className}` : ''}`} {...rest}>
       {leadingIcon && <Icon name={leadingIcon} size={iconSize} />}
       <span>{children}</span>
       {trailingIcon && <Icon name={trailingIcon} size={iconSize} />}
