@@ -9,6 +9,8 @@ import Avatar from '../components/Avatar.jsx'
 import Badge from '../components/Badge.jsx'
 import { Button } from '../components/Button.jsx'
 import Icon from '../lib/Icon.jsx'
+import Field from './WizardField.jsx'
+import StepExcel from './StepExcel.jsx'
 import { kaB2B } from './strings.js'
 import {
   contract,
@@ -18,7 +20,9 @@ import {
   relationByValue,
   existingEmployees,
   registryLookup,
+  emptyDraft,
 } from './data/addInsured.js'
+import { importable, toPerson } from './data/insuredImport.js'
 
 /* AddInsuredScreen — B2B add-insured wizard (concept agreed 2026-07-06).
    Full-page wizard ON the canvas, shell kept (BMLL-pattern): 3 steps
@@ -38,23 +42,11 @@ const go = (sub) => {
   window.location.hash = '#/b2b/insured/add' + (sub ? `/${sub}` : '')
 }
 
-const emptyDraft = () => ({
-  who: 'employee',
-  citizen: 'resident',
-  pid: '',
-  birth: '',
-  firstName: '',
-  lastName: '',
-  gender: '',
-  linkedTo: '',
-  relation: '',
-  mobile: '',
-  email: '',
-  address: '',
-  pkg: '',
-})
-
 const fmtGel = (n) => `₾ ${n.toFixed(2)}`
+
+/* Stable reference: the importer memoises its validation context on this, so a
+   fresh Date() per render would rebuild it on every keystroke. */
+const TODAY = new Date()
 
 /* ---- step 1: method cards -------------------------------------------------- */
 
@@ -103,14 +95,26 @@ function ContractChip() {
   )
 }
 
-function StepMethod() {
+function StepMethod({ method, onMethod }) {
   return (
     <>
       <ContractChip />
       <h2 className="b2b-wiz__h">{t.method.heading}</h2>
       <div className="b2b-method">
-        <MethodCard icon="user-plus" title={t.method.single.title} meta={t.method.single.meta} selected onSelect={() => {}} />
-        <MethodCard icon="upload" title={t.method.excel.title} meta={t.method.excel.meta} tag={t.method.later} disabled />
+        <MethodCard
+          icon="user-plus"
+          title={t.method.single.title}
+          meta={t.method.single.meta}
+          selected={method === 'single'}
+          onSelect={() => onMethod('single')}
+        />
+        <MethodCard
+          icon="upload"
+          title={t.method.excel.title}
+          meta={t.method.excel.meta}
+          selected={method === 'excel'}
+          onSelect={() => onMethod('excel')}
+        />
         <MethodCard icon="mail" title={t.method.link.title} meta={t.method.link.meta} tag={t.method.later} disabled />
         <MethodCard icon="arrow-right-left" title={t.method.hr.title} meta={t.method.hr.meta} tag={t.method.soon} disabled />
       </div>
@@ -122,33 +126,6 @@ function StepMethod() {
 }
 
 /* ---- step 2: data form + batch list ---------------------------------------- */
-
-/* Field — label + control + ONE message line. Message priority is exclusive
-   (user rule 2026-07-06): inline error (red) > success check (green) > hint.
-   A success message can never render in the error tone. */
-function Field({ label, required, hint, success, errorMsg, wide, children }) {
-  return (
-    <div className={`gpi-field ${wide ? 'wide' : ''}`}>
-      <span className="gpi-field__lbl">
-        {label}
-        {required && <span className="gpi-field__req">*</span>}
-      </span>
-      {children}
-      {errorMsg ? (
-        <span className="gpi-field__hint b2b-hint-err" role="alert">
-          {errorMsg}
-        </span>
-      ) : success ? (
-        <span className="gpi-field__hint b2b-hint-ok">
-          <Icon name="check" size={14} />
-          {success}
-        </span>
-      ) : hint ? (
-        <span className="gpi-field__hint">{hint}</span>
-      ) : null}
-    </div>
-  )
-}
 
 function StepData({ people, draft, onField, onWho, errors, lookup, editingId, onAddToList, onClearForm, onEditRow, onRemoveRow, onAddFamily }) {
   const f = t.form
@@ -411,6 +388,11 @@ export default function AddInsuredScreen({ step = 'method' }) {
   const [people, setPeople] = useState([])
   const [draft, setDraft] = useState(emptyDraft)
   const [editingId, setEditingId] = useState(null)
+  const [method, setMethod] = useState('single')
+  /* The Excel batch lives HERE, not in StepExcel, so it survives navigating to
+     review and back. The component instance is preserved across steps — never
+     add a `key` to the step branches or the batch is wiped. */
+  const [excel, setExcel] = useState({ file: null, result: null })
   /* key → 'required' | 'format'. Set on submit-attempt, cleared LIVE per field
      as the user edits it (user rule 2026-07-06: no stale red borders). */
   const [errors, setErrors] = useState(new Map())
@@ -437,10 +419,21 @@ export default function AddInsuredScreen({ step = 'method' }) {
     })
   }, [lookup]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* Deep-linking review with an empty batch bounces back to the form. */
+  const backFromReview = () => (method === 'excel' ? 'excel' : 'data')
+
+  /* Deep-linking straight to /excel (or /data) skips the method step, which
+     would otherwise leave `method` on its default and send Back-from-review to
+     the wrong screen. The route is the source of truth. */
   useEffect(() => {
-    if (step === 'review' && people.length === 0) go('data')
-  }, [step, people.length])
+    if (step === 'excel' && method !== 'excel') setMethod('excel')
+    if (step === 'data' && method !== 'single') setMethod('single')
+  }, [step]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* Deep-linking review with an empty batch bounces back — to whichever step
+     the chosen method actually uses. */
+  useEffect(() => {
+    if (step === 'review' && people.length === 0) go(backFromReview())
+  }, [step, people.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
   /* The batch empties only once the success step is MOUNTED — clearing it inside
      submit() raced the guard above (step still 'review' → bounced to 'data'). */
@@ -452,11 +445,25 @@ export default function AddInsuredScreen({ step = 'method' }) {
     }
   }, [step]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const dirty = people.length > 0 || draft.pid || draft.firstName || draft.lastName
+  /* An uploaded-but-unresolved Excel batch counts as work in progress — without
+     `excel.file` here, leaving the page would silently discard it. */
+  const dirty = people.length > 0 || !!excel.file || draft.pid || draft.firstName || draft.lastName
 
   const cancel = () => {
     if (dirty && !window.confirm(t.cancelConfirm)) return
     window.location.hash = '#/b2b/persons'
+  }
+
+  /* Switching method discards the other side's work, so it asks first — same
+     window.confirm pattern as cancel(). Mixing an uploaded file with
+     hand-added people is not supported in v1. */
+  const chooseMethod = (next) => {
+    if (next === method) return
+    const losing = next === 'single' ? !!excel.file : people.length > 0
+    if (losing && !window.confirm(t.excel.switchConfirm)) return
+    if (next === 'single') setExcel({ file: null, result: null })
+    else setPeople([])
+    setMethod(next)
   }
 
   const validate = () => {
@@ -524,7 +531,20 @@ export default function AddInsuredScreen({ step = 'method' }) {
 
   const submit = () => go('done')
 
-  const stepIndex = { method: 0, data: 1, review: 2 }[step] ?? 0
+  const excelCount = excel.result ? excel.result.counts.importable : 0
+  const excelReady = !!excel.result && !excel.result.fileError && excel.result.counts.error === 0 && excelCount > 0
+  const excelBlockHint = excel.result?.counts.error
+    ? t.excel.continueDisabled(excel.result.counts.error)
+    : t.excel.continueEmpty
+  /* Replace rather than append, so pressing Continue twice cannot double the
+     batch. */
+  const commitExcel = () => {
+    setPeople(importable(excel.result.rows).map(toPerson))
+    setSeq(excel.result.nextSeq)
+    go('review')
+  }
+
+  const stepIndex = { method: 0, data: 1, excel: 1, review: 2 }[step] ?? 0
   const isDone = step === 'done'
 
   return (
@@ -546,7 +566,10 @@ export default function AddInsuredScreen({ step = 'method' }) {
         </>
       )}
 
-      {step === 'method' && <StepMethod />}
+      {step === 'method' && <StepMethod method={method} onMethod={chooseMethod} />}
+      {step === 'excel' && (
+        <StepExcel excel={excel} onImportState={setExcel} startSeq={seq} ctxToday={TODAY} />
+      )}
       {step === 'data' && (
         <StepData
           people={people}
@@ -568,11 +591,28 @@ export default function AddInsuredScreen({ step = 'method' }) {
 
       {!isDone && (
         <WizardFooter
-          onBack={step === 'method' ? cancel : () => go(step === 'review' ? 'data' : '')}
-          onContinue={step === 'review' ? submit : () => go(step === 'method' ? 'data' : 'review')}
-          canContinue={step !== 'data' || people.length > 0}
-          continueLabel={step === 'data' ? `${t.steps.review} (${people.length})` : step === 'review' ? t.review.submit : undefined}
+          onBack={step === 'method' ? cancel : () => go(step === 'review' ? backFromReview() : '')}
+          onContinue={
+            step === 'review'
+              ? submit
+              : step === 'method'
+                ? () => go(method === 'excel' ? 'excel' : 'data')
+                : step === 'excel'
+                  ? commitExcel
+                  : () => go('review')
+          }
+          canContinue={step === 'data' ? people.length > 0 : step === 'excel' ? excelReady : true}
+          continueLabel={
+            step === 'data'
+              ? `${t.steps.review} (${people.length})`
+              : step === 'excel'
+                ? `${t.steps.review} (${excelCount})`
+                : step === 'review'
+                  ? t.review.submit
+                  : undefined
+          }
           continueIcon={step === 'review' ? 'check' : 'arrow-right'}
+          hint={step === 'excel' && !excelReady ? excelBlockHint : null}
         />
       )}
     </div>

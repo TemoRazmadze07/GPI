@@ -392,6 +392,96 @@
 .gpi-alert--info    { background: var(--status-info-bg);    color: var(--status-info-fg); }
 .gpi-alert--error   { background: var(--status-error-bg);   color: var(--status-error-fg); }
 
+/* ---- File Dropzone (shared kit; B2B Excel import 2026-08, reusable for
+   claims document upload). The <input type=file> is .gpi-sr-only — clipped,
+   NOT display:none — so it keeps its place in the tab order and the a11y tree.
+   That native input is what satisfies WCAG 2.2 SC 2.5.7 (dragging) + 2.1.1. --- */
+.gpi-dropzone {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-32) var(--space-24);
+  background: var(--surface-card);
+  border: var(--border-width-md) dashed var(--border-default);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  transition: border-color .12s ease, background .12s ease;
+}
+.gpi-dropzone__label {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--space-4);
+  min-height: var(--control-lg);
+  padding: var(--space-8) var(--space-16);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+.gpi-dropzone__icon     { color: var(--icon-muted); display: flex; }
+.gpi-dropzone__title    { font: 600 14px/20px var(--font-sans); color: var(--text-main); }
+.gpi-dropzone__cta      { font: 500 13px/20px var(--font-sans); color: var(--text-brand);
+                          text-decoration: underline; text-underline-offset: 2px; }
+.gpi-dropzone__hint     { margin: 0; font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+.gpi-dropzone__file     { display: flex; flex-direction: column; align-items: center;
+                          gap: var(--space-2); min-width: 0; }
+.gpi-dropzone__filename { font: 600 13px/20px var(--font-sans); color: var(--text-main);
+                          max-width: 420px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gpi-dropzone__filemeta { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+.gpi-dropzone__actions  { display: flex; gap: var(--space-8); }
+.gpi-dropzone__err      { display: flex; align-items: flex-start; gap: var(--space-4); margin: 0;
+                          font: 400 12px/16px var(--font-sans); color: var(--status-error-fg); }
+.gpi-dropzone__err svg  { flex: 0 0 auto; margin-top: 1px; }
+
+/* The focused element is the clipped input, so the ring is drawn on the label.
+   Both selectors are needed: :has() for modern engines, the adjacent-sibling
+   form as the fallback. */
+.gpi-dropzone:has(input:focus-visible) .gpi-dropzone__label,
+.gpi-dropzone input:focus-visible + .gpi-dropzone__label {
+  outline: var(--focus-ring-width) solid var(--border-focus);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.gpi-dropzone:hover:not(.is-disabled):not(.is-loading) { border-color: var(--border-strong); }
+
+/* Border-width swaps are compensated in padding (house pattern, see
+   .b2b-method__card.is-selected) so content never shifts by a pixel. */
+.gpi-dropzone.is-filled  { border-style: solid; border-width: var(--border-width-sm);
+                           padding: calc(var(--space-32) + 0.5px) calc(var(--space-24) + 0.5px); }
+.gpi-dropzone.is-error   { border-color: var(--status-error-fg); background: var(--status-error-bg); }
+.gpi-dropzone.is-over    { border-style: solid; border-width: var(--border-width-lg);
+                           border-color: var(--action-primary);
+                           background: var(--interactive-selected-bg);
+                           padding: calc(var(--space-32) - 0.5px) calc(var(--space-24) - 0.5px); }
+.gpi-dropzone.is-over .gpi-dropzone__icon { color: var(--action-primary); }
+.gpi-dropzone.is-loading { background: var(--surface-sunken); cursor: progress; }
+.gpi-dropzone.is-loading .gpi-dropzone__label { pointer-events: none; opacity: .7; }
+.gpi-dropzone.is-disabled { background: var(--interactive-disabled-bg); cursor: not-allowed; }
+.gpi-dropzone.is-disabled .gpi-dropzone__label { pointer-events: none; }
+
+/* Compact — the same dropzone after a file has been read. Once the results
+   table is on screen the file is provenance, not the task, so the 200px band
+   collapses to one row (~48px) and the table starts near the top of the
+   canvas. Doubled class in the selector so it outranks the .is-filled padding
+   above; still a real drop target, so a replacement file can be dragged onto
+   it exactly as before. */
+.gpi-dropzone.gpi-dropzone--compact {
+  flex-direction: row; align-items: center; text-align: left;
+  gap: var(--space-8);
+  padding: var(--space-4) var(--space-8);
+}
+.gpi-dropzone--compact .gpi-dropzone__label {
+  flex-direction: row; align-items: center; justify-content: flex-start;
+  gap: var(--space-8);
+  min-height: var(--control-sm);
+  width: 100%;
+}
+.gpi-dropzone--compact .gpi-dropzone__icon svg { width: 20px; height: 20px; }
+.gpi-dropzone--compact .gpi-dropzone__file { flex-direction: row; align-items: baseline; gap: var(--space-8); }
+.gpi-dropzone--compact .gpi-dropzone__filename { max-width: 320px; }
+/* Pushed to the far end: replacing the file is the exception here, not the
+   invitation it is in the empty state. */
+.gpi-dropzone--compact .gpi-dropzone__cta { margin-left: auto; }
+
+
 /* ---- Buttons ------------------------------------------------------------ */
 .gpi-btn {
   display: inline-flex;
@@ -1327,6 +1417,28 @@
 /* ---- Info alert (design 89:2625, tokenized: indigo-tint bg + indigo text) - */
 .gpi-alert { display: flex; gap: var(--space-12); align-items: flex-start; width: 100%; box-sizing: border-box; background: var(--alert-info-bg); color: var(--alert-info-fg); border-radius: var(--radius-lg); padding: var(--space-16); font: 400 14px/20px var(--font-sans); }
 .gpi-alert svg { flex: 0 0 auto; margin-top: 1px; }
+
+/* Re-assert the InlineAlert tone variants over the legacy bare `.gpi-alert`
+   info-box directly above. Both had equal specificity (0,1,0), so source order
+   silently killed all four tones from the moment they were written — every
+   InlineAlert has been rendering in info-lavender regardless of its `tone`.
+   Doubling the class makes these (0,2,0) AND scopes them to elements carrying
+   a tone modifier, i.e. only <InlineAlert>. The bare `.gpi-alert` used by
+   WizardScreen.jsx is deliberately untouched. */
+.gpi-alert.gpi-alert--success,
+.gpi-alert.gpi-alert--warning,
+.gpi-alert.gpi-alert--info,
+.gpi-alert.gpi-alert--error {
+  gap: var(--space-8);
+  padding: var(--space-12);
+  border-radius: var(--radius-md);
+  font: 400 12px/16px var(--font-sans);
+}
+.gpi-alert.gpi-alert--success { background: var(--status-success-bg); color: var(--status-success-fg); }
+.gpi-alert.gpi-alert--warning { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+.gpi-alert.gpi-alert--info    { background: var(--status-info-bg);    color: var(--status-info-fg); }
+.gpi-alert.gpi-alert--error   { background: var(--status-error-bg);   color: var(--status-error-fg); }
+
 
 /* ---- Review section (collapsible box — shared buying-flow pattern) ------- */
 .gpi-rsec { border: var(--border-width-sm) solid var(--border-strong); border-radius: var(--radius-lg); padding: var(--space-16) var(--space-20); }

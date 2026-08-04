@@ -10,8 +10,17 @@ import { Button } from './Button.jsx'
    columns opt in via `sortable: true` (identifiers like №s stay unsortable —
    user rule 2026-07-16). The table only renders the header affordance — the
    screen owns comparator + order.
+
+   Added 2026-08 for the Excel importer, both additive and optional:
+   · caption      — sr-only <caption>; a data table needs a name when a screen
+                    holds more than one, and this one does.
+   · rowClassName — (row) => string, for per-row state (an invalid import row).
+                    Purely decorative: the row's own status text must still
+                    carry the meaning (SC 1.4.1).
+   · a column may set `rowHeader: true` to render as <th scope="row">, so every
+     cell announcement is prefixed with that row's identifier.
    Deferred by spec: selection/bulk bar, column resize, sticky header. */
-export default function DataTable({ columns, rows, rowKey, onRowClick, empty, sort, onSort }) {
+export default function DataTable({ columns, rows, rowKey, onRowClick, empty, sort, onSort, caption, rowClassName }) {
   /* Pinned-edge elevation: a shadow shows ONLY while content is hidden behind
      that pinned column (user rule 2026-07-16 — never a stroke; a table that
      fits gets no scroll and no decoration). Re-checked on scroll, resize, and
@@ -54,6 +63,7 @@ export default function DataTable({ columns, rows, rowKey, onRowClick, empty, so
       onScroll={updateEdges}
     >
       <table>
+        {caption && <caption className="gpi-sr-only">{caption}</caption>}
         <thead>
           <tr>
             {columns.map((c) => {
@@ -87,19 +97,28 @@ export default function DataTable({ columns, rows, rowKey, onRowClick, empty, so
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
-            <tr
-              key={rowKey(row)}
-              className={onRowClick ? 'is-clickable' : undefined}
-              onClick={onRowClick ? () => onRowClick(row) : undefined}
-            >
-              {columns.map((c) => (
-                <td key={c.key} className={c.align === 'right' ? 'is-right' : undefined}>
-                  {c.render(row)}
-                </td>
-              ))}
-            </tr>
-          ))}
+          {rows.map((row) => {
+            const extra = rowClassName?.(row)
+            return (
+              <tr
+                key={rowKey(row)}
+                className={[onRowClick ? 'is-clickable' : '', extra || ''].filter(Boolean).join(' ') || undefined}
+                onClick={onRowClick ? () => onRowClick(row) : undefined}
+              >
+                {columns.map((c) =>
+                  c.rowHeader ? (
+                    <th key={c.key} scope="row" className={c.align === 'right' ? 'is-right' : undefined}>
+                      {c.render(row)}
+                    </th>
+                  ) : (
+                    <td key={c.key} className={c.align === 'right' ? 'is-right' : undefined}>
+                      {c.render(row)}
+                    </td>
+                  ),
+                )}
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     </div>

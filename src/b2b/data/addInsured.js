@@ -26,13 +26,37 @@ export const relations = [
 
 export const relationByValue = (v) => relations.find((r) => r.value === v)
 
-/* Already-insured employees a family member can link to (search source). */
+/* Already-insured employees a family member can link to (search source).
+   `pid` was added for the Excel importer: a spreadsheet links a family member
+   to an employee by personal ID, and a row whose PID is already on this
+   contract must be reported as "already insured" rather than re-added. */
 export const existingEmployees = [
-  { id: 'e1', name: 'გიორგი გვარიძე' },
-  { id: 'e2', name: 'ანა ქარიძე' },
-  { id: 'e3', name: 'დავით ბერიძე' },
-  { id: 'e4', name: 'თამარ კალანდაძე' },
+  { id: 'e1', name: 'გიორგი გვარიძე', pid: '01024001122' },
+  { id: 'e2', name: 'ანა ქარიძე', pid: '01019004455' },
+  { id: 'e3', name: 'დავით ბერიძე', pid: '01027007788' },
+  { id: 'e4', name: 'თამარ კალანდაძე', pid: '01011002233' },
 ]
+
+export const employeeByPid = (pid) => existingEmployees.find((e) => e.pid === pid)
+
+/* The single source of truth for a person record in this wizard. The Excel
+   importer builds its rows on exactly these keys so an imported person and a
+   hand-typed one are the same shape — see data/insuredImport.js `toPerson`. */
+export const emptyDraft = () => ({
+  who: 'employee',
+  citizen: 'resident',
+  pid: '',
+  birth: '',
+  firstName: '',
+  lastName: '',
+  gender: '',
+  linkedTo: '',
+  relation: '',
+  mobile: '',
+  email: '',
+  address: '',
+  pkg: '',
+})
 
 /* Mock Revenue-Service lookup: 11-digit ID + birth date → person or null.
    Deterministic: hash of the ID picks a sample; ID 11111111111 = not found

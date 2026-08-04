@@ -108,6 +108,11 @@ export const apps = [
         status: 'in-progress',
         flows: [
           { id: 'addInsured', path: 'b2b/insured/add', label: 'add insured (wizard)', status: 'in-progress', hash: '/b2b/insured/add' },
+          { id: 'excel', path: 'b2b/insured/add/excel', label: 'excel import — upload', status: 'in-progress', hash: '/b2b/insured/add/excel' },
+          // ?demo= loads a bundled sample workbook straight into the validator —
+          // the demo links for a live walkthrough (no file picking on stage).
+          { id: 'excelDemo', path: '…/excel?demo=errors', label: 'excel import — demo file (7 errors)', status: 'in-progress', hash: '/b2b/insured/add/excel?demo=errors' },
+          { id: 'excelDemoClean', path: '…/excel?demo=clean', label: 'excel import — demo file (all valid)', status: 'in-progress', hash: '/b2b/insured/add/excel?demo=clean' },
         ],
       },
     ],
