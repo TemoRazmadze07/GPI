@@ -22,6 +22,7 @@
   --mga-lav-fg: #3a3d8f;
   --mga-blue: #2563c9;
   --mga-teal: #0d9488;
+  --mga-teal-fg: #0b6e63; /* AA text-on-teal-tint (audit 2026-08-04) */
   --mga-green-bg: #e4f7ec;
   --mga-green-fg: #1f9d55;
   --mga-amber-bg: #fef3d8;
@@ -103,6 +104,7 @@
   display: flex;
   flex-direction: column;
   min-height: 824px;
+  position: relative; /* anchors the V2 OTP sheet overlay */
 }
 @media (max-width: 430px) {
   .mga-stage {
@@ -404,6 +406,21 @@
   padding: 0 5px;
   line-height: 14px;
 }
+/* Lock glyph on the ისტორია quick tile while the OTP session is locked */
+.mga-qa__lock {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--mga-lav);
+  color: var(--mga-lav-fg);
+  border: 1.5px solid var(--mga-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .mga-qa__lbl {
   font-size: 10.5px;
   font-weight: 600;
@@ -604,17 +621,6 @@
   color: var(--mga-green-fg);
   margin-top: 6px;
 }
-.mga-stage .mga-remind {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  width: 100%;
-  padding-top: 9px;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--mga-lav-fg);
-}
 .mga-stage .mga-today-card {
   border: 1px solid #f8bbda;
 }
@@ -790,7 +796,9 @@
   border-color: #f8bbda;
 }
 
-/* Toggle switch (button-based, aria-pressed) */
+/* Toggle switch (button-based, role=switch). Currently UNUSED — its only call site
+   was the removed "remind 1 patient earlier" opt-in. Kept deliberately: the F-05
+   reminders panel (per-type on/off toggles) is the next screen and needs it. */
 .mga-stage .mga-swbtn {
   width: 38px;
   height: 22px;
@@ -890,6 +898,11 @@
 .mga-stage .mga-dlbtn {
   color: var(--mga-muted);
   display: flex;
+  align-items: center;
+  justify-content: center;
+  /* WCAG 2.2 target-size: keep the tap area ≥24px (audit 2026-08-04) */
+  min-width: 28px;
+  min-height: 28px;
   padding: 4px;
 }
 .mga-stage .mga-upload {
@@ -915,4 +928,911 @@
 }
 .mga-prodimg--row {
   height: 22px;
+}
+
+/* ===== V2 (three-tab nav, ?v=2) ===================================== */
+
+/* Demo chip-row divider between day-state and version chips */
+.mga-demo__sep {
+  width: 1px;
+  align-self: stretch;
+  background: rgba(46, 44, 110, 0.18);
+  margin: 2px 2px;
+}
+
+/* Three-up switcher: tighter pills, short labels */
+.mga-seg--3 .mga-seg__item {
+  font-size: 11px;
+  gap: 4px;
+  padding: 8px 0;
+}
+.mga-seg--3 .mga-prodimg {
+  height: 14px;
+}
+.mga-seg__cur {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--mga-teal);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Home booking card: slim visit-day strip link (V2 replaces the inline queue) */
+.mga-strip__link {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mga-pink-fg);
+  white-space: nowrap;
+}
+
+/* Protected-zone section header */
+.mga-locksect {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: var(--mga-sp-2xl) 0 var(--mga-sp-md);
+}
+.mga-locksect__icon {
+  display: flex;
+  color: var(--mga-lav-fg);
+}
+.mga-locksect__title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.mga-locksect__hint {
+  flex: 1;
+  min-width: 0;
+  font-size: 10.5px;
+  color: var(--mga-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mga-stage .mga-locksect__relock {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--mga-lav-fg);
+  text-decoration: underline;
+  white-space: nowrap;
+}
+
+/* Locked cards: visible but inert-looking, lock badge instead of chevron */
+.mga-stage .mga-lockcard {
+  background: #fbfbfe;
+  border-style: dashed;
+  border-color: #ccd0e8;
+  box-shadow: none;
+}
+.mga-lockcard__lock {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--mga-lav);
+  color: var(--mga-lav-fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* OTP bottom sheet */
+.mga-sheetwrap {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  border-radius: inherit;
+  overflow: hidden;
+}
+.mga-stage .mga-sheetwrap__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(23, 22, 60, 0.45);
+}
+.mga-sheet {
+  position: relative;
+  background: var(--mga-card);
+  border-radius: 24px 24px 0 0;
+  padding: var(--mga-sp-sm) var(--mga-sp-xl) var(--mga-sp-2xl);
+  box-shadow: 0 -12px 40px rgba(23, 22, 60, 0.25);
+}
+.mga-sheet__grab {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: #d9dcec;
+  margin: 0 auto var(--mga-sp-lg);
+}
+.mga-sheet__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: var(--mga-sp-sm);
+}
+.mga-sheet__title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+}
+.mga-sheet__body {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--mga-muted);
+  margin: 0 0 var(--mga-sp-lg);
+}
+.mga-otp {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: var(--mga-sp-lg);
+}
+.mga-otp input {
+  width: 52px;
+  height: 56px;
+  border: 1.5px solid #d9dcec;
+  border-radius: 14px;
+  background: #fbfbfe;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  font-family: inherit;
+  color: var(--mga-text);
+}
+.mga-otp input:focus {
+  outline: none;
+  border-color: var(--mga-pink);
+  box-shadow: 0 0 0 3px var(--mga-pink-soft);
+}
+.mga-stage .mga-cta--off {
+  opacity: 0.45;
+  pointer-events: none;
+}
+.mga-stage .mga-sheet__resend {
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mga-muted);
+  padding: var(--mga-sp-md) 0 0;
+}
+.mga-stage .mga-sheet__resend:not(:disabled) {
+  color: var(--mga-pink-fg);
+}
+.mga-sheet__demo {
+  text-align: center;
+  font-size: 10px;
+  color: #b9bccd;
+  margin-top: var(--mga-sp-sm);
+}
+
+/* ═══ V2 stakeholder-parity კურაციო tab (A1) ═══ */
+
+/* Card header row with a "see all"-style link */
+.mga-cardhdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--mga-sp-sm);
+}
+.mga-stage .mga-seeall {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--mga-pink-fg);
+  white-space: nowrap;
+  /* WCAG 2.2 target-size: text link alone measured 16px (audit 2026-08-04) */
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+}
+
+/* PersonSelect — insured-person dropdown under the product switcher */
+.mga-pselect {
+  position: relative;
+  margin: 0 var(--mga-sp-xl) var(--mga-sp-sm);
+  z-index: 60;
+}
+.mga-stage .mga-pselect__btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  background: var(--mga-card);
+  border: 0.5px solid var(--mga-border);
+  border-radius: var(--mga-r-tile);
+  box-shadow: var(--mga-shadow);
+  padding: 8px 12px;
+}
+.mga-pselect__ava {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--mga-lav);
+  color: var(--mga-lav-fg);
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.mga-pselect__meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+.mga-pselect__name {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--mga-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mga-pselect__id {
+  font-size: 10.5px;
+  color: var(--mga-muted);
+}
+.mga-pselect__chev {
+  position: relative;
+  color: var(--mga-muted);
+  display: flex;
+  flex-shrink: 0;
+}
+.mga-pselect__dot {
+  position: absolute;
+  top: -3px;
+  right: -5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--mga-pink);
+  border: 1.5px solid var(--mga-card);
+}
+.mga-pselect__dot--ava {
+  top: -1px;
+  right: -1px;
+}
+.mga-stage .mga-pselect__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  background: transparent;
+  cursor: default;
+}
+.mga-pselect__panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 60;
+  background: var(--mga-card);
+  border: 0.5px solid var(--mga-border);
+  border-radius: var(--mga-r-tile);
+  box-shadow: 0 8px 28px rgba(41, 37, 98, 0.16);
+  overflow: hidden;
+}
+.mga-stage .mga-pselect__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+}
+.mga-stage .mga-pselect__row + .mga-pselect__row {
+  border-top: 0.5px solid var(--mga-border);
+}
+.mga-stage .mga-pselect__row--on {
+  background: var(--mga-queue-bg);
+}
+.mga-pselect__tag {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--mga-pink-fg);
+  background: var(--mga-pink-soft);
+  border-radius: 20px;
+  padding: 3px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.mga-pselect__radio {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid var(--mga-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.mga-pselect__radio--on {
+  border-color: var(--mga-pink);
+}
+.mga-pselect__radiodot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--mga-pink);
+}
+
+/* Today-visit hero (navy card, solid CTA) */
+.mga-hero {
+  background: var(--mga-navy);
+  border-radius: var(--mga-r-card);
+  padding: var(--mga-sp-lg);
+  margin-bottom: var(--mga-sp-md);
+  color: #fff;
+}
+.mga-hero__kicker {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+  margin-bottom: 6px;
+}
+.mga-hero__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.mga-hero__proc {
+  font-size: 17px;
+  font-weight: 800;
+  margin-bottom: 3px;
+}
+.mga-hero__place {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.72);
+}
+.mga-hero__live {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+.mga-hero__pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  animation: mga-pulse 2s infinite;
+}
+@keyframes mga-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.mga-hero__when {
+  text-align: right;
+  flex-shrink: 0;
+}
+.mga-hero__whenlbl {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 2px;
+}
+.mga-hero__time {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* Round "go" affordance on entry cards */
+.mga-gobtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--mga-navy);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Doctor card — next-chat chip */
+.mga-doc__chatnext {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+/* Lock chip on protected rows */
+.mga-lockchip {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--mga-lav);
+  color: var(--mga-lav-fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Badge tones missing until now */
+.mga-badge--red {
+  background: #fdecec;
+  color: #c2410c;
+}
+.mga-badge--teal {
+  background: #e9f5f3;
+  color: var(--mga-teal);
+}
+
+/* Promo banners — solid brand (NO gradients on interactive, per AA rule) */
+.mga-stage .mga-bnr {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  border-radius: var(--mga-r-card);
+  padding: 14px var(--mga-sp-lg);
+  margin-bottom: var(--mga-sp-md);
+  color: #fff;
+}
+.mga-stage .mga-bnr--navy {
+  background: var(--mga-navy);
+}
+.mga-stage .mga-bnr--teal {
+  background: var(--mga-teal);
+}
+.mga-bnr__ico {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--mga-r-tile);
+  background: rgba(255, 255, 255, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.mga-bnr__meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.35;
+}
+.mga-bnr__title {
+  font-size: 12.5px;
+  font-weight: 800;
+}
+.mga-bnr__hint {
+  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.75);
+}
+.mga-bnr__go {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ═══ A3 — queue-picker (digital ticket activation, F-01) ═══ */
+.mga-hdr__sub {
+  font-size: 10.5px;
+  color: var(--mga-muted);
+  margin-top: 1px;
+}
+.mga-stage .mga-card.mga-qpk--on {
+  border: 2px solid var(--mga-pink);
+}
+.mga-qpk__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.mga-qpk__kicker {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--mga-muted);
+  margin-bottom: 3px;
+}
+.mga-qpk__kicker--on {
+  color: var(--mga-pink-fg);
+}
+.mga-qpk__proc {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--mga-text);
+  margin-bottom: 2px;
+}
+.mga-qpk__side {
+  text-align: right;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+.mga-qpk__time {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--mga-text);
+  line-height: 1;
+}
+.mga-qpk__locked {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--mga-queue-bg);
+  border: 0.5px solid var(--mga-border);
+  border-radius: 20px;
+  padding: 9px 10px;
+  margin-top: 10px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--mga-muted);
+}
+.mga-qpk__empty {
+  text-align: center;
+  padding: 28px 16px;
+  color: var(--mga-muted);
+  background: var(--mga-card);
+  border: 1px dashed var(--mga-border);
+  border-radius: var(--mga-r-card);
+}
+
+/* ═══ A4 — doctor detail (F-03) ═══ */
+.mga-docd__ava {
+  width: 52px;
+  height: 52px;
+  font-size: 19px;
+}
+.mga-docd__name {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--mga-text);
+}
+.mga-docd__online {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--mga-green-fg);
+  margin-top: 3px;
+}
+.mga-docd__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.mga-docd__cell {
+  background: var(--mga-queue-bg);
+  border-radius: 10px;
+  padding: 9px 10px;
+}
+.mga-docd__cell--wide {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+.mga-docd__lbl {
+  font-size: 9.5px;
+  color: var(--mga-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+.mga-docd__val {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--mga-text);
+}
+.mga-stage .mga-docd__act {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  background: var(--mga-queue-bg);
+  border: 0.5px solid var(--mga-border);
+  border-radius: var(--mga-r-tile);
+  padding: 10px 12px;
+}
+.mga-stage .mga-docd__act + .mga-docd__act {
+  margin-top: 8px;
+}
+.mga-stage .mga-docd__act--wa {
+  background: var(--mga-green-bg);
+  border-color: transparent;
+}
+.mga-docd__act--wa .mga-docd__actico {
+  background: var(--mga-green-fg);
+  color: #fff;
+}
+.mga-docd__actico {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--mga-lav);
+  color: var(--mga-lav-fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.mga-docd__actmeta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+.mga-docd__acttitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mga-text);
+}
+.mga-docd__acthint {
+  font-size: 10px;
+  color: var(--mga-muted);
+}
+.mga-docd__body {
+  font-size: 11px;
+  color: var(--mga-muted);
+  line-height: 1.5;
+  margin: 0 0 10px;
+}
+
+/* ═══ A5 — history transfer (F-03) ═══ */
+.mga-stage .mga-trf__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 11px 0;
+}
+.mga-stage .mga-trf__row + .mga-trf__row {
+  border-top: 0.5px solid var(--mga-border);
+}
+.mga-trf__ava {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--mga-lav);
+  color: var(--mga-lav-fg);
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.mga-trf__meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.35;
+}
+.mga-trf__name {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--mga-text);
+}
+.mga-trf__target {
+  background: var(--mga-queue-bg);
+  border-radius: var(--mga-r-tile);
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+.mga-trf__includes {
+  background: var(--mga-lav);
+  color: var(--mga-lav-fg);
+  border-radius: var(--mga-r-tile);
+  padding: 10px 12px;
+  font-size: 11px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+.mga-trf__btns {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+.mga-trf__success {
+  text-align: center;
+  padding: 6px 0 2px;
+}
+.mga-trf__successico {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--mga-green-bg);
+  color: var(--mga-green-fg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ═══ A6 — V2 history parity (F-02/F-03, no charts) ═══ */
+.mga-h2__sec {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--mga-muted);
+  padding: 4px 0 6px;
+}
+.mga-h2__med {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+}
+.mga-h2__med + .mga-h2__med {
+  border-top: 0.5px solid var(--mga-border);
+}
+.mga-h2__med--exp {
+  background: #fff5f5;
+  border: 0.5px solid #f5c2c2;
+  border-radius: var(--mga-r-tile);
+  padding: 9px 10px;
+  margin: 4px 0;
+}
+.mga-h2__med--exp + .mga-h2__med {
+  border-top: none;
+}
+.mga-h2__exp {
+  font-size: 10px;
+  font-weight: 700;
+  color: #c2410c;
+  margin-top: 2px;
+}
+.mga-stage .mga-h2__minicta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--mga-lav);
+  color: var(--mga-lav-fg);
+  border-radius: 20px;
+  padding: 5px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  margin-top: 5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.mga-stage .mga-h2__minicta--red {
+  background: #fdecec;
+  color: #c2410c;
+  margin-top: 0;
+}
+.mga-h2__callout {
+  background: #e9f5f3;
+  color: var(--mga-teal-fg);
+  border-radius: 8px;
+  padding: 5px 8px;
+  margin-top: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.mga-h2__callout--amber {
+  background: var(--mga-amber-bg);
+  color: var(--mga-amber-fg);
+}
+.mga-h2__summary {
+  font-size: 11px;
+  color: var(--mga-muted);
+  line-height: 1.5;
+  margin-top: 6px;
+}
+.mga-h2__uzone {
+  text-align: center;
+  padding: 18px 16px;
+  background: var(--mga-card);
+  border: 1.5px dashed #e3b7cd;
+  border-radius: var(--mga-r-card);
+  margin-bottom: var(--mga-sp-md);
+}
+.mga-h2__uico {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--mga-pink-soft);
+  color: var(--mga-pink-fg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.mga-h2__confid {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--mga-queue-bg);
+  border: 0.5px solid var(--mga-border);
+  border-radius: var(--mga-r-tile);
+  padding: 10px 12px;
+  font-size: 10px;
+  color: var(--mga-muted);
+  line-height: 1.5;
+  margin-bottom: var(--mga-sp-md);
+}
+.mga-h2__confid svg {
+  flex-shrink: 0;
+  color: var(--mga-teal);
+  margin-top: 1px;
+}
+
+/* A6c — history hub + section filter pills (dropdown pill → bottom-sheet picker) */
+.mga-stage .mga-fpill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--mga-text);
+}
+.mga-fsheet {
+  display: flex;
+  flex-direction: column;
+  margin-top: 2px;
+}
+.mga-stage .mga-fopt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mga-text);
+  text-align: left;
+  border-bottom: 0.5px solid var(--mga-border);
+}
+.mga-stage .mga-fopt:last-child {
+  border-bottom: none;
+}
+.mga-stage .mga-fopt--on {
+  color: var(--mga-pink-fg);
+}
+
+/* A7 — prevention screen (reminder banner + row status notes) */
+.mga-prv__banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--mga-amber-bg);
+  border-radius: var(--mga-r-card);
+  padding: 16px;
+  margin-bottom: var(--mga-sp-md);
+}
+.mga-prv__note {
+  font-size: 10.5px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+.mga-prv__note--red {
+  color: #c2410c; /* matches .mga-h2__exp / badge--red fg */
+}
+.mga-prv__note--amber {
+  color: var(--mga-amber-fg);
 }

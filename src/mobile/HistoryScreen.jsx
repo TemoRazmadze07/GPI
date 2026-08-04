@@ -8,6 +8,7 @@ import Icon from '../lib/Icon.jsx'
 import { M } from './strings.js'
 import { HISTORY } from './data.js'
 import { go } from './nav.js'
+import { OtpSheet, isUnlocked } from './otp.jsx'
 
 const BADGE = {
   norm: 'mga-badge--green',
@@ -19,7 +20,33 @@ const BADGE = {
 export default function HistoryScreen() {
   const [tab, setTab] = useState('analyses')
   const [period, setPeriod] = useState('m3')
+  /* History is OTP-protected in BOTH nav versions — a deep link (tile, push, SMS)
+     must not bypass the lock. The gate opens in place; declining goes back. */
+  const [unlocked, setUnlocked] = useState(isUnlocked())
   const rows = HISTORY[tab] || []
+
+  if (!unlocked) {
+    return (
+      <>
+        <div className="mga-hdr">
+          <button className="mga-back" aria-label="უკან" onClick={() => go('curatio')}>
+            <Icon name="chevron-left" size={16} />
+          </button>
+          <h1 className="mga-hdr__title">{M.history.title}</h1>
+        </div>
+        <div className="mga-body">
+          <div className="mga-card mga-lockcard" style={{ textAlign: 'center', padding: 24 }}>
+            <span className="mga-itile" style={{ background: 'var(--mga-lav)', color: 'var(--mga-lav-fg)', margin: '0 auto 8px' }}>
+              <Icon name="lock" size={17} />
+            </span>
+            <div className="mga-meta__val">{M.dash.protectedTitle}</div>
+            <div className="mga-meta__lbl" style={{ marginTop: 4 }}>{M.dash.protectedHint}</div>
+          </div>
+        </div>
+        <OtpSheet onSuccess={() => setUnlocked(true)} onClose={() => go('curatio')} />
+      </>
+    )
+  }
 
   return (
     <>

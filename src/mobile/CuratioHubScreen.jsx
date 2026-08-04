@@ -1,17 +1,26 @@
-/* "ჩემი კურაციო" hub — what სრულად › opens. Aggregates and ROUTES; it never
+/* "ჩემი კურაციო" hub (V1) — what სრულად › opens. Aggregates and ROUTES; it never
    duplicates the dashboard's booking management. Person chips scope the
    per-patient content (doctor, history counts); ყველა aggregates with person
    labels downstream. The today-strip (visit day only) deep-links to the SAME
-   e-ticket the home card opens. */
+   e-ticket the home card opens.
+
+   History-class data sits behind the SAME OTP zone as V1's V2 counterpart — the
+   passcode is a data-access rule, so the two nav versions differ only in
+   structure, never in what is protected (ProtectedZone.jsx). */
 
 import { useState } from 'react'
 import Icon from '../lib/Icon.jsx'
 import { M } from './strings.js'
 import { PERSONS, BOOKING, QUEUE, DOCTOR, HISTORY_COUNTS, NEXT_REMINDER, PREVENTION_NEXT } from './data.js'
 import { go, isVisitDay } from './nav.js'
+import { useOtpGate } from './otp.jsx'
+import ProtectedZone from './ProtectedZone.jsx'
+
+const noop = () => {}
 
 export default function CuratioHubScreen() {
   const [scope, setScope] = useState('all')
+  const { unlocked, request, relock, gate } = useOtpGate()
   const visitDay = isVisitDay()
   const counts = HISTORY_COUNTS[scope] || HISTORY_COUNTS.all
 
@@ -77,22 +86,15 @@ export default function CuratioHubScreen() {
           </div>
           <div className="mga-doc__btns">
             <button className="mga-obtn" style={{ flex: 1 }}>{M.hub.book}</button>
-            <button className="mga-obtn mga-obtn--pink" style={{ flex: 1 }}>{M.hub.details} ›</button>
+            <button
+              className="mga-obtn mga-obtn--pink"
+              style={{ flex: 1 }}
+              onClick={() => (unlocked ? noop() : request())}
+            >
+              {M.hub.details} ›{!unlocked && <Icon name="lock" size={11} />}
+            </button>
           </div>
         </section>
-
-        <button className="mga-card mga-prow" onClick={() => go('history')}>
-          <span className="mga-itile">
-            <Icon name="file-text" size={17} />
-          </span>
-          <span style={{ flex: 1, minWidth: 0, lineHeight: 1.3 }}>
-            <span className="mga-meta__val" style={{ display: 'block' }}>{M.hub.historyTitle}</span>
-            <span className="mga-meta__lbl">{M.hub.historyCounts(counts)}</span>
-          </span>
-          <span className="mga-prow__chv">
-            <Icon name="chevron-right" size={16} />
-          </span>
-        </button>
 
         <button className="mga-card mga-prow">
           <span className="mga-itile" style={{ background: 'var(--mga-amber-bg)', color: 'var(--mga-amber-fg)' }}>
@@ -122,8 +124,19 @@ export default function CuratioHubScreen() {
           </span>
         </button>
 
+        <ProtectedZone
+          unlocked={unlocked}
+          request={request}
+          relock={relock}
+          counts={counts}
+          onHistory={() => go('history')}
+          onTransfer={noop}
+        />
+
         <div className="mga-hub__soon">{M.hub.soon}</div>
       </div>
+
+      {gate}
     </>
   )
 }

@@ -4,17 +4,25 @@
    full-bleed on real mobile viewports.
 
    Sections: health (home) · curatio (hub) · ticket (F-01) · history (F-02).
-   Demo state: `?day=visit` flips visit-day mode; nav.js#go() preserves it across
-   pages. The chips above the frame switch it and are hidden from usability-study
-   links (?study). */
+   Demo state: `?day=visit` flips visit-day mode; `?v=2` switches to the V2
+   three-tab nav comparison (curatio renders as a DASHBOARD TAB, not a hub page).
+   nav.js#go() preserves both across pages. The chips above the frame switch
+   them and are hidden from usability-study links (?study). */
 
 import Icon from '../lib/Icon.jsx'
 import { M } from './strings.js'
-import { isVisitDay } from './nav.js'
+import { isVisitDay, isV2, go } from './nav.js'
 import HealthHomeScreen from './HealthHomeScreen.jsx'
 import CuratioHubScreen from './CuratioHubScreen.jsx'
+import CuratioDashScreen from './CuratioDashScreen.jsx'
 import TicketScreen from './TicketScreen.jsx'
 import HistoryScreen from './HistoryScreen.jsx'
+import QueuePickerScreen from './QueuePickerScreen.jsx'
+import DoctorScreen from './DoctorScreen.jsx'
+import TransferScreen from './TransferScreen.jsx'
+import History2Screen from './History2Screen.jsx'
+import HistoryHubScreen from './HistoryHubScreen.jsx'
+import PreventionScreen from './PreventionScreen.jsx'
 
 const IS_STUDY = new URLSearchParams(window.location.search).has('study')
 
@@ -64,16 +72,27 @@ const SCREENS = {
   curatio: CuratioHubScreen,
   ticket: TicketScreen,
   history: HistoryScreen,
+  queuepicker: QueuePickerScreen /* V2 only — reached from the dash (A3) */,
+  doctor: DoctorScreen /* V2 only — dash doctor card „სრული ინფო" (A4) */,
+  transfer: TransferScreen /* V2 only — doctor screen's gated CTA (A5) */,
+  histhub: HistoryHubScreen /* V2 only — dash history row → section menu (A6c) */,
+  prevention: PreventionScreen /* V2 only — dash prevention row (A7) */,
 }
 
 export default function MobileApp({ section = 'health' }) {
   const visitDay = isVisitDay()
-  const Screen = SCREENS[section] || HealthHomeScreen
+  const v2 = isV2()
+  /* V2 swaps: curatio hub → dashboard tab; history → parity rework (A6). */
+  const Screen =
+    v2 && section === 'curatio'
+      ? CuratioDashScreen
+      : v2 && section === 'history'
+        ? History2Screen
+        : SCREENS[section] || HealthHomeScreen
 
-  const setDay = (visit) => {
-    const sect = SCREENS[section] ? section : 'health'
-    window.location.hash = '#/mobile/' + sect + (visit ? '?day=visit' : '')
-  }
+  const sect = SCREENS[section] ? section : 'health'
+  const setDay = (visit) => go(sect, { day: visit })
+  const setV2 = (on) => go(sect, { v2: on })
 
   return (
     <div className="mga-stage">
@@ -91,12 +110,25 @@ export default function MobileApp({ section = 'health' }) {
           >
             {M.demo.visit}
           </button>
+          <span className="mga-demo__sep" aria-hidden="true" />
+          <button
+            className={'mga-demo__chip' + (!v2 ? ' mga-demo__chip--on' : '')}
+            onClick={() => setV2(false)}
+          >
+            {M.demo.v1}
+          </button>
+          <button
+            className={'mga-demo__chip' + (v2 ? ' mga-demo__chip--on' : '')}
+            onClick={() => setV2(true)}
+          >
+            {M.demo.v2}
+          </button>
         </div>
       )}
       <div className="mga-frame">
         <div className="mga-screen">
           <StatusBar />
-          <Screen visitDay={visitDay} />
+          <Screen visitDay={visitDay} v2={v2} />
           <BottomNav />
           <div className="mga-homebar" aria-hidden="true">
             <span />

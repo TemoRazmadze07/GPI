@@ -2,17 +2,23 @@
    Everything from the existing design is kept; the additions are: the Curatio
    quick-access card, the გადაჯავშნა booking action, the chronic-referral row,
    and (on visit day) the live queue strip — see project memory for the rationale.
-   `visitDay` flips the booking card into its live F-01 state. */
+   `visitDay` flips the booking card into its live F-01 state.
+
+   V2 (?v=2, stakeholder comparison — V1 stays canonical): the switcher grows a
+   third კურაციო pill (short labels), the Curatio block leaves this screen, and
+   on visit day the booking card keeps its normal layout with a slim strip that
+   deep-links to the e-ticket — the live queue moves to the კურაციო tab. */
 
 import Icon from '../lib/Icon.jsx'
 import { PRODUCT_IMG } from '../lib/assets.js'
 import { M } from './strings.js'
 import { PERSONS, BOOKING, NEXT_BOOKING, QUEUE, REFERRAL, CHRONIC, COUNTS } from './data.js'
 import { go } from './nav.js'
+import { isUnlocked } from './otp.jsx'
 
 const noop = () => {}
 
-function TopBar() {
+export function TopBar() {
   return (
     <div className="mga-top">
       <div className="mga-ava" aria-hidden="true">
@@ -37,30 +43,65 @@ function TopBar() {
   )
 }
 
-function ProductSwitcher() {
+export function ProductSwitcher({ v2 = false, active = 'health' }) {
+  if (!v2) {
+    return (
+      <div className="mga-seg" role="tablist" aria-label="Insurance products">
+        <button className="mga-seg__item" role="tab" aria-selected="false" onClick={noop}>
+          <img className="mga-prodimg" src={PRODUCT_IMG['auto.png']} alt="" />
+          {M.tabs.auto}
+        </button>
+        <button className="mga-seg__item mga-seg__item--on" role="tab" aria-selected="true">
+          <img className="mga-prodimg" src={PRODUCT_IMG['health.png']} alt="" />
+          {M.tabs.health}
+        </button>
+        <button className="mga-seg__more" aria-label="More products" onClick={noop}>
+          <Icon name="more-vertical" size={16} />
+        </button>
+      </div>
+    )
+  }
+  /* V2: three pills. Full product names can't fit 390px three-up → short labels.
+     The კურაციო pill uses the Curatio teal mark, not a product illustration —
+     it's a service layer, not an insurance product. */
+  const pill = (key, on, label, img, onClick) => (
+    <button
+      key={key}
+      className={'mga-seg__item' + (on ? ' mga-seg__item--on' : '')}
+      role="tab"
+      aria-selected={on}
+      onClick={on ? undefined : onClick}
+    >
+      {img}
+      {label}
+    </button>
+  )
   return (
-    <div className="mga-seg" role="tablist" aria-label="Insurance products">
-      <button className="mga-seg__item" role="tab" aria-selected="false" onClick={noop}>
-        <img className="mga-prodimg" src={PRODUCT_IMG['auto.png']} alt="" />
-        {M.tabs.auto}
-      </button>
-      <button className="mga-seg__item mga-seg__item--on" role="tab" aria-selected="true">
-        <img className="mga-prodimg" src={PRODUCT_IMG['health.png']} alt="" />
-        {M.tabs.health}
-      </button>
-      <button className="mga-seg__more" aria-label="More products" onClick={noop}>
-        <Icon name="more-vertical" size={16} />
-      </button>
+    <div className="mga-seg mga-seg--3" role="tablist" aria-label="Products and services">
+      {pill('auto', false, M.tabsV2.auto, <img className="mga-prodimg" src={PRODUCT_IMG['auto.png']} alt="" />, noop)}
+      {pill('health', active === 'health', M.tabsV2.health, <img className="mga-prodimg" src={PRODUCT_IMG['health.png']} alt="" />, () => go('health'))}
+      {pill(
+        'curatio',
+        active === 'curatio',
+        M.tabsV2.curatio,
+        <span className="mga-seg__cur" aria-hidden="true">
+          <Icon name="activity" size={11} />
+        </span>,
+        () => go('curatio'),
+      )}
     </div>
   )
 }
 
 function CuratioBlock() {
   /* doctor/reminders/prevention route to the hub (their cards live there) until
-     dedicated pages exist; history has its own page. */
+     dedicated pages exist; history has its own page. The ისტორია tile carries a
+     lock glyph while the session is locked — the OTP gate then opens on the
+     history screen itself, so the tap is never a dead end. */
+  const locked = !isUnlocked()
   const tiles = [
     { key: 'doctor', icon: 'stethoscope', label: M.curatio.doctor, to: 'curatio' },
-    { key: 'history', icon: 'file-text', label: M.curatio.history, to: 'history' },
+    { key: 'history', icon: 'file-text', label: M.curatio.history, to: 'history', locked },
     { key: 'reminders', icon: 'bell', label: M.curatio.reminders, count: COUNTS.reminders, to: 'curatio' },
     { key: 'prevention', icon: 'shield-check', label: M.curatio.prevention, to: 'curatio' },
   ]
@@ -83,6 +124,11 @@ function CuratioBlock() {
             <span className="mga-qa__tile">
               <Icon name={t.icon} size={20} />
               {t.count > 0 && <span className="mga-qa__cnt">{t.count}</span>}
+              {t.locked && (
+                <span className="mga-qa__lock" aria-label={M.dash.protectedHint}>
+                  <Icon name="lock" size={9} />
+                </span>
+              )}
             </span>
             <span className="mga-qa__lbl">{t.label}</span>
           </button>
@@ -92,9 +138,12 @@ function CuratioBlock() {
   )
 }
 
-function BookingsWidget({ visitDay }) {
+function BookingsWidget({ visitDay, v2 = false }) {
+  /* V2 visit day: the card keeps its NORMAL layout — the live queue lives on the
+     კურაციო tab — plus one slim strip deep-linking to the same e-ticket. */
+  const liveHere = visitDay && !v2
   return (
-    <section className={'mga-card' + (visitDay ? ' mga-today-card' : '')} aria-label={M.bookings.title}>
+    <section className={'mga-card' + (liveHere ? ' mga-today-card' : '')} aria-label={M.bookings.title}>
       <div className="mga-whead">
         <h2 className="mga-whead__title" style={{ margin: 0, fontSize: 15 }}>
           {M.bookings.title}
@@ -108,7 +157,7 @@ function BookingsWidget({ visitDay }) {
         )}
       </div>
 
-      {visitDay ? (
+      {liveHere ? (
         <>
           <div className="mga-irow">
             <span className="mga-itile mga-itile--gold">
@@ -146,10 +195,6 @@ function BookingsWidget({ visitDay }) {
           <button className="mga-cta" style={{ margin: 0, padding: 11, borderRadius: 20 }} onClick={() => go('ticket')}>
             {M.bookings.ticket}
           </button>
-          <button className="mga-remind" onClick={noop}>
-            <Icon name="bell" size={12} />
-            {M.bookings.remindEarlier}
-          </button>
         </>
       ) : (
         <>
@@ -178,15 +223,25 @@ function BookingsWidget({ visitDay }) {
             </span>
             <span className="mga-badge mga-badge--green">● {M.bookings.active}</span>
           </div>
-          <div className="mga-actions">
-            <button className="mga-actbtn" onClick={noop}>
-              {M.bookings.reschedule}
+          {v2 && visitDay ? (
+            <button className="mga-card mga-irow mga-strip" style={{ marginBottom: 0 }} onClick={() => go('ticket')}>
+              <span className="mga-badge mga-strip__bdg">{M.bookings.today}</span>
+              <span className="mga-strip__txt">
+                რიგი {QUEUE.number} · ~{QUEUE.waitMin} {M.bookings.minutes}
+              </span>
+              <span className="mga-strip__link">{M.dash.ticketLink} ›</span>
             </button>
-            <button className="mga-linkbtn" onClick={noop}>
-              <Icon name="trash" size={13} />
-              {M.bookings.cancel}
-            </button>
-          </div>
+          ) : (
+            <div className="mga-actions">
+              <button className="mga-actbtn" onClick={noop}>
+                {M.bookings.reschedule}
+              </button>
+              <button className="mga-linkbtn" onClick={noop}>
+                <Icon name="trash" size={13} />
+                {M.bookings.cancel}
+              </button>
+            </div>
+          )}
         </>
       )}
     </section>
@@ -261,11 +316,11 @@ function ReferralsWidget() {
   )
 }
 
-export default function HealthHomeScreen({ visitDay }) {
+export default function HealthHomeScreen({ visitDay, v2 = false }) {
   return (
     <>
       <TopBar />
-      <ProductSwitcher />
+      <ProductSwitcher v2={v2} active="health" />
       <div className="mga-body">
         <h1 className="mga-sect">{M.healthSection}</h1>
         {PERSONS.map((p) => (
@@ -287,9 +342,9 @@ export default function HealthHomeScreen({ visitDay }) {
         <button className="mga-cta" onClick={noop}>
           {M.newAppointment}
         </button>
-        <CuratioBlock />
-        <BookingsWidget visitDay={visitDay} />
-        {visitDay && <NextBookingCard />}
+        {!v2 && <CuratioBlock />}
+        <BookingsWidget visitDay={visitDay} v2={v2} />
+        {visitDay && !v2 && <NextBookingCard />}
         <ReferralsWidget />
         <div className="mga-fabrow">
           <button className="mga-fab" aria-label="Call support" onClick={noop}>
