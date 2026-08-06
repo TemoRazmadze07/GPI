@@ -3,6 +3,12 @@
 import { ASSETS } from '../lib/assets.js'
 
 export const kaB2B = {
+  /* Shared action labels — one action, one label, one string. The add-policy CTA
+     appears in the topbar (global), on Contracts and on Policies; all three route to
+     the add-insured wizard, so they MUST read identically (Rule 1). Never re-inline. */
+  actions: {
+    addPolicy: 'პოლისის დამატება',
+  },
   topbar: {
     corpoTag: 'CORPO',
     client: 'შპს მაგალითი კომპანია',
@@ -12,11 +18,16 @@ export const kaB2B = {
     clientLogo: ASSETS.clientLogo,
     search: 'ძიება — პირი, პოლისი, ინვოისი…',
     searchClear: 'ძიების გასუფთავება',
-    addInsured: 'დაზღვეულის დამატება',
     notifications: 'შეტყობინებები',
     home: 'GPI CORPO — მთავარ გვერდზე',
     user: 'გიორგი გვარიძე',
     role: 'ადმინი',
+  },
+  /* Company switcher — the client chip's dropdown (multi-company accounts). */
+  switcher: {
+    trigger: (name) => `აქტიური კომპანია — ${name}. კომპანიის შეცვლა`,
+    heading: 'კომპანიები',
+    meta: (taxId, n) => `ს/კ ${taxId} · ${n} დაზღვეული`,
   },
   nav: {
     home: 'მთავარი',
@@ -43,6 +54,35 @@ export const kaB2B = {
     phone: '2 505 111',
     phoneHref: 'tel:+995322505111',
     email: 'n.ninodze@gpih.ge',
+  },
+  /* Notification center — bell popover (concept locked 2026-08-06).
+     Category labels double as the row meta and the filter menu entries. */
+  notif: {
+    title: 'შეტყობინებები',
+    bellUnread: (n) => `შეტყობინებები — ${n} წაუკითხავი`,
+    markAll: 'ყველას წაკითხვა',
+    filterAll: 'ყველა',
+    filterUnread: 'წაუკითხავი',
+    filterLabel: 'შეტყობინებების ფილტრი',
+    statusLabel: 'სტატუსი',
+    categoryLabel: 'კატეგორია',
+    categoryAll: 'ყველა',
+    categories: {
+      requests: 'მოთხოვნები',
+      finances: 'ფინანსები',
+      contracts: 'კონტრაქტები / პოლისები',
+      claims: 'ზარალები',
+      other: 'სხვა',
+    },
+    chips: {
+      action: 'საჭიროებს მოქმედებას',
+      renewal: 'განახლების პერიოდი',
+    },
+    unreadMark: 'წაუკითხავი',
+    emptyInbox: 'შეტყობინებები არ არის',
+    emptyUnread: 'ყველაფერი წაკითხულია',
+    emptyFilter: 'ამ კატეგორიაში შეტყობინებები არ არის',
+    clearFilter: 'ფილტრის გასუფთავება',
   },
   crumbsLabel: 'გვერდის მდებარეობა',
   stub: {
@@ -83,7 +123,6 @@ export const kaB2B = {
   },
   policies: {
     subtitle: (n, p) => `${n} პოლისი · ${p} პროდუქტი`,
-    addPolicy: 'პოლისის დამატება',
     tabsLabel: 'პროდუქტი',
     status: { active: 'აქტიური', ended: 'დასრულებული', canceled: 'გაუქმებული' },
     relation: { employee: 'თანამშრომელი', spouse: 'მეუღლე', child: 'შვილი', parent: 'მშობელი' },
@@ -148,7 +187,6 @@ export const kaB2B = {
       status: 'სტატუსი',
     },
     status: { active: 'აქტიური', ended: 'დასრულებული' },
-    newContract: 'ახალი კონტრაქტი',
     actions: {
       menu: 'მოქმედებები',
       details: 'დეტალურად',
@@ -259,14 +297,28 @@ export const kaB2B = {
     emptyAction: 'ყველას ჩვენება',
   },
   addIns: {
-    title: 'დაზღვეულის დამატება',
+    /* Matches actions.addPolicy — the CTA label and the page it lands on must read
+       the same. Step copy below stays person-centred (you add people; the result is
+       policies), which is deliberate. */
+    title: 'პოლისის დამატება',
     crumbParent: 'პოლისები',
     cancel: 'გაუქმება',
     cancelConfirm: 'შეყვანილი მონაცემები დაიკარგება. დატოვებთ გვერდს?',
     steps: { method: 'მეთოდი', data: 'მონაცემები', review: 'გადახედვა' },
     contractLabel: 'კონტრაქტი',
-    contractChange: 'შეცვლა',
     contractSingle: 'ერთი აქტიური კონტრაქტი',
+    /* Inline contract selector (2026-08-06): value = dropdown trigger when >1
+       eligible contract; plain text otherwise. Switching with data present
+       re-validates against the new contract's rules after a confirm. */
+    contractSelect: 'კონტრაქტის არჩევა',
+    contractInsured: (n) => `${n} დაზღვეული`,
+    contractSwitch: {
+      title: 'კონტრაქტის შეცვლა',
+      bodyForm: 'შეყვანილი პირები შენარჩუნდება და შემოწმდება ახალი კონტრაქტის წესებით.',
+      bodyExcel: 'ატვირთული ფაილი ხელახლა შემოწმდება ახალი კონტრაქტის წესებით — შედეგები შეიძლება შეიცვალოს.',
+      confirm: 'შეცვლა',
+      cancel: 'გაუქმება',
+    },
     method: {
       heading: 'როგორ გსურთ თანამშრომლების დამატება?',
       single: { title: 'ერთი პირის დამატება', meta: 'ფორმით — ოჯახის წევრებთან ერთად' },
@@ -286,26 +338,27 @@ export const kaB2B = {
        Georgian. */
     excel: {
       heading: 'ატვირთეთ თანამშრომლების სია',
-      step1: 'ჩამოტვირთეთ შაბლონი',
-      step1Body: 'შაბლონში სვეტები და პაკეტების სახელები უკვე ჩაწერილია — არ შეცვალოთ სათაურების სტრიქონი.',
+      /* Step cards + the leading-zero tip removed 2026-08-06 (trained users; the
+         validator catches header drift and padded PIDs anyway). Template = quiet
+         inline link beside the heading. */
       download: 'შაბლონის ჩამოტვირთვა (.xlsx)',
-      step2: 'ატვირთეთ შევსებული ფაილი',
-      step2Body: 'ერთ ფაილში შეგიძლიათ როგორც თანამშრომლები, ისე ოჯახის წევრები.',
       dropTitle: 'გადმოათრიეთ ფაილი აქ',
       dropBrowse: 'აირჩიეთ ფაილი',
       dropReplace: 'სხვა ფაილის არჩევა',
       dropReqs: '.xlsx · მაქსიმუმ 5 MB · მაქსიმუმ 500 სტრიქონი',
       dropHint: 'ოჯახის წევრი დაუკავშირეთ თანამშრომელს პირადი ნომრით.',
       clearFile: 'ფაილის მოხსნა',
-      tipTitle: 'რჩევა',
-      tipBody: 'პირადი ნომრის სვეტი Excel-ში ტექსტად დატოვეთ — წინააღმდეგ შემთხვევაში პირველი ნული იკარგება.',
 
       validating: 'მიმდინარეობს შემოწმება…',
 
-      readSummary: (sheet, rows) => `წავიკითხეთ ფურცელი „${sheet}" · ${rows} სტრიქონი`,
-      replaceFile: 'ფაილის შეცვლა',
+      /* readSummary removed 2026-08-06 — row count lives in the strip stats;
+         only notices (irregularities) still print, and only when present. */
+      fileLabel: 'ფაილი',
+      /* Fires AFTER the new file is picked (the strip's label opens the OS picker
+         directly), so the dialog names the incoming file. 2026-08-06. */
       replaceTitle: 'ახალი ფაილის ატვირთვა?',
-      replaceBody: 'ამ ფაილში შეტანილი შესწორებები და წაშლილი სტრიქონები დაიკარგება.',
+      replaceBody: (name) =>
+        `„${name}" ჩაანაცვლებს ამჟამინდელ ფაილს — შეტანილი შესწორებები და წაშლილი სტრიქონები დაიკარგება.`,
       replaceYes: 'ატვირთვა',
       replaceKeep: 'დატოვება',
       switchConfirm: 'მეთოდის შეცვლისას შეყვანილი მონაცემები დაიკარგება. გავაგრძელოთ?',
@@ -353,10 +406,8 @@ export const kaB2B = {
       emptyFilterHint: 'ყველა შესწორდა ან წაიშალა.',
       emptyFilterAction: 'ყველას ჩვენება',
 
-      blockTitle: (n) => `${n} სტრიქონში შეცდომაა`,
-      blockBody: 'გაგზავნამდე თითოეული სტრიქონი უნდა გაასწოროთ ან წაშალოთ.',
-      allClearTitle: 'ყველა სტრიქონი გამართულია',
-      allClearBody: (n, sum) => `${n} პირი მზადაა გასაგზავნად · ${sum} / თვე`,
+      /* blockTitle/blockBody/allClearTitle/allClearBody removed 2026-08-06 —
+         the one-line summary + footer hint replaced both banners. */
       continueDisabled: (n) => `ჯერ გაასწორეთ ან წაშალეთ ${n} სტრიქონი`,
       continueEmpty: 'ატვირთეთ შევსებული ფაილი',
 
@@ -516,6 +567,92 @@ export const kaB2B = {
       home: 'მთავარი გვერდი',
     },
   },
+  /* Guide (გზამკვლევი) — employee-education hub (concept locked 2026-08-06).
+     The admin's jobs: onboard new hires (kit), find-and-send material (library
+     + one shared send flow), minimal monitoring (2 actionable stats + log). */
+  guide: {
+    title: 'გზამკვლევი',
+    subtitle: 'ვიდეოები, FAQ და სახელმძღვანელოები თანამშრომლებისთვის',
+    report: 'ჩართულობის ანგარიში',
+    stats: {
+      engagement: 'ჩართულობა MyGPI-ში',
+      engagementMeta: (a, t) => `${a} / ${t} აქტიური მომხმარებელი`,
+      openQ: 'ღია კითხვა',
+      openQMeta: 'პასუხს ამზადებს GPI',
+      allAnswered: 'ყველა კითხვას გაეცა პასუხი',
+    },
+    kit: {
+      title: 'ახალი თანამშრომლის გზამკვლევი',
+      lead: 'ერთი პაკეტი ყველაფრით, რაც ახალ დაზღვეულს პირველი დღიდან სჭირდება.',
+      send: 'გაგზავნა',
+      lastSent: (d, n) => `ბოლოს გაიგზავნა: ${d} · ${n} პირი`,
+    },
+    questions: {
+      title: 'თანამშრომლების კითხვები',
+      pending: 'პასუხის მოლოდინში',
+      answered: 'პასუხი გაცემულია',
+      note: 'კითხვებს პასუხობს GPI-ის გუნდი — აქ სტატუსი ჩანს.',
+    },
+    library: {
+      search: 'ძებნა ყველა მასალაში — ვიდეო, FAQ, სახელმძღვანელო…',
+      tabs: { videos: 'ვიდეოები', faqs: 'FAQ', handbooks: 'სახელმძღვანელოები' },
+      tabsLabel: 'მასალის ტიპი',
+      watch: 'ნახვა',
+      send: 'გაგზავნა',
+      sendTo: (title) => `გაგზავნა — ${title}`,
+      download: 'ჩამოტვირთვა',
+      helpful: (p) => `${p}% სასარგებლო`,
+      flags: { top: 'პოპულარული', new: 'ახალი' },
+      results: (n) => `ნაპოვნია ${n} მასალა`,
+      noResults: 'ვერაფერი მოიძებნა',
+      noResultsHint: 'სცადეთ სხვა საძიებო სიტყვა',
+      types: { video: 'ვიდეო', faq: 'FAQ', handbook: 'PDF', kit: 'კიტი' },
+      expand: 'პასუხის ნახვა',
+    },
+    history: {
+      title: 'გაგზავნების ისტორია',
+      caption: 'გაგზავნილი მასალების ისტორია',
+      cols: { date: 'თარიღი', material: 'მასალა', to: 'მიმღები', channel: 'არხი', status: 'სტატუსი' },
+      people: (n) => `${n} პირი`,
+      delivered: 'ჩაბარებულია',
+      today: 'დღეს',
+      actions: {
+        menu: 'მოქმედებები',
+        resend: 'ხელახლა გაგზავნა',
+        viewMaterial: 'მასალის ნახვა',
+      },
+    },
+    send: {
+      title: 'მასალის გაგზავნა',
+      what: 'რა იგზავნება',
+      to: 'ვის',
+      toLabel: 'მიმღებები',
+      groupAll: (n) => `ყველა დაზღვეული (${n})`,
+      groupRecent: (n) => `ბოლოს დამატებულები (${n})`,
+      groupContract: 'კონტრაქტის მიხედვით',
+      contractMeta: (n) => `${n} დაზღვეული`,
+      alreadySent: (d) => `ამ ჯგუფს ეს მასალა უკვე გაეგზავნა — ${d}`,
+      channel: 'არხი',
+      channelLabel: 'გაგზავნის არხი',
+      channels: { email: 'ელ. ფოსტა', sms: 'SMS' },
+      preview: 'რას მიიღებს თანამშრომელი',
+      previewFromEmail: 'GPI Holding · noreply@gpih.ge',
+      previewFromSms: 'GPI',
+      previewSubject: 'სასარგებლო მასალა თქვენი დაზღვევის შესახებ',
+      previewBody: (company, title) => `გამარჯობა! „${company}" გიზიარებთ: „${title}". იხილეთ ბმულზე:`,
+      previewLink: 'gpih.ge/g/a7x2k9',
+      cancel: 'გაუქმება',
+      submit: (n) => `გაგზავნა · ${n} პირი`,
+      confirmTitle: 'მასალის გაგზავნა',
+      confirmBody: (n, ch) => `მასალა გაეგზავნება ${n} ადამიანს ${ch}. გავაგრძელოთ?`,
+      confirmChannel: { email: 'ელ. ფოსტით', sms: 'SMS-ით' },
+      confirmSend: 'გაგზავნა',
+      keep: 'გადახედვა',
+      successTitle: 'მასალა გაიგზავნა',
+      successBody: (n) => `მასალა გაეგზავნა ${n} ადამიანს. ჩართულობის ანგარიში ხელმისაწვდომი იქნება 24 საათში.`,
+      close: 'დახურვა',
+    },
+  },
   pages: {
     home: { title: 'მთავარი გვერდი', subtitle: 'მიმოხილვა და შეხსენებები' },
     contracts: { title: 'კონტრაქტები' },
@@ -523,7 +660,8 @@ export const kaB2B = {
     claims: { title: 'ზარალები', subtitle: '3 ელოდება თქვენს დადასტურებას' },
     invoices: { title: 'ინვოისები', subtitle: '1 ვადაგადაცილებული · ₾ 6,450' },
     statement: { title: 'ამონაწერი', subtitle: 'პრემიის განაწილება — კომპანია / თანამშრომელი' },
-    guide: { title: 'გზამკვლევი', subtitle: 'ვიდეოები, FAQ და სახელმძღვანელოები თანამშრომლებისთვის' },
+    /* guide: real screen since 2026-08-06 — its strings live in the top-level
+       `guide` block, so no stub entry (one label, one string; Rule 1). */
     offers: { title: 'შეთავაზებები', subtitle: 'შეთავაზებები კომპანიისა და თანამშრომლებისთვის' },
     adminUsers: { title: 'მომხმარებლები და როლები', subtitle: 'წვდომის მართვა' },
     adminOrg: { title: 'ორგანიზაცია', subtitle: 'კომპანიის მონაცემები' },

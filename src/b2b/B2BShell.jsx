@@ -4,14 +4,24 @@ import Icon from '../lib/Icon.jsx'
 import Avatar from '../components/Avatar.jsx'
 import { Button } from '../components/Button.jsx'
 import ContactLauncher from './ContactLauncher.jsx'
-import ClientMark from './ClientMark.jsx'
+import NotificationsBell from './NotificationsBell.jsx'
+import CompanySwitcher from './CompanySwitcher.jsx'
 import { kaB2B } from './strings.js'
 import { NAV_MAIN, parentOf, bubbled } from './nav.js'
+import { COMPANIES, DEFAULT_COMPANY_ID } from './data/companies.js'
 
 /* B2BShell — CORPO portal application chrome (Rule 5: separate platform
    context from My Cabinet). Light chrome on surface/page, content floats as
    a rounded white canvas. Sidebar: 7 top-level items, accordion groups,
    collapsible to an icon rail. All sizes come straight from tokens. */
+
+/* Global (cross-entity) top-bar search is HIDDEN, not removed — searching across
+   people, policies, invoices and requests at once is expensive to implement on
+   the current back end (2026-08-06). The field, its clear button, its strings
+   (t.topbar.search / .searchClear) and its CSS (.b2b-search in b2b.css) all stay
+   in place: flip this to true to bring it back. The per-table search inside
+   FilterBar is a DIFFERENT, working feature — it is untouched by this flag. */
+const SHOW_GLOBAL_SEARCH = false
 
 function NavBadge({ badge, urgent }) {
   if (urgent) return <span className="b2b-nav__dot" aria-label="საჭიროებს ყურადღებას" />
@@ -108,6 +118,7 @@ export default function B2BShell({ active = 'home', onNavigate, children }) {
   const [flyout, setFlyout] = useState(null)
   const sidebarRef = useRef(null)
   // Top-bar search: controlled so a clear (×) button can cancel it.
+  // Kept wired up while SHOW_GLOBAL_SEARCH is false — nothing to restore later.
   const [query, setQuery] = useState('')
   const searchRef = useRef(null)
   const clearSearch = () => {
@@ -154,6 +165,14 @@ export default function B2BShell({ active = 'home', onNavigate, children }) {
     setCollapsed((v) => !v)
   }
 
+  // Active company (session-only, like notification read state). Switching
+  // changes the whole portal context, so it always lands on the portal home.
+  const [companyId, setCompanyId] = useState(DEFAULT_COMPANY_ID)
+  const switchCompany = (id) => {
+    setCompanyId(id)
+    navigate('home')
+  }
+
   const navProps = { active, openGroup, flyout, collapsed, onNavigate: navigate, onToggle: toggle }
 
   return (
@@ -166,39 +185,40 @@ export default function B2BShell({ active = 'home', onNavigate, children }) {
             <img className="b2b-brand__logo" src={ASSETS.logo} alt="GPI" />
           </a>
           <span className="b2b-brand__divider" aria-hidden="true" />
-          <span className="b2b-client" title={t.topbar.client}>
-            <ClientMark
-              name={t.topbar.client}
-              logo={t.topbar.clientLogo}
-              fallback={t.topbar.clientMark}
-            />
-            <span className="b2b-client__name">{t.topbar.clientShort}</span>
-          </span>
+          {/* Client chip = company switcher when the account spans several
+              companies; static chip when there is only one. */}
+          <CompanySwitcher
+            companies={COMPANIES}
+            activeId={companyId}
+            onSwitch={switchCompany}
+          />
         </div>
 
         <div className="b2b-topbar__actions">
-          <div className={`b2b-search ${query ? 'has-value' : ''}`} role="search">
-            <Icon name="search" size={20} />
-            <input
-              ref={searchRef}
-              type="text"
-              value={query}
-              placeholder={t.topbar.search}
-              aria-label={t.topbar.search}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Escape' && query && clearSearch()}
-            />
-            {query && (
-              <button
-                type="button"
-                className="b2b-search__clear"
-                aria-label={t.topbar.searchClear}
-                onClick={clearSearch}
-              >
-                <Icon name="x" size={16} />
-              </button>
-            )}
-          </div>
+          {SHOW_GLOBAL_SEARCH && (
+            <div className={`b2b-search ${query ? 'has-value' : ''}`} role="search">
+              <Icon name="search" size={20} />
+              <input
+                ref={searchRef}
+                type="text"
+                value={query}
+                placeholder={t.topbar.search}
+                aria-label={t.topbar.search}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Escape' && query && clearSearch()}
+              />
+              {query && (
+                <button
+                  type="button"
+                  className="b2b-search__clear"
+                  aria-label={t.topbar.searchClear}
+                  onClick={clearSearch}
+                >
+                  <Icon name="x" size={16} />
+                </button>
+              )}
+            </div>
+          )}
           <Button
             variant="primary"
             size="md"
@@ -207,12 +227,9 @@ export default function B2BShell({ active = 'home', onNavigate, children }) {
               window.location.hash = '#/b2b/insured/add'
             }}
           >
-            {t.topbar.addInsured}
+            {t.actions.addPolicy}
           </Button>
-          <button className="b2b-topbtn" aria-label={t.topbar.notifications}>
-            <Icon name="bell" size={20} />
-            <span className="b2b-topbtn__dot" />
-          </button>
+          <NotificationsBell />
           <button className="b2b-user" aria-label={`${t.topbar.user} · ${t.topbar.role}`}>
             <Avatar name={t.topbar.user} size={32} />
             <Icon name="chevron-down" size={16} />

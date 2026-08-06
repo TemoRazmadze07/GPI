@@ -371,7 +371,7 @@ export default function PoliciesScreen({ product = 'health', initialContract = n
             leadingIcon="plus"
             onClick={() => (window.location.hash = '#/b2b/insured/add')}
           >
-            {p.addPolicy}
+            {t.actions.addPolicy}
           </Button>
         </div>
       </div>

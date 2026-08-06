@@ -103,6 +103,16 @@ export const apps = [
         ],
       },
       {
+        id: 'policies',
+        label: 'policies',
+        status: 'in-progress',
+        flows: [
+          // One entry: the four product tabs (health/auto/travel/property) are
+          // in-page navigation, so this link opens the whole section.
+          { id: 'list', path: 'b2b/policies/health', label: 'policies list — 4 product tabs', status: 'in-progress', hash: '/b2b/policies/health' },
+        ],
+      },
+      {
         id: 'insured',
         label: 'insured',
         status: 'in-progress',
@@ -113,6 +123,23 @@ export const apps = [
           // the demo links for a live walkthrough (no file picking on stage).
           { id: 'excelDemo', path: '…/excel?demo=errors', label: 'excel import — demo file (7 errors)', status: 'in-progress', hash: '/b2b/insured/add/excel?demo=errors' },
           { id: 'excelDemoClean', path: '…/excel?demo=clean', label: 'excel import — demo file (all valid)', status: 'in-progress', hash: '/b2b/insured/add/excel?demo=clean' },
+        ],
+      },
+      {
+        id: 'finances',
+        label: 'finances',
+        status: 'in-progress',
+        flows: [
+          { id: 'invoices', path: 'b2b/invoices', label: 'invoices', status: 'in-progress', hash: '/b2b/invoices' },
+          { id: 'statement', path: 'b2b/statement', label: 'statement (ამონაწერი)', status: 'in-progress', hash: '/b2b/statement' },
+        ],
+      },
+      {
+        id: 'guide',
+        label: 'guide',
+        status: 'in-progress',
+        flows: [
+          { id: 'guide', path: 'b2b/guide', label: 'employee guide — library & send', status: 'in-progress', hash: '/b2b/guide' },
         ],
       },
     ],

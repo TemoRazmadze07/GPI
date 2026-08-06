@@ -353,6 +353,9 @@
   border-radius: var(--radius-full);
   white-space: nowrap;
 }
+/* NB: vertical padding stays 2px here. B2B raises it to space/4 in b2b.css —
+   scoped deliberately (user, 2026-08-06): My Cabinet + mobile keep their current
+   badge rhythm. Do not "unify" these without asking. */
 .gpi-badge--md {
   padding: 2px var(--space-12);
   font: 400 13px/20px var(--font-sans);
@@ -465,21 +468,30 @@
    it exactly as before. */
 .gpi-dropzone.gpi-dropzone--compact {
   flex-direction: row; align-items: center; text-align: left;
+  flex-wrap: wrap; /* a rejected replacement's error message wraps to its own row */
   gap: var(--space-8);
   padding: var(--space-4) var(--space-8);
 }
-.gpi-dropzone--compact .gpi-dropzone__label {
-  flex-direction: row; align-items: center; justify-content: flex-start;
-  gap: var(--space-8);
-  min-height: var(--control-sm);
-  width: 100%;
-}
+/* Restructured 2026-08-06: in compact only the CTA is a <label> (file identity +
+   the `extra` slot are read-out, not picker triggers). */
+.gpi-dropzone--compact .gpi-dropzone__lbl  { font: 400 13px/20px var(--font-sans); color: var(--text-muted); }
 .gpi-dropzone--compact .gpi-dropzone__icon svg { width: 20px; height: 20px; }
-.gpi-dropzone--compact .gpi-dropzone__file { flex-direction: row; align-items: baseline; gap: var(--space-8); }
+.gpi-dropzone--compact .gpi-dropzone__file { flex-direction: row; align-items: baseline; gap: var(--space-8); min-width: 0; }
 .gpi-dropzone--compact .gpi-dropzone__filename { max-width: 320px; }
 /* Pushed to the far end: replacing the file is the exception here, not the
-   invitation it is in the empty state. */
-.gpi-dropzone--compact .gpi-dropzone__cta { margin-left: auto; }
+   invitation it is in the empty state. When an `extra` block is present IT takes
+   the flexible gap and the CTA sits after it. */
+.gpi-dropzone--compact .gpi-dropzone__cta   { margin-left: auto; cursor: pointer; }
+.gpi-dropzone--compact .gpi-dropzone__extra { margin-left: auto; min-width: 0; }
+.gpi-dropzone--compact .gpi-dropzone__extra ~ .gpi-dropzone__cta { margin-left: 0; }
+.gpi-dropzone--compact .gpi-dropzone__err   { flex-basis: 100%; }
+/* Focus ring lands on the CTA label in compact (the big label doesn't exist). */
+.gpi-dropzone--compact:has(input:focus-visible) .gpi-dropzone__cta,
+.gpi-dropzone--compact input:focus-visible ~ .gpi-dropzone__cta {
+  outline: var(--focus-ring-width) solid var(--border-focus);
+  outline-offset: var(--focus-ring-offset);
+  border-radius: var(--radius-sm);
+}
 
 
 /* ---- Buttons ------------------------------------------------------------ */
@@ -1580,12 +1592,20 @@
   text-align: left;
   white-space: nowrap;
 }
-.gpi-table tbody td {
+/* `th` is included deliberately: a column with `rowHeader: true` renders as
+   <th scope="row"> so screen readers prefix each row with its identifier. That
+   a11y opt-in must stay visually invisible — without this the UA default
+   (center + bold, no padding, no row divider) silently breaks every table that
+   uses it. `text-align: left` is spelled out to beat that UA default; the
+   `.is-right` modifier still wins on both cell types (higher specificity). */
+.gpi-table tbody td,
+.gpi-table tbody th {
   height: 64px;
   padding: var(--space-8) var(--space-12);
   border-top: var(--border-width-sm) solid var(--border-divider);
   font: 400 14px/22px var(--font-sans); /* Body/Default */
   color: var(--text-main);
+  text-align: left;
   vertical-align: middle;
 }
 .gpi-table .is-right { text-align: right; }

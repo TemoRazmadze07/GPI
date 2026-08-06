@@ -3,15 +3,15 @@ import DataTable from '../components/DataTable.jsx'
 import Pagination from '../components/Pagination.jsx'
 import FilterChips from '../components/FilterChips.jsx'
 import FileDropzone from '../components/FileDropzone.jsx'
-import StatTile from '../components/StatTile.jsx'
 import InlineAlert from '../components/InlineAlert.jsx'
 import ConfirmDialog from '../components/ConfirmDialog.jsx'
 import Badge from '../components/Badge.jsx'
 import { Button, IconButton } from '../components/Button.jsx'
 import Icon from '../lib/Icon.jsx'
 import ImportRowDrawer, { rowRef } from './ImportRowDrawer.jsx'
+import ContractSelect from './ContractSelect.jsx'
 import { kaB2B } from './strings.js'
-import { contract, packageByValue, relationByValue, existingEmployees } from './data/addInsured.js'
+import { packageByValue, relationByValue, existingEmployeesFor, employeeByPidFor } from './data/addInsured.js'
 import { TEMPLATE_DATA_URI, TEMPLATE_FILENAME } from './data/excelTemplate.js'
 import {
   MAX_BYTES,
@@ -119,32 +119,7 @@ function DemoBar({ loaded, onLoad, onReset }) {
   )
 }
 
-function ContractChip() {
-  return (
-    <div className="b2b-wiz__contract">
-      <span className="b2b-wiz__contract-lbl">{t.contractLabel}:</span>
-      <span className="b2b-wiz__contract-val">{contract.label}</span>
-      <Badge color="success" size="sm">
-        {contract.status}
-      </Badge>
-    </div>
-  )
-}
-
-function NumberedStep({ num, title, body, children }) {
-  return (
-    <div className="b2b-xl__step">
-      <span className="b2b-xl__stepnum" aria-hidden="true">
-        {num}
-      </span>
-      <span className="b2b-xl__steptitle">{title}</span>
-      <span className="b2b-xl__stepbody">{body}</span>
-      {children}
-    </div>
-  )
-}
-
-export default function StepExcel({ excel, onImportState, startSeq, ctxToday }) {
+export default function StepExcel({ excel, onImportState, startSeq, ctxToday, contract, onContract }) {
   const { file, result } = excel
   const [phase, setPhase] = useState('idle') // idle | loading | error
   const [fileError, setFileError] = useState(null)
@@ -154,13 +129,23 @@ export default function StepExcel({ excel, onImportState, startSeq, ctxToday }) 
   const [page, setPage] = useState(1)
   const [sort, setSort] = useState({ key: 'row', dir: 'asc' })
   const [editing, setEditing] = useState(null)
-  const [confirmReplace, setConfirmReplace] = useState(false)
+  /* The file picked while a batch is already on screen, held until confirmed. */
+  const [pendingFile, setPendingFile] = useState(null)
   const [trayOpen, setTrayOpen] = useState(false)
   const dropRef = useRef(null)
 
+  /* Contract-scoped context: already-insured + link-to-existing checks depend
+     on the selected contract's employee roster. */
   const ctx = useMemo(
-    () => ({ startSeq, existingEmployees, today: ctxToday || new Date(), x, f }),
-    [startSeq, ctxToday],
+    () => ({
+      startSeq,
+      existingEmployees: existingEmployeesFor(contract.id),
+      employeeByPid: employeeByPidFor(contract.id),
+      today: ctxToday || new Date(),
+      x,
+      f,
+    }),
+    [startSeq, ctxToday, contract.id],
   )
 
   /* Send focus back to the file input whenever a file is rejected. This is
@@ -172,7 +157,9 @@ export default function StepExcel({ excel, onImportState, startSeq, ctxToday }) 
     if (fileError) dropRef.current?.focus()
   }, [fileError])
 
-  const loadDemo = (key) => demoFile(key).then(handleFile)
+  /* Demo bar (dev/presentation aid) goes straight to runImport — picking a demo
+     workbook IS the explicit intent, and it has its own reset. */
+  const loadDemo = (key) => demoFile(key).then(runImport)
 
   /* Load the demo workbook once per mount, and only if the step is still
      empty — coming BACK from the review step must not re-import over rows the
@@ -182,7 +169,7 @@ export default function StepExcel({ excel, onImportState, startSeq, ctxToday }) 
     if (!key || file || result) return
     let cancelled = false
     demoFile(key).then((f) => {
-      if (!cancelled) handleFile(f)
+      if (!cancelled) runImport(f)
     })
     return () => {
       cancelled = true
@@ -198,7 +185,7 @@ export default function StepExcel({ excel, onImportState, startSeq, ctxToday }) 
       const target = rows.find((o) => `b:${o.id}` === r.linkedTo)
       return target ? `${target.firstName} ${target.lastName}`.trim() : '—'
     }
-    return existingEmployees.find((e) => e.id === r.linkedTo)?.name || '—'
+    return ctx.existingEmployees.find((e) => e.id === r.linkedTo)?.name || '—'
   }
 
   /* revalidate() returns only what it recomputes (rows, counts, premiumTotal).
@@ -206,9 +193,35 @@ export default function StepExcel({ excel, onImportState, startSeq, ctxToday }) 
      notices, totalDataRows, extraColumns, nextSeq — survive every edit. */
   const setResult = (next) => onImportState({ file, result: { ...result, ...next } })
 
+  /* Contract switched with a validated file on screen (parent already ran the
+     confirm): re-run the row rules against the new contract's roster. Keyed on
+     contract.id via a ref so it never fires on mount; page resets because the
+     error set — and with it the row order under the errors filter — can change. */
+  const prevContractRef = useRef(contract.id)
+  useEffect(() => {
+    if (prevContractRef.current === contract.id) return
+    prevContractRef.current = contract.id
+    if (!result) return
+    setResult(revalidate(result.rows, ctx))
+    setPage(1)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contract.id])
+
   /* ---- file handling ---- */
 
-  const handleFile = async (picked) => {
+  /* Replacing the file is ONE action with ONE control: the „სხვა ფაილის არჩევა"
+     label on the file strip itself (user, 2026-08-06 — the file's controls belong
+     with the file; the duplicate toolbar button was removed). Because that label
+     is the native input's label, the OS picker opens before we can intervene —
+     so the guard runs AFTER the pick, which also lets the dialog name the
+     incoming file. Rejected files (wrong type/size) never reach here: the
+     dropzone screens them and calls onReject instead. */
+  const handleFile = (picked) => {
+    if (result) return setPendingFile(picked)
+    runImport(picked)
+  }
+
+  const runImport = async (picked) => {
     setFileError(null)
     setPhase('loading')
     setLive(x.live.selected(picked.name, fmtSize(picked.size)))
@@ -264,7 +277,7 @@ export default function StepExcel({ excel, onImportState, startSeq, ctxToday }) 
     setPhase('idle')
     setFileError(null)
     setEditing(null)
-    setConfirmReplace(false)
+    setPendingFile(null)
     setFilter('all')
     setPage(1)
   }
@@ -289,7 +302,13 @@ export default function StepExcel({ excel, onImportState, startSeq, ctxToday }) 
     setResultsLive(x.live.restored(1))
   }
 
-  const removeAllErrors = () => removeRows(rows.filter((r) => !r.removed && r.status === 'error').map((r) => r.id))
+  /* Bulk remove also leaves the errors filter — it would otherwise strand the
+     user on „შეცდომით · 0" with an empty table (audit 2026-08-06). Single-row
+     repairs/removals keep the filter: mid-cleanup you want the remaining errors. */
+  const removeAllErrors = () => {
+    removeRows(rows.filter((r) => !r.removed && r.status === 'error').map((r) => r.id))
+    changeFilter('all')
+  }
 
   const applyEdit = (id, key, value) => {
     setResult(
@@ -459,25 +478,24 @@ export default function StepExcel({ excel, onImportState, startSeq, ctxToday }) 
        So the results state takes the full canvas. */
     <div className={`b2b-wiz__cols b2b-xl${result ? ' b2b-xl--wide' : ''}`}>
       <div className="b2b-wiz__main">
-        <ContractChip />
+        <ContractSelect contract={contract} onSelect={onContract} />
 
+        {/* Guidance minimized 2026-08-06 (user): portal users are trained and know
+            the flow by heart, so the two onboarding step cards were dropped — the
+            dropzone IS the job and takes the hero position. The template survives
+            as a quiet inline link beside the heading (an <a>, not a Button: Button
+            renders <button> and cannot carry href/download; the data: URI also
+            works in the single-file share build, where public/ is not copied).
+            The "don't change the header row" warning was cut with the cards —
+            the importer detects header drift at validation time and reports it. */}
         {!result && (
-          <>
+          <div className="b2b-xl__hd">
             <h2 className="b2b-wiz__h">{x.heading}</h2>
-            <div className="b2b-xl__steps">
-              <NumberedStep num="1" title={x.step1} body={x.step1Body}>
-                {/* A link, not a Button: Button renders <button> and cannot
-                    carry href/download. The template is a data: URI so it also
-                    works in the single-file share build, where public/ is not
-                    copied. */}
-                <a className="gpi-btn gpi-btn--secondary gpi-btn--md" href={TEMPLATE_DATA_URI} download={TEMPLATE_FILENAME}>
-                  <Icon name="download" size={20} />
-                  <span>{x.download}</span>
-                </a>
-              </NumberedStep>
-              <NumberedStep num="2" title={x.step2} body={x.step2Body} />
-            </div>
-          </>
+            <a className="gpi-link" href={TEMPLATE_DATA_URI} download={TEMPLATE_FILENAME}>
+              <Icon name="download" size={16} />
+              <span>{x.download}</span>
+            </a>
+          </div>
         )}
 
         <FileDropzone
@@ -487,8 +505,38 @@ export default function StepExcel({ excel, onImportState, startSeq, ctxToday }) 
           maxSizeBytes={MAX_BYTES}
           state={phase === 'loading' ? 'loading' : 'idle'}
           /* Results on screen → the dropzone shrinks to a one-line file strip
-             (user, 2026-08-04: the table is the work, the file is not). */
+             (user, 2026-08-04: the table is the work, the file is not), and the
+             import stats live INSIDE it (user, 2026-08-06 — they describe the
+             file, so they sit with the file; frees a whole row above the table).
+             შეცდომა renders only when > 0; the premium total only when the
+             batch is CLEAN — a total over broken rows is provisional and reads
+             as misleading. The footer hint keeps the fix-or-remove guidance. */
           compact={!!result}
+          compactLabel={x.fileLabel}
+          extra={
+            result && counts ? (
+              <span className="b2b-xl__filestats">
+                <span className="b2b-xl__sumitem">
+                  {x.stats.total} <strong>{counts.total}</strong>
+                </span>
+                <span className="b2b-xl__sumitem is-ok">
+                  <Icon name="check" size={14} />
+                  {x.stats.ready} <strong>{counts.importable}</strong>
+                </span>
+                {counts.error > 0 && (
+                  <span className="b2b-xl__sumitem is-bad">
+                    <Icon name="alert-circle" size={14} />
+                    {x.stats.errors} <strong>{counts.error}</strong>
+                  </span>
+                )}
+                {counts.error === 0 && (
+                  <span className="b2b-xl__sumitem">
+                    {x.stats.premium} <strong>{fmtGel(result.premiumTotal)}</strong> {t.batch.perMonth}
+                  </span>
+                )}
+              </span>
+            ) : null
+          }
           file={file}
           error={fileError}
           announcement={live}
@@ -505,35 +553,15 @@ export default function StepExcel({ excel, onImportState, startSeq, ctxToday }) 
           formatSize={fmtSize}
         />
 
-        {!result && !fileError && (
-          <InlineAlert tone="info" title={x.tipTitle}>
-            {x.tipBody}
-          </InlineAlert>
-        )}
-
         {result && (
           <>
-            <p className="b2b-xl__preflight">
-              {x.readSummary(result.sheetName, result.totalDataRows)}
-              {(result.notices || []).map((n) => ` · ${n.message}`).join('')}
-            </p>
-
-            {counts.error > 0 ? (
-              <InlineAlert tone="error" title={x.blockTitle(counts.error)}>
-                {x.blockBody}
-              </InlineAlert>
-            ) : (
-              <InlineAlert tone="success" title={x.allClearTitle}>
-                {x.allClearBody(counts.importable, fmtGel(result.premiumTotal))}
-              </InlineAlert>
+            {/* Routine read-out (sheet name, row count) dropped 2026-08-06 —
+                the row count is in the strip's stats. Only the IRREGULARITIES
+                (ignored columns, skipped blank rows, multi-sheet pick) still
+                surface, and only when there are any. */}
+            {(result.notices || []).length > 0 && (
+              <p className="b2b-xl__preflight">{result.notices.map((n) => n.message).join(' · ')}</p>
             )}
-
-            <div className="b2b-xl__stats">
-              <StatTile label={x.stats.total} value={counts.total} />
-              <StatTile label={x.stats.ready} value={counts.importable} icon="check" tone="success" />
-              <StatTile label={x.stats.errors} value={counts.error} icon="alert-circle" tone={counts.error ? 'danger' : 'default'} />
-              <StatTile label={x.stats.premium} value={fmtGel(result.premiumTotal)} meta={t.batch.perMonth} />
-            </div>
 
             <div className="b2b-xl__toolbar">
               <FilterChips
@@ -554,12 +582,12 @@ export default function StepExcel({ excel, onImportState, startSeq, ctxToday }) 
                     {x.removeAllErrors(counts.error)}
                   </Button>
                 )}
-                <Button variant="tertiary" size="sm" type="button" leadingIcon="rotate-ccw" onClick={() => setConfirmReplace(true)}>
-                  {x.replaceFile}
-                </Button>
               </div>
             </div>
 
+            {/* No rowClassName tints since 2026-08-06 (user): the status badge +
+                red note already carry the state; a full-row wash was noise.
+                DataTable's rowClassName capability itself stays for other tables. */}
             <DataTable
               caption={x.tableCaption}
               columns={COLS}
@@ -567,9 +595,6 @@ export default function StepExcel({ excel, onImportState, startSeq, ctxToday }) 
               rowKey={(r) => r.id}
               sort={sort}
               onSort={onSort}
-              rowClassName={(r) =>
-                r.status === 'error' ? 'is-invalid' : r.status === 'warning' ? 'is-warn' : r.status === 'exists' ? 'is-exists' : undefined
-              }
               empty={{
                 icon: 'check',
                 title: x.emptyFilterTitle,
@@ -630,12 +655,10 @@ export default function StepExcel({ excel, onImportState, startSeq, ctxToday }) 
         </span>
       </div>
 
+      {/* No contract read-out here (audit 2026-08-06): the selector chip at the
+          top of the main column already names it on this same screen. */}
       {!result && (
         <div className="b2b-wiz__side">
-          <div className="b2b-wiz__sideplain">
-            <span className="b2b-wiz__sidelbl">{t.contractLabel}</span>
-            <span className="b2b-wiz__sideval">{contract.label}</span>
-          </div>
           <div className="b2b-wiz__sidecard">
             <div className="b2b-wiz__sidehd">{t.side.rulesTitle}</div>
             <InlineAlert tone="success" title={t.side.ruleWindowTitle}>
@@ -655,14 +678,18 @@ export default function StepExcel({ excel, onImportState, startSeq, ctxToday }) 
       {/* Gated on !editing: the shared Modal and Drawer both listen for Escape
           on document, so stacking them would double-close. The drawer applies
           edits live and therefore never needs a confirm of its own. */}
-      {confirmReplace && !editing && (
+      {pendingFile && !editing && (
         <ConfirmDialog
           title={x.replaceTitle}
-          body={x.replaceBody}
+          body={x.replaceBody(pendingFile.name)}
           confirmLabel={x.replaceYes}
           keepLabel={x.replaceKeep}
-          onConfirm={handleClear}
-          onClose={() => setConfirmReplace(false)}
+          onConfirm={() => {
+            const next = pendingFile
+            setPendingFile(null)
+            runImport(next)
+          }}
+          onClose={() => setPendingFile(null)}
         />
       )}
 
@@ -680,6 +707,7 @@ export default function StepExcel({ excel, onImportState, startSeq, ctxToday }) 
           onNext={() => setEditing(nextErrorId(rows, editing))}
           hasNext={!!nextErrorId(rows, editing)}
           onClose={() => setEditing(null)}
+          employees={ctx.existingEmployees}
         />
       )}
     </div>

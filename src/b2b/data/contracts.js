@@ -59,6 +59,9 @@ export function contractDetails(r) {
 
 /* status: active | ended */
 export const CONTRACTS = [
+  /* 0341 + 0128 are also the add-policy wizard's eligible contracts
+     (data/addInsured.js `eligibleContracts`) — keep the two lists reconciled. */
+  { id: 'CNT-2026-0341', product: 'health', start: '01.01.2026', end: '31.12.2026', insured: 4, status: 'active' },
   { id: 'CNT-2025-0128', product: 'health', start: '01.01.2025', end: '31.12.2025', insured: 248, status: 'active' },
   { id: 'CNT-2024-0089', product: 'health', start: '01.01.2024', end: '31.12.2024', insured: 231, status: 'ended' },
   { id: 'CNT-2025-0131', product: 'auto', start: '15.02.2025', end: '14.02.2026', insured: 34, status: 'active' },

@@ -433,6 +433,11 @@ export const clearParseIssue = (row, field) => ({
 function runRowRules(rows, ctx) {
   const x = ctx.x
   const f = ctx.f
+  /* Contract-scoped employee lookup (2026-08-06): the already-insured check and
+     link-to-existing resolution depend on WHICH contract is selected. Callers
+     pass ctx.employeeByPid from employeeByPidFor(contractId); the module-level
+     default keeps pre-selector callers on the default contract. */
+  const lookupEmployee = ctx.employeeByPid || employeeByPid
   const live = rows.filter((r) => !r.removed)
 
   /* Pass 1 — index the employees this file itself introduces. Family rows may
@@ -482,7 +487,7 @@ function runRowRules(rows, ctx) {
       else if (v) {
         const inFileId = inFileByPid.get(v)
         const target = inFileId ? live.find((o) => o.id === inFileId) : null
-        const existing = employeeByPid(v)
+        const existing = lookupEmployee(v)
         const asFamily = live.find((o) => o.pid === v && o.who === 'family')
         if (target) r.linkedTo = `b:${target.id}`
         else if (existing) r.linkedTo = existing.id
@@ -512,7 +517,7 @@ function runRowRules(rows, ctx) {
       add('W_REGISTRY_NOT_FOUND', 'pid', 'warning', f.notFound)
     }
 
-    if (r.pid && employeeByPid(r.pid)) add('X_ALREADY_INSURED', 'pid', 'info', x.exists.body)
+    if (r.pid && lookupEmployee(r.pid)) add('X_ALREADY_INSURED', 'pid', 'info', x.exists.body)
   }
 
   /* Pass 3 — cascade: a family row whose employee is broken cannot be fixed on

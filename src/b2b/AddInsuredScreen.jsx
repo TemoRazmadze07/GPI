@@ -11,17 +11,20 @@ import { Button } from '../components/Button.jsx'
 import Icon from '../lib/Icon.jsx'
 import Field from './WizardField.jsx'
 import StepExcel from './StepExcel.jsx'
+import ContractSelect from './ContractSelect.jsx'
 import { kaB2B } from './strings.js'
 import {
-  contract,
+  defaultContract,
+  contractById,
+  existingEmployeesFor,
   packages,
   packageByValue,
   relations,
   relationByValue,
-  existingEmployees,
   registryLookup,
   emptyDraft,
 } from './data/addInsured.js'
+import ConfirmDialog from '../components/ConfirmDialog.jsx'
 import { importable, toPerson } from './data/insuredImport.js'
 
 /* AddInsuredScreen — B2B add-insured wizard (concept agreed 2026-07-06).
@@ -50,18 +53,13 @@ const TODAY = new Date()
 
 /* ---- step 1: method cards -------------------------------------------------- */
 
-function MethodCard({ icon, title, meta, selected, disabled, tag, onSelect }) {
+/* Navigation tiles (user, 2026-08-06 — replaced the radio-cards + footer
+   „გაგრძელება"): clicking a tile goes STRAIGHT to its flow — the extra
+   confirm-click bought nothing on a one-decision step. Chevron = navigation
+   affordance; disabled methods keep their tag and get no chevron. */
+function MethodCard({ icon, title, meta, disabled, tag, onGo }) {
   return (
-    <button
-      type="button"
-      className={`b2b-method__card ${selected ? 'is-selected' : ''}`}
-      disabled={disabled}
-      aria-pressed={!disabled ? selected : undefined}
-      onClick={onSelect}
-    >
-      <span className="gpi-radio" aria-hidden="true">
-        {selected && <span className="gpi-radio__dot" />}
-      </span>
+    <button type="button" className="b2b-method__card" disabled={disabled} onClick={onGo}>
       <span className="b2b-method__icon">
         <Icon name={icon} size={24} />
       </span>
@@ -76,44 +74,32 @@ function MethodCard({ icon, title, meta, selected, disabled, tag, onSelect }) {
         </span>
         <span className="b2b-method__meta">{meta}</span>
       </span>
+      {!disabled && (
+        <span className="b2b-method__chev" aria-hidden="true">
+          <Icon name="chevron-right" size={20} />
+        </span>
+      )}
     </button>
   )
 }
 
-function ContractChip() {
-  return (
-    <div className="b2b-wiz__contract">
-      <span className="b2b-wiz__contract-lbl">{t.contractLabel}:</span>
-      <span className="b2b-wiz__contract-val">{contract.label}</span>
-      <Badge color="success" size="sm">
-        {contract.status}
-      </Badge>
-      <button type="button" className="gpi-link" title={t.contractSingle}>
-        {t.contractChange}
-      </button>
-    </div>
-  )
-}
-
-function StepMethod({ method, onMethod }) {
+function StepMethod({ onMethod, contract, onContract }) {
   return (
     <>
-      <ContractChip />
+      <ContractSelect contract={contract} onSelect={onContract} />
       <h2 className="b2b-wiz__h">{t.method.heading}</h2>
       <div className="b2b-method">
         <MethodCard
           icon="user-plus"
           title={t.method.single.title}
           meta={t.method.single.meta}
-          selected={method === 'single'}
-          onSelect={() => onMethod('single')}
+          onGo={() => onMethod('single')}
         />
         <MethodCard
           icon="upload"
           title={t.method.excel.title}
           meta={t.method.excel.meta}
-          selected={method === 'excel'}
-          onSelect={() => onMethod('excel')}
+          onGo={() => onMethod('excel')}
         />
         <MethodCard icon="mail" title={t.method.link.title} meta={t.method.link.meta} tag={t.method.later} disabled />
         <MethodCard icon="arrow-right-left" title={t.method.hr.title} meta={t.method.hr.meta} tag={t.method.soon} disabled />
@@ -127,7 +113,7 @@ function StepMethod({ method, onMethod }) {
 
 /* ---- step 2: data form + batch list ---------------------------------------- */
 
-function StepData({ people, draft, onField, onWho, errors, lookup, editingId, onAddToList, onClearForm, onEditRow, onRemoveRow, onAddFamily }) {
+function StepData({ people, draft, onField, onWho, errors, lookup, editingId, onAddToList, onClearForm, onEditRow, onRemoveRow, onAddFamily, contract, onContract }) {
   const f = t.form
   const set = (k) => (e) => onField(k, e.target.value)
   /* Per-field inline message (user rule): required vs format, cleared live. */
@@ -136,7 +122,7 @@ function StepData({ people, draft, onField, onWho, errors, lookup, editingId, on
   const pkg = packageByValue(draft.pkg)
 
   const linkOptions = [
-    ...existingEmployees.map((e) => ({ value: e.id, label: e.name })),
+    ...existingEmployeesFor(contract.id).map((e) => ({ value: e.id, label: e.name })),
     ...people.filter((p) => p.who === 'employee').map((p) => ({ value: `b:${p.id}`, label: `${f.linkedNew} ${p.firstName} ${p.lastName}` })),
   ]
 
@@ -145,6 +131,7 @@ function StepData({ people, draft, onField, onWho, errors, lookup, editingId, on
   return (
     <div className="b2b-wiz__cols">
       <div className="b2b-wiz__main">
+        <ContractSelect contract={contract} onSelect={onContract} />
         <div className="b2b-wiz__grid">
           <Field label={t.who.label} wide>
             <div className="b2b-wiz__radios" role="radiogroup" aria-label={t.who.label}>
@@ -281,11 +268,9 @@ function StepData({ people, draft, onField, onWho, errors, lookup, editingId, on
         )}
       </div>
 
+      {/* No contract read-out here (audit 2026-08-06): the selector chip at the
+          top of the main column already names it on this same screen. */}
       <div className="b2b-wiz__side">
-        <div className="b2b-wiz__sideplain">
-          <span className="b2b-wiz__sidelbl">{t.contractLabel}</span>
-          <span className="b2b-wiz__sideval">{contract.label}</span>
-        </div>
         <div className="b2b-wiz__sidecard">
           <div className="b2b-wiz__sidehd">{t.side.rulesTitle}</div>
           <InlineAlert tone="success" title={t.side.ruleWindowTitle}>
@@ -308,13 +293,26 @@ function StepData({ people, draft, onField, onWho, errors, lookup, editingId, on
 
 /* ---- step 3: review --------------------------------------------------------- */
 
-function StepReview({ people }) {
+function StepReview({ people, contract }) {
   const total = people.reduce((s, p) => s + (packageByValue(p.pkg)?.premium || 0), 0)
+  /* Same link resolution the data step's batch list uses (audit 2026-08-06 —
+     review previously showed a bare „შვილი" with no employee): in-batch people
+     first (`b:` ids), then the selected contract's roster. */
+  const linkedName = (p) => {
+    if (!p.linkedTo) return ''
+    const inBatch = people.find((o) => `b:${o.id}` === p.linkedTo)
+    if (inBatch) return `${inBatch.firstName} ${inBatch.lastName}`.trim()
+    return existingEmployeesFor(contract.id).find((e) => e.id === p.linkedTo)?.name || ''
+  }
   return (
     <div className="b2b-wiz__cols">
       <div className="b2b-wiz__main">
+        {/* Chip ABOVE the heading — same order as the data + excel steps
+            (audit 2026-08-06). readOnly: at review the contract is context, not
+            a control — switching here would re-open validation behind the
+            user's back. */}
+        <ContractSelect contract={contract} readOnly />
         <h2 className="b2b-wiz__h">{t.review.heading}</h2>
-        <ContractChip />
         <div className="b2b-batch">
           <div className="b2b-batch__hd">
             {people.length} {t.review.people}
@@ -329,7 +327,13 @@ function StepReview({ people }) {
                   <div className="b2b-batch__name">
                     {p.firstName} {p.lastName}
                   </div>
-                  <div className="b2b-batch__meta">{p.who === 'employee' ? t.batch.employeeTag : rel?.label}</div>
+                  <div className="b2b-batch__meta">
+                    {p.who === 'employee'
+                      ? t.batch.employeeTag
+                      : linkedName(p)
+                        ? `${rel?.label || ''} → ${linkedName(p)}`
+                        : rel?.label}
+                  </div>
                 </div>
                 <div className="b2b-batch__pkg">
                   {pk?.label} · {pk ? fmtGel(pk.premium) : ''}
@@ -399,6 +403,20 @@ export default function AddInsuredScreen({ step = 'method' }) {
   const [doneCount, setDoneCount] = useState(0)
   const [seq, setSeq] = useState(1)
 
+  /* Selected contract (2026-08-06): default pre-selected, switchable from the
+     inline selector. Switching with data present goes through a confirm —
+     entered people are kept, an uploaded file is RE-VALIDATED (StepExcel
+     watches contract.id): already-insured / link-to-existing checks are
+     contract-scoped, so results can genuinely change. */
+  const [contractId, setContractId] = useState(defaultContract.id)
+  const [pendingContract, setPendingContract] = useState(null)
+  const selContract = contractById(contractId)
+  const requestContract = (id) => {
+    const hasData = method === 'excel' ? !!(excel.file || excel.result) : people.length > 0
+    if (hasData) setPendingContract(id)
+    else setContractId(id)
+  }
+
   /* Mock registry autofill: resident + 11-digit ID + birth date → look the
      person up and pre-fill name/surname/gender (fields stay editable). */
   const lookup = useMemo(() => {
@@ -457,13 +475,19 @@ export default function AddInsuredScreen({ step = 'method' }) {
   /* Switching method discards the other side's work, so it asks first — same
      window.confirm pattern as cancel(). Mixing an uploaded file with
      hand-added people is not supported in v1. */
+  /* Tile click = navigate straight into the chosen flow (2026-08-06). The
+     lose-data guard stays for the revisit case: coming BACK to step 1 with an
+     Excel batch and tapping the single form (or vice versa) still confirms
+     before wiping the other method's data. */
   const chooseMethod = (next) => {
-    if (next === method) return
-    const losing = next === 'single' ? !!excel.file : people.length > 0
-    if (losing && !window.confirm(t.excel.switchConfirm)) return
-    if (next === 'single') setExcel({ file: null, result: null })
-    else setPeople([])
-    setMethod(next)
+    if (next !== method) {
+      const losing = next === 'single' ? !!excel.file : people.length > 0
+      if (losing && !window.confirm(t.excel.switchConfirm)) return
+      if (next === 'single') setExcel({ file: null, result: null })
+      else setPeople([])
+      setMethod(next)
+    }
+    go(next === 'excel' ? 'excel' : 'data')
   }
 
   const validate = () => {
@@ -566,9 +590,18 @@ export default function AddInsuredScreen({ step = 'method' }) {
         </>
       )}
 
-      {step === 'method' && <StepMethod method={method} onMethod={chooseMethod} />}
+      {step === 'method' && (
+        <StepMethod onMethod={chooseMethod} contract={selContract} onContract={requestContract} />
+      )}
       {step === 'excel' && (
-        <StepExcel excel={excel} onImportState={setExcel} startSeq={seq} ctxToday={TODAY} />
+        <StepExcel
+          excel={excel}
+          onImportState={setExcel}
+          startSeq={seq}
+          ctxToday={TODAY}
+          contract={selContract}
+          onContract={requestContract}
+        />
       )}
       {step === 'data' && (
         <StepData
@@ -584,32 +617,41 @@ export default function AddInsuredScreen({ step = 'method' }) {
           onEditRow={editRow}
           onRemoveRow={removeRow}
           onAddFamily={addFamily}
+          contract={selContract}
+          onContract={requestContract}
         />
       )}
-      {step === 'review' && <StepReview people={people} />}
+      {step === 'review' && <StepReview people={people} contract={selContract} />}
       {isDone && <StepDone count={doneCount} />}
 
-      {!isDone && (
+      {pendingContract && (
+        <ConfirmDialog
+          variant="primary"
+          title={t.contractSwitch.title}
+          body={method === 'excel' ? t.contractSwitch.bodyExcel : t.contractSwitch.bodyForm}
+          confirmLabel={t.contractSwitch.confirm}
+          keepLabel={t.contractSwitch.cancel}
+          onConfirm={() => {
+            setContractId(pendingContract)
+            setPendingContract(null)
+          }}
+          onClose={() => setPendingContract(null)}
+        />
+      )}
+
+      {/* No footer on the method step (2026-08-06): tiles navigate directly, and
+          „უკან" there duplicated the X გაუქმება in the page head. */}
+      {!isDone && step !== 'method' && (
         <WizardFooter
-          onBack={step === 'method' ? cancel : () => go(step === 'review' ? backFromReview() : '')}
-          onContinue={
-            step === 'review'
-              ? submit
-              : step === 'method'
-                ? () => go(method === 'excel' ? 'excel' : 'data')
-                : step === 'excel'
-                  ? commitExcel
-                  : () => go('review')
-          }
+          onBack={() => go(step === 'review' ? backFromReview() : '')}
+          onContinue={step === 'review' ? submit : step === 'excel' ? commitExcel : () => go('review')}
           canContinue={step === 'data' ? people.length > 0 : step === 'excel' ? excelReady : true}
           continueLabel={
             step === 'data'
               ? `${t.steps.review} (${people.length})`
               : step === 'excel'
                 ? `${t.steps.review} (${excelCount})`
-                : step === 'review'
-                  ? t.review.submit
-                  : undefined
+                : t.review.submit
           }
           continueIcon={step === 'review' ? 'check' : 'arrow-right'}
           hint={step === 'excel' && !excelReady ? excelBlockHint : null}

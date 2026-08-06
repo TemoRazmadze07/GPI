@@ -35,6 +35,12 @@ export default function FileDropzone({
   formatSize,
   disabled = false,
   compact = false,
+  /* Compact-state slots (2026-08-06): `compactLabel` renders a muted
+     "<label>:" before the filename (mirrors the contract chip's "კონტრაქტი:"),
+     `extra` is a caller-supplied node (e.g. import stats) shown between the
+     file identity and the replace CTA. Both are ignored in the full state. */
+  compactLabel = '',
+  extra = null,
   className = '',
   inputRef: externalRef,
 }) {
@@ -131,23 +137,43 @@ export default function FileDropzone({
         }}
       />
 
-      <label htmlFor={inputId} className="gpi-dropzone__label">
-        <span className="gpi-dropzone__icon">
-          {/* The icon SHAPE changes on drag-over, not just its colour (SC 1.4.1). */}
-          <Icon name={file ? 'file-text' : over ? 'download' : 'upload'} size={24} />
-        </span>
-        {file ? (
-          <span className="gpi-dropzone__file">
-            <span className="gpi-dropzone__filename">{file.name}</span>
-            <span className="gpi-dropzone__filemeta">{fmt(file.size)}</span>
+      {compact ? (
+        /* Compact: only the CTA is a <label> for the input — the file identity
+           and the `extra` slot are plain read-out, so clicking the stats can
+           never open the OS picker. Keyboard path stays the input itself. */
+        <>
+          <span className="gpi-dropzone__icon gpi-dropzone__tile" aria-hidden="true">
+            <Icon name={over ? 'download' : 'file-text'} size={20} />
           </span>
-        ) : (
-          <span className="gpi-dropzone__title">{title}</span>
-        )}
-        <span className="gpi-dropzone__cta">
-          {state === 'loading' ? loadingLabel : file ? replaceLabel || browseLabel : browseLabel}
-        </span>
-      </label>
+          {compactLabel && <span className="gpi-dropzone__lbl">{compactLabel}:</span>}
+          <span className="gpi-dropzone__file">
+            <span className="gpi-dropzone__filename">{file?.name}</span>
+            {file && <span className="gpi-dropzone__filemeta">{fmt(file.size)}</span>}
+          </span>
+          {extra && <span className="gpi-dropzone__extra">{extra}</span>}
+          <label htmlFor={inputId} className="gpi-dropzone__cta">
+            {state === 'loading' ? loadingLabel : replaceLabel || browseLabel}
+          </label>
+        </>
+      ) : (
+        <label htmlFor={inputId} className="gpi-dropzone__label">
+          <span className="gpi-dropzone__icon">
+            {/* The icon SHAPE changes on drag-over, not just its colour (SC 1.4.1). */}
+            <Icon name={file ? 'file-text' : over ? 'download' : 'upload'} size={24} />
+          </span>
+          {file ? (
+            <span className="gpi-dropzone__file">
+              <span className="gpi-dropzone__filename">{file.name}</span>
+              <span className="gpi-dropzone__filemeta">{fmt(file.size)}</span>
+            </span>
+          ) : (
+            <span className="gpi-dropzone__title">{title}</span>
+          )}
+          <span className="gpi-dropzone__cta">
+            {state === 'loading' ? loadingLabel : file ? replaceLabel || browseLabel : browseLabel}
+          </span>
+        </label>
+      )}
 
       {onClear && file && state !== 'loading' && (
         <div className="gpi-dropzone__actions">

@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import ActionMenu from '../components/ActionMenu.jsx'
 import Badge from '../components/Badge.jsx'
-import { Button } from '../components/Button.jsx'
 import DataTable from '../components/DataTable.jsx'
 import FilterBar from '../components/FilterBar.jsx'
 import { datePresets } from '../components/FilterPopover.jsx'
@@ -166,15 +165,12 @@ export default function ContractsScreen() {
 
   return (
     <>
+      {/* No page-head CTA: contracts are signed OFF-platform (stakeholders, 2026-08-05) —
+          this page is visibility only. Adding a policy lives in the topbar + Policies. */}
       <div className="b2b-page__head">
         <div>
           <h1 className="b2b-page__title">{page.title}</h1>
           <div className="b2b-page__subtitle">{c.subtitle(CONTRACTS.length, productCount)}</div>
-        </div>
-        <div className="b2b-page__actions">
-          <Button variant="primary" size="md" leadingIcon="plus">
-            {c.newContract}
-          </Button>
         </div>
       </div>
       <div className="b2b-page__filters">

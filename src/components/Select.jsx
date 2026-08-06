@@ -4,7 +4,7 @@ import Icon from '../lib/Icon.jsx'
 /* Select — lightweight dropdown (trigger + menu of options), mirroring the
    Figma Select component (node 69:148). Closes on outside-click / Escape.
    Composes our Menu Item visual. `error` = red stroke (Figma Error variant). */
-export default function Select({ value, placeholder, options, onChange, disabled = false, error = false, className = '' }) {
+export default function Select({ value, placeholder, options, onChange, disabled = false, error = false, className = '', ariaLabel }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
@@ -32,6 +32,7 @@ export default function Select({ value, placeholder, options, onChange, disabled
         onClick={() => { if (!disabled) setOpen((o) => !o) }}
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-label={ariaLabel}
         aria-disabled={disabled || undefined}
         disabled={disabled}
       >

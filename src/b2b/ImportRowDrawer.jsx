@@ -9,6 +9,8 @@ import { Button } from '../components/Button.jsx'
 import Field from './WizardField.jsx'
 import { kaB2B } from './strings.js'
 import { packages, relations, existingEmployees, packageByValue } from './data/addInsured.js'
+/* NB `existingEmployees` here is the default-contract fallback only — the
+   caller passes the selected contract's roster via the `employees` prop. */
 
 /* ImportRowDrawer — repair one imported row, using the SAME controls as the
    single-person form (Field + gpi-input + Select + Radio) so a person edited
@@ -38,7 +40,7 @@ export const rowRef = (r) =>
     : r.pid ? `${x.cols.pid} ${r.pid}`
       : `${x.cols.row} ${r.excelRow}`
 
-export default function ImportRowDrawer({ row, rows, onChange, onRemove, onNext, hasNext, onClose }) {
+export default function ImportRowDrawer({ row, rows, onChange, onRemove, onNext, hasNext, onClose, employees = existingEmployees }) {
   const panelRef = useRef(null)
 
   /* Land on the first control that actually has a problem — the user opened
@@ -71,7 +73,7 @@ export default function ImportRowDrawer({ row, rows, onChange, onRemove, onNext,
      contract, plus the employees this file itself introduces (`b:` prefixed —
      the wizard's removal cascade depends on that exact shape). */
   const linkOptions = [
-    ...existingEmployees.map((e) => ({ value: e.id, label: e.name })),
+    ...employees.map((e) => ({ value: e.id, label: e.name })),
     ...rows
       .filter((p) => p.who === 'employee' && !p.removed && p.id !== row.id)
       .map((p) => ({

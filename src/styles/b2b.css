@@ -17,6 +17,53 @@
   color: var(--text-main);
 }
 
+/* ---- B2B-scoped design-system adjustments -------------------------------
+   Shared components keep their own defaults; these overrides apply ONLY inside
+   the CORPO shell (user, 2026-08-06 — B2B only, leave My Cabinet + mobile as is).
+   Modal and Drawer render inline (no portals), so `.b2b-shell` reaches badges in
+   dialogs and detail drawers too; ActionMenu portals out but carries no badge. */
+
+/* Badge vertical padding 2px → space/4. At 2px a badge carrying a 16px icon got
+   8px of air on the left but only 2px above/below, so the round glyph read as
+   cramped (spotted on the Excel import table). Horizontal padding intentionally
+   unchanged: these are full pills, whose ends need ≈ half the height of
+   clearance or the label hugs the curve. Heights become sm 24 (= control/xs) ·
+   md 28. Also removes a hardcoded literal in favour of a token (Rule 8). */
+.b2b-shell .gpi-badge--md { padding: var(--space-4) var(--space-12); }
+.b2b-shell .gpi-badge--sm { padding: var(--space-4) var(--space-8); }
+
+/* Compact file strip = the contract chip's TWIN (user, 2026-08-06): same
+   padding/radius/border and a 32px icon tile at the same x, so the two boxes
+   read as one stacked header. GRAY fill (surface/page on the white canvas) =
+   read-only context; the contract box above stays white = interactive. Triple
+   selector outranks .is-filled's padding override in components.css. */
+.b2b-shell .gpi-dropzone.gpi-dropzone--compact {
+  padding: var(--space-12) var(--space-16);
+  background: var(--surface-page);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-lg);
+}
+.b2b-shell .gpi-dropzone--compact .gpi-dropzone__tile {
+  width: var(--space-32);
+  height: var(--space-32);
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  color: var(--icon-default);
+}
+/* Import stats inside the strip: label + value pairs, divided. */
+.b2b-xl__filestats {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-16);
+}
+.b2b-xl__filestats .b2b-xl__sumitem + .b2b-xl__sumitem {
+  border-left: var(--border-width-sm) solid var(--border-divider);
+  padding-left: var(--space-16);
+}
+
 /* ---- Top bar: single 40px control row, centered in 64px ------------------ */
 .b2b-topbar {
   height: var(--layout-topbar-height);
@@ -96,6 +143,101 @@
   white-space: nowrap;
 }
 
+/* Company switcher — the client chip as a dropdown trigger (multi-company
+   accounts). The static single-company chip keeps the base .b2b-client look;
+   the trigger adds affordance only (chevron, hover, pointer) so geometry is
+   identical in both cases. */
+.b2b-switch {
+  position: relative;
+  display: inline-flex;
+}
+.b2b-client--btn {
+  cursor: pointer;
+  font: inherit;
+  color: var(--text-muted);
+  transition: border-color 120ms ease, background 120ms ease;
+}
+.b2b-client--btn:hover {
+  border-color: var(--border-field-hover);
+  background: var(--interactive-hover-bg);
+}
+.b2b-client--btn:focus-visible {
+  outline: var(--focus-ring-width) solid var(--border-focus);
+  outline-offset: var(--focus-ring-offset);
+}
+.b2b-client__chev {
+  display: inline-flex;
+  align-items: center;
+}
+.b2b-switch__popover {
+  position: absolute;
+  top: calc(100% + var(--space-8));
+  left: 0;
+  width: 320px;
+  padding: var(--space-8);
+  background: var(--surface-card);
+  border: var(--border-width-sm) solid var(--border-divider);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--elevation-popover);
+  z-index: 60;
+}
+.b2b-switch__heading {
+  padding: var(--space-4) var(--space-12) var(--space-4);
+  font: 600 11px/16px var(--font-sans);
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+.b2b-switch__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+}
+.b2b-switch__row:hover {
+  background: var(--interactive-hover-bg);
+}
+.b2b-switch__row.is-active {
+  background: var(--interactive-selected-bg);
+}
+.b2b-switch__row.is-active:hover {
+  background: var(--interactive-selected-bg);
+}
+.b2b-switch__row:focus-visible {
+  outline: var(--focus-ring-width) solid var(--border-focus);
+  outline-offset: -2px;
+}
+.b2b-switch__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.b2b-switch__name {
+  font: 500 13px/18px var(--font-sans);
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.b2b-switch__meta {
+  font: 400 12px/16px var(--font-sans);
+  color: var(--text-muted);
+}
+.b2b-switch__check {
+  flex-shrink: 0;
+  color: var(--text-brand);
+}
+
+/* Global top-bar search — currently NOT rendered (SHOW_GLOBAL_SEARCH = false in
+   B2BShell.jsx). Kept intentionally so the field can be switched back on; do not
+   prune as dead CSS. Table search lives in .gpi-filterbar and is unrelated. */
 .b2b-search {
   display: flex;
   align-items: center;
@@ -598,6 +740,56 @@
 .b2b-wiz__contract-val { font-weight: 600; color: var(--text-main); }
 .b2b-wiz__contract .gpi-link { margin-left: auto; font-size: 13px; }
 
+/* Inline contract selector (2026-08-06): the VALUE is the dropdown trigger —
+   quiet, not a form field. Menu panel reuses .gpi-fsel__menu (Menu Item
+   grammar); options get a right-aligned muted meta (insured count). */
+.b2b-wiz__contract-sel { position: relative; display: inline-flex; min-width: 0; }
+.b2b-wiz__contract-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-4)); /* 24px+ hit area without shifting the row */
+  border: 0;
+  background: transparent;
+  border-radius: var(--radius-md);
+  font: inherit;
+  cursor: pointer;
+}
+.b2b-wiz__contract-trigger:hover { background: var(--interactive-hover-bg); }
+.b2b-wiz__contract-trigger svg { color: var(--text-muted); flex: 0 0 auto; }
+.b2b-wiz__contract-menu {
+  top: calc(100% + var(--space-8));
+  left: 0;
+  right: auto;
+  min-width: 520px; /* fits tile + "label · CNT-…" + meta on one line */
+}
+.b2b-wiz__contract-opt {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+.b2b-wiz__contract-meta { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+/* Product tile in the chip/options — same lavender tile as the Contracts table
+   (.gpi-table__media), cut down: 36px chip / 32px option, image scaled to match. */
+.b2b-wiz__contract-tile {
+  width: var(--space-32);
+  height: var(--space-32);
+  flex: 0 0 auto;
+  border-radius: var(--radius-md); /* inset tile inside the 12px chip (radius ladder) */
+  background: var(--color-link-25);
+  color: var(--action-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.b2b-wiz__contract-tile img { width: 20px; height: auto; display: block; }
+.b2b-wiz__contract-tile--sm { width: 28px; height: 28px; border-radius: var(--radius-sm); }
+.b2b-wiz__contract-tile--sm img { width: 18px; }
+
 /* Method / who selector cards (Radio Card usage) */
 .b2b-method {
   display: grid;
@@ -618,12 +810,10 @@
   font-family: var(--font-sans);
   transition: border-color 0.12s ease, background 0.12s ease;
 }
+/* Navigation tiles (2026-08-06 — was radio-cards): hover lifts the border and
+   nudges the chevron; no selected state, clicking navigates. */
 .b2b-method__card:hover:not(:disabled) { border-color: var(--border-strong); }
-.b2b-method__card.is-selected {
-  border: var(--border-width-md) solid var(--action-primary);
-  background: var(--interactive-selected-bg);
-  padding: calc(var(--space-16) - 0.5px);
-}
+.b2b-method__card:hover:not(:disabled) .b2b-method__chev { color: var(--text-main); transform: translateX(2px); }
 .b2b-method__card:disabled {
   cursor: not-allowed;
   background: var(--surface-page);
@@ -631,8 +821,13 @@
 .b2b-method__card:disabled .b2b-method__title,
 .b2b-method__card:disabled .b2b-method__meta,
 .b2b-method__card:disabled .b2b-method__icon { color: var(--text-muted); }
-.b2b-method__card .gpi-radio { flex: 0 0 auto; margin-top: 2px; }
-.b2b-method__card:disabled .gpi-radio { visibility: hidden; }
+.b2b-method__chev {
+  flex: 0 0 auto;
+  margin-left: auto;
+  align-self: center;
+  color: var(--text-muted);
+  transition: transform 0.12s ease, color 0.12s ease;
+}
 .b2b-method__icon { flex: 0 0 auto; color: var(--color-indigo-800); margin-top: 1px; }
 .b2b-method__body { min-width: 0; display: flex; flex-direction: column; gap: var(--space-2); }
 .b2b-method__title {
@@ -666,9 +861,8 @@
 }
 .b2b-wiz__sidenote { font: 400 11px/16px var(--font-sans); color: var(--text-muted); }
 .b2b-wiz__sidetext { font: 400 12px/18px var(--font-sans); color: var(--text-muted); padding: 0 var(--space-4); }
-.b2b-wiz__sideplain { display: flex; flex-direction: column; gap: var(--space-2); padding: 0 var(--space-4); }
-.b2b-wiz__sidelbl { font: 400 11px/16px var(--font-sans); color: var(--text-muted); }
-.b2b-wiz__sideval { font: 600 13px/20px var(--font-sans); color: var(--text-main); }
+/* .b2b-wiz__sideplain/-lbl/-val removed 2026-08-06 — the side panel's contract
+   read-out duplicated the selector chip on the same screen. */
 
 /* Form grid (reuses .gpi-field / .gpi-input / Select) */
 .b2b-wiz__grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-20) var(--space-16); }
@@ -852,26 +1046,32 @@
 
 /* ---- Excel import (step 2, Excel mode) ----------------------------------
    Sibling of .b2b-wiz__* / .b2b-batch__* — same wizard, second method. */
-.b2b-xl__steps      { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-12); }
-.b2b-xl__step       { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-8);
-                      padding: var(--space-16);
-                      border: var(--border-width-sm) solid var(--border-default);
-                      border-radius: var(--radius-lg); background: var(--surface-card); }
-.b2b-xl__stepnum    { display: grid; place-items: center;
-                      width: var(--control-xs); height: var(--control-xs);
-                      border-radius: var(--radius-full);
-                      background: var(--color-indigo-800); color: var(--text-inverse);
-                      font: 600 12px/1 var(--font-sans); }
-.b2b-xl__steptitle  { font: 600 14px/20px var(--font-sans); color: var(--text-main); }
-.b2b-xl__stepbody   { font: 400 12px/18px var(--font-sans); color: var(--text-muted); }
-.b2b-xl__step .gpi-btn { margin-top: var(--space-4); }
+/* Upload-state header row: heading left, quiet template link right (the two
+   onboarding step cards were removed 2026-08-06 — trained users, dropzone = hero). */
+.b2b-xl__hd         { display: flex; align-items: baseline; justify-content: space-between;
+                      gap: var(--space-16); }
+/* No bottom margin: .b2b-wiz__main already spaces its children by space/16, so
+   the heading's own 16 stacked on top of it and doubled the gap to the dropzone. */
+.b2b-xl__hd .b2b-wiz__h { margin-bottom: 0; }
+.b2b-xl__hd .gpi-link   { white-space: nowrap; }
 
 /* Results state: no side panel, so the issue column gets the space it needs. */
 .b2b-xl--wide .b2b-wiz__main { flex: 1 1 100%; }
 .b2b-xl--wide .b2b-xl__issues { max-width: 420px; }
 
-.b2b-xl__preflight  { margin: 0; font: 400 12px/18px var(--font-sans); color: var(--text-muted); }
-.b2b-xl__stats      { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-12); }
+/* Pulled toward the file strip (-8 against the column's 16 gap): it's the
+   file's read-out, not a separate section. */
+.b2b-xl__preflight  { margin: calc(-1 * var(--space-8)) 0 0; font: 400 12px/18px var(--font-sans); color: var(--text-muted); }
+/* Result stat items (2026-08-06 — replaced the alert + 4 stat tiles; since the
+   same day they live INSIDE the file strip, see .b2b-xl__filestats). */
+.b2b-xl__sumitem    { display: inline-flex; align-items: baseline; gap: var(--space-4);
+                      font: 400 13px/20px var(--font-sans); color: var(--text-muted); }
+.b2b-xl__sumitem strong { font: 600 16px/20px var(--font-sans); color: var(--text-main); }
+.b2b-xl__sumitem svg    { align-self: center; }
+.b2b-xl__sumitem.is-ok  { color: var(--status-success-fg); }
+.b2b-xl__sumitem.is-ok strong  { color: var(--status-success-fg); }
+.b2b-xl__sumitem.is-bad { color: var(--status-error-fg); }
+.b2b-xl__sumitem.is-bad strong { color: var(--status-error-fg); }
 .b2b-xl__ledger     { margin: 0; font: 400 12px/18px var(--font-sans); color: var(--text-muted); }
 
 .b2b-xl__toolbar    { display: flex; align-items: center; justify-content: space-between;
@@ -889,15 +1089,9 @@
 .b2b-xl__trayhd     { display: flex; align-items: center; justify-content: space-between; gap: var(--space-12); }
 .b2b-xl__drawergrid { margin-top: var(--space-16); }
 
-/* Row tint is DECORATIVE ONLY — the status badge's text carries the meaning
-   (SC 1.4.1). Applied to th as well as td: column 1 is a <th scope="row"> and
-   is position:sticky with its own background. */
-.b2b-xl .gpi-table tbody tr.is-invalid td,
-.b2b-xl .gpi-table tbody tr.is-invalid th { background: var(--status-error-bg); }
-.b2b-xl .gpi-table tbody tr.is-warn   td,
-.b2b-xl .gpi-table tbody tr.is-warn   th { background: var(--status-warning-bg); }
-.b2b-xl .gpi-table tbody tr.is-exists td,
-.b2b-xl .gpi-table tbody tr.is-exists th { background: var(--surface-page); }
+/* Row tints removed 2026-08-06 (user): the status badge + red note carry the
+   state; a full-row wash was noise. Tints were decorative-only (SC 1.4.1), so
+   nothing semantic was lost. */
 
 /* ---- prototype demo bar (NOT product UI) ------------------------------------
    A presenter affordance for the Excel import: one click loads a bundled sample
@@ -951,3 +1145,492 @@
 }
 .b2b-demobar__btn--ghost { background: transparent; color: rgba(255, 255, 255, .72); }
 .b2b-demobar__btn--ghost:hover { background: rgba(255, 255, 255, .14); color: #fff; }
+
+/* ---- Notification center (bell popover) ---------------------------------- */
+/* Concept locked 2026-08-06: flat list (no day grouping), all/unread pills +
+   category dropdown, whole-row click deep-links, inert rows get no affordance.
+   Unread dot = brand pink (non-text accent); urgency lives in the Badge chip. */
+.b2b-notif {
+  position: relative;
+}
+.b2b-topbtn__dot--muted {
+  background: var(--color-neutral-400); /* unread info only — no action needed */
+}
+.b2b-notif__popover {
+  position: absolute;
+  top: calc(100% + var(--space-8));
+  right: 0;
+  width: 400px;
+  background: var(--surface-card);
+  border: var(--border-width-sm) solid var(--border-divider);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--elevation-popover);
+  z-index: 60;
+}
+.b2b-notif__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-16) var(--space-16) var(--space-8);
+}
+.b2b-notif__title {
+  font: 500 16px/24px var(--font-sans);
+  color: var(--text-main);
+}
+.b2b-notif__markall {
+  border: 0;
+  background: transparent;
+  padding: var(--space-4);
+  font: 400 12px/16px var(--font-sans);
+  color: var(--text-link);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+.b2b-notif__markall:hover {
+  text-decoration: underline;
+}
+/* Toolbar = the table FilterBar grammar (user, 2026-08-06): [ფილტრი ▾ +count]
+   trigger LEFT, applied .gpi-fchip chips flowing after it, wrapping. Trigger,
+   count bubble and chips are the shared FilterBar classes — only layout and
+   the grouped live-apply menu are notif-specific. */
+.b2b-notif__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-4) var(--space-16) var(--space-12);
+  border-bottom: var(--border-width-sm) solid var(--border-divider);
+}
+.b2b-notif__fanchor {
+  position: relative;
+  flex: none;
+}
+.b2b-notif__fmenu {
+  position: absolute;
+  top: calc(100% + var(--space-4));
+  left: 0;
+  width: 248px;
+  background: var(--surface-card);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-dropdown);
+  padding: var(--space-4) var(--space-4) var(--space-8);
+  z-index: 2;
+}
+.b2b-notif__fgroup {
+  font: 500 12px/16px var(--font-sans);
+  color: var(--text-muted);
+  padding: var(--space-8) var(--space-12) var(--space-4);
+}
+.b2b-notif__fgroup--divided {
+  border-top: var(--border-width-sm) solid var(--border-divider);
+  margin-top: var(--space-4);
+  padding-top: var(--space-8);
+}
+.b2b-notif__fopt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-md);
+  font: 400 13px/18px var(--font-sans);
+  color: var(--text-main);
+  text-align: left;
+  cursor: pointer;
+}
+.b2b-notif__fopt:hover {
+  background: var(--interactive-hover-bg);
+}
+.b2b-notif__fopt.is-sel {
+  font-weight: 500;
+}
+/* Check = the Select's own grammar (brand check on the selected option). */
+.b2b-notif__fopt svg {
+  color: var(--text-brand);
+  flex: none;
+}
+.b2b-notif__foptcount {
+  font: 500 12px/16px var(--font-sans);
+  color: var(--text-muted);
+}
+.b2b-notif__list {
+  max-height: 432px;
+  overflow-y: auto;
+  /* Rounds the last row's fill; the popover itself must NOT clip, or the
+     filter menu gets cut off when the list is short. */
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+}
+.b2b-notif__row {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-12);
+  width: 100%;
+  padding: var(--space-16);
+  border: 0;
+  border-bottom: var(--border-width-sm) solid var(--border-divider);
+  background: transparent;
+  text-align: left;
+  font-family: var(--font-sans);
+}
+/* Divider lives on the row, but "last" is decided by the listitem wrapper. */
+.b2b-notif__item:last-child .b2b-notif__row {
+  border-bottom: 0;
+}
+.b2b-notif__row.is-unread {
+  background: var(--surface-page);
+}
+.b2b-notif__row.is-clickable {
+  cursor: pointer;
+}
+.b2b-notif__row.is-clickable:hover {
+  background: var(--interactive-hover-bg);
+}
+.b2b-notif__row.is-clickable:active {
+  background: var(--interactive-pressed-bg);
+}
+.b2b-notif__row.is-clickable:focus-visible {
+  outline: var(--focus-ring-width) solid var(--border-focus);
+  outline-offset: -2px;
+}
+.b2b-notif__tilewrap {
+  position: relative;
+  flex: none;
+}
+.b2b-notif__tile {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  color: var(--color-neutral-500); /* lower-shaded: category is context, not content */
+}
+.b2b-notif__content {
+  flex: 1;
+  min-width: 0;
+}
+/* ONE title style, read or unread — read state lives in the tile dot + row
+   tint only. Never re-mute the title (hierarchy pass, 2026-08-06). */
+.b2b-notif__rowtitle {
+  display: block;
+  font: 500 13px/18px var(--font-sans);
+  color: var(--text-main);
+}
+.b2b-notif__meta {
+  display: block;
+  margin-top: 2px;
+  font: 400 12px/16px var(--font-sans);
+  color: var(--text-muted);
+}
+.b2b-notif__chip {
+  display: block;
+  margin-top: var(--space-4);
+}
+/* Unread dot pinned to the tile corner — same grammar as the bell's own dot;
+   the ring lets it sit on any row background. */
+.b2b-notif__dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--text-brand); /* brand pink — unreadness, not urgency */
+  box-shadow: 0 0 0 2px var(--surface-card);
+}
+/* Time = the fixed top-right anchor, alone on the right so the scan column
+   stays clean and nothing appears/disappears on hover. */
+.b2b-notif__time {
+  flex: none;
+  font: 400 12px/18px var(--font-sans); /* 18px line — baseline-aligns with the title */
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.b2b-notif__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-32) var(--space-16);
+  color: var(--text-muted);
+  font: 400 13px/18px var(--font-sans);
+}
+.b2b-notif__empty-ok {
+  color: var(--status-success-fg);
+}
+.b2b-notif__clear {
+  border: 0;
+  background: transparent;
+  padding: var(--space-4);
+  font: 400 13px/18px var(--font-sans);
+  color: var(--text-link);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+.b2b-notif__clear:hover {
+  text-decoration: underline;
+}
+
+/* ==== Guide (გზამკვლევი) — employee-education hub (concept 2026-08-06) ======
+   2 actionable stat tiles · kit + questions row · library card with GLOBAL
+   search above the tabs · send-log table · one shared send drawer. Item tiles
+   echo the method-tile grammar (border-default, radius-lg); every value is a
+   foundation token (Rule 8). */
+.b2b-guide__stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-12);
+  margin-bottom: var(--space-16);
+}
+.b2b-guide__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-12);
+  margin-bottom: var(--space-16);
+  align-items: stretch;
+}
+.b2b-guide__h { margin: 0; font: 600 16px/24px var(--font-sans); color: var(--text-main); }
+.b2b-guide__lead { margin: var(--space-4) 0 var(--space-12); font: 400 13px/20px var(--font-sans); color: var(--text-muted); }
+
+/* Kit card — the page's one primary CTA lives here. */
+.b2b-guide__kit { display: flex; flex-direction: column; }
+.b2b-guide__kitlist {
+  list-style: none;
+  margin: 0 0 var(--space-16);
+  padding: var(--space-12) var(--space-16);
+  background: var(--surface-page);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+.b2b-guide__kitlist li { display: flex; align-items: flex-start; gap: var(--space-8); font: 400 13px/20px var(--font-sans); color: var(--text-main); }
+.b2b-guide__kitlist svg { flex: 0 0 auto; margin-top: 2px; color: var(--status-success-fg); }
+.b2b-guide__kitfoot { display: flex; align-items: center; gap: var(--space-12); margin-top: auto; }
+.b2b-guide__kitmeta { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+
+/* Questions card — STATUS-ONLY (answer ownership = open stakeholder question). */
+.b2b-guide__qs { display: flex; flex-direction: column; }
+.b2b-guide__qlist { list-style: none; margin: var(--space-8) 0 0; padding: 0; }
+.b2b-guide__q { display: flex; align-items: flex-start; gap: var(--space-12); padding: var(--space-12) 0; border-bottom: 1px solid var(--border-divider); }
+.b2b-guide__q:last-child { border-bottom: none; }
+.b2b-guide__q-main { flex: 1; min-width: 0; }
+.b2b-guide__q-top { display: flex; align-items: baseline; gap: var(--space-8); flex-wrap: wrap; }
+.b2b-guide__q-name { font: 600 13px/18px var(--font-sans); color: var(--text-main); }
+.b2b-guide__q-when { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+.b2b-guide__q-text { margin: var(--space-2) 0 0; font: 400 13px/20px var(--font-sans); color: var(--text-main); }
+.b2b-guide__q-note {
+  margin: auto 0 0;
+  padding-top: var(--space-12);
+  border-top: 1px solid var(--border-divider);
+  font: 400 12px/16px var(--font-sans);
+  color: var(--text-muted);
+}
+
+/* Library card — search is GLOBAL (a query bypasses the type tabs). */
+.b2b-guide__lib { margin-bottom: var(--space-16); }
+.b2b-guide__search { margin-bottom: var(--space-16); max-width: 480px; }
+.b2b-guide__search .gpi-search { width: 100%; height: 40px; border-radius: var(--radius-lg); }
+.b2b-guide__lib .gpi-tabs { margin-bottom: var(--space-16); }
+
+.b2b-guide__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-12); }
+.b2b-guide__video {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.b2b-guide__thumb { position: relative; height: 112px; display: grid; place-items: center; overflow: hidden; }
+/* Photo thumb: the image fills the tile; the tint stays underneath as the
+   fallback while the image loads or if it fails.
+   ⚠ The duration chip keeps its OPAQUE surface-card pill on photos too — do
+   not switch it to white-on-scrim. Measured 2026-08-06: over these photos a
+   56px 55% scrim left white text at 2.51:1 (needs 4.5:1 — 12px normal text),
+   and it would fail unpredictably on any photo swapped in later. An opaque
+   chip is photo-INDEPENDENT (surface-card + text-main = 16:1) and keeps one
+   chip spec across both states. The scrim below is now purely decorative —
+   it grounds the photo against the white card body (Rule 7: decoration may be
+   loose, readable text may not). */
+.b2b-guide__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.b2b-guide__thumb.has-img::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 56px;
+  background: linear-gradient(to top, rgba(17, 23, 34, 0.35), rgba(17, 23, 34, 0));
+}
+.b2b-guide__thumb.has-img .b2b-guide__dur { z-index: 1; }
+.b2b-guide__thumb--lavender { background: var(--color-link-25); }
+.b2b-guide__thumb--pink { background: var(--color-pink-25); }
+.b2b-guide__thumb--indigo { background: var(--color-indigo-50); }
+.b2b-guide__thumb--mint { background: var(--status-success-bg); }
+.b2b-guide__thumb--sun { background: var(--status-warning-bg); }
+.b2b-guide__thumb--slate { background: var(--color-neutral-100); }
+.b2b-guide__play {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  color: var(--color-indigo-500);
+  display: grid;
+  place-items: center;
+  box-shadow: var(--elevation-card);
+}
+.b2b-guide__play svg { margin-left: 2px; } /* optical centering of the triangle */
+/* Lift the controls above the image + scrim (the flag keeps its own
+   absolute placement — only the stacking changes). */
+.b2b-guide__thumb.has-img .b2b-guide__play { position: relative; z-index: 1; }
+.b2b-guide__thumb.has-img .b2b-guide__flag { z-index: 1; }
+.b2b-guide__dur {
+  position: absolute;
+  right: var(--space-8);
+  bottom: var(--space-8);
+  padding: var(--space-2) var(--space-8);
+  background: var(--surface-card);
+  border-radius: var(--radius-sm);
+  font: 500 12px/16px var(--font-sans);
+  color: var(--text-main);
+}
+.b2b-guide__flag { position: absolute; left: var(--space-8); top: var(--space-8); }
+.b2b-guide__vbody { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-12); flex: 1; }
+.b2b-guide__vtitle { font: 600 14px/20px var(--font-sans); color: var(--text-main); }
+.b2b-guide__vmeta { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+.b2b-guide__acts { display: flex; gap: var(--space-8); }
+.b2b-guide__vbody .b2b-guide__acts { margin-top: auto; padding-top: var(--space-8); }
+
+.b2b-guide__faqs { list-style: none; margin: 0; padding: 0; }
+.b2b-guide__faq { border-bottom: 1px solid var(--border-divider); }
+.b2b-guide__faq:last-child { border-bottom: none; }
+.b2b-guide__faq-row { display: flex; align-items: center; gap: var(--space-12); }
+.b2b-guide__faq-q {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+  padding: var(--space-12) 0;
+  border: none;
+  background: none;
+  font: 400 14px/20px var(--font-sans);
+  color: var(--text-main);
+  text-align: left;
+  cursor: pointer;
+}
+.b2b-guide__faq-q:hover { color: var(--color-indigo-600); }
+.b2b-guide__faq-q svg { flex: 0 0 auto; color: var(--text-muted); }
+.b2b-guide__faq-a { margin: 0 0 var(--space-12); font: 400 13px/20px var(--font-sans); color: var(--text-muted); max-width: 720px; }
+
+.b2b-guide__hbs { list-style: none; margin: 0; padding: 0; }
+.b2b-guide__hb { display: flex; align-items: center; gap: var(--space-12); padding: var(--space-12) 0; border-bottom: 1px solid var(--border-divider); }
+.b2b-guide__hb:last-child { border-bottom: none; }
+.b2b-guide__hb-ic {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--color-link-25);
+  color: var(--color-indigo-500);
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+.b2b-guide__hb-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.b2b-guide__hb-title { font: 600 14px/20px var(--font-sans); color: var(--text-main); }
+.b2b-guide__hb-meta { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+
+/* Global-search results — mixed types, one flat list. */
+.b2b-guide__rescount { margin: 0 0 var(--space-8); font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+.b2b-guide__reslist { list-style: none; margin: 0; padding: 0; }
+.b2b-guide__res { display: flex; align-items: center; gap: var(--space-12); padding: var(--space-12) 0; border-bottom: 1px solid var(--border-divider); }
+.b2b-guide__res:last-child { border-bottom: none; }
+.b2b-guide__res-title { flex: 1; min-width: 0; font: 400 14px/20px var(--font-sans); color: var(--text-main); }
+.b2b-guide__res-meta { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+.b2b-guide__empty { display: flex; flex-direction: column; align-items: center; padding: var(--space-32) 0; color: var(--text-muted); }
+.b2b-guide__empty-title { margin: var(--space-8) 0 0; font: 600 14px/20px var(--font-sans); color: var(--text-main); }
+.b2b-guide__empty-hint { margin: var(--space-2) 0 0; font: 400 13px/20px var(--font-sans); }
+
+.b2b-guide__histh { margin: var(--space-24) 0 var(--space-12); }
+.b2b-guide__chan { display: inline-flex; align-items: center; gap: var(--space-8); }
+.b2b-guide__chan svg { color: var(--text-muted); }
+
+/* ---- Send drawer (shared Drawer shell) ------------------------------------ */
+.b2b-gsend { display: flex; flex-direction: column; gap: var(--space-24); }
+.b2b-gsend__h {
+  margin: 0 0 var(--space-8);
+  font: 600 13px/16px var(--font-sans);
+  color: var(--text-muted);
+  letter-spacing: 0.4px; /* mirrors .b2b-cdrawer__secttitle */
+}
+.b2b-gsend__mat {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-12);
+  background: var(--surface-page);
+  border-radius: var(--radius-lg);
+}
+.b2b-gsend__mat-ic {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--color-link-25);
+  color: var(--color-indigo-500);
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+.b2b-gsend__mat-meta { display: flex; flex-direction: column; min-width: 0; }
+.b2b-gsend__mat-title { font: 600 14px/20px var(--font-sans); color: var(--text-main); }
+.b2b-gsend__mat-type { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+.b2b-gsend__opts { display: flex; flex-direction: column; gap: var(--space-8); }
+.b2b-gsend__opts--row { flex-direction: row; gap: var(--space-24); }
+.b2b-gsend__contract { margin-top: var(--space-8); max-width: 420px; }
+.b2b-gsend__warn {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-8);
+  margin: var(--space-8) 0 0;
+  font: 400 12px/18px var(--font-sans);
+  color: var(--status-warning-fg);
+}
+.b2b-gsend__warn svg { flex: 0 0 auto; }
+.b2b-gsend__preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-16);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--surface-page);
+}
+.b2b-gsend__pv-from { display: flex; align-items: center; gap: var(--space-8); font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+.b2b-gsend__pv-subject { font: 600 13px/20px var(--font-sans); color: var(--text-main); }
+.b2b-gsend__pv-body { margin: 0; font: 400 13px/20px var(--font-sans); color: var(--text-main); }
+.b2b-gsend__pv-link {
+  align-self: flex-start;
+  padding: var(--space-2) var(--space-12);
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  font: 500 12px/20px var(--font-sans);
+  color: var(--text-link);
+}
+.b2b-gsend__done { display: flex; flex-direction: column; align-items: center; text-align: center; padding: var(--space-48) var(--space-24); }
+.b2b-gsend__done-ic {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background: var(--status-success-bg);
+  color: var(--status-success-fg);
+  display: grid;
+  place-items: center;
+}
+.b2b-gsend__done-title { margin: var(--space-16) 0 0; font: 600 18px/26px var(--font-sans); color: var(--text-main); }
+.b2b-gsend__done-body { margin: var(--space-8) 0 0; font: 400 13px/20px var(--font-sans); color: var(--text-muted); max-width: 360px; }
