@@ -6,6 +6,7 @@ import WizardScreen from './screens/WizardScreen.jsx'
 import MapScreen from './screens/MapScreen.jsx'
 import B2BApp from './b2b/B2BApp.jsx'
 import MobileApp from './mobile/MobileApp.jsx'
+import AccountsApp from './accounts/AccountsApp.jsx'
 import { t } from './i18n/index.js'
 
 /* Tiny hash-router. URLs mirror the Flow Map hierarchy: app → feature → flow.
@@ -46,6 +47,7 @@ function resolve(segs) {
   if (segs.length === 0 || segs[0] === 'map') return { view: 'map', wizardStep: 0 }
   if (segs[0] === 'b2b') return { view: 'b2b', wizardStep: 0, b2bSection: segs.slice(1).join('/') || 'home' }
   if (segs[0] === 'mobile') return { view: 'mobile', wizardStep: 0, mobileSection: segs[1] || 'health' }
+  if (segs[0] === 'accounts') return { view: 'accounts', wizardStep: 0, accSection: segs[1] || 'home' }
   const ai = segs.indexOf('appointments')
   if (ai !== -1) {
     if (segs[ai + 1] === 'book') {
@@ -70,7 +72,10 @@ function StudyFallback() {
   )
 }
 
-function Flow({ view, wizardStep, rescheduleFrom, editFrom, b2bSection, b2bContract, mobileSection }) {
+function Flow({ view, wizardStep, rescheduleFrom, editFrom, b2bSection, b2bContract, mobileSection, accSection }) {
+  if (view === 'accounts') {
+    return <AccountsApp section={accSection} />
+  }
   if (view === 'mobile') {
     return <MobileApp section={mobileSection} />
   }
@@ -134,12 +139,12 @@ export default function App() {
     }
   }, [segs])
 
-  const { view, wizardStep, b2bSection, mobileSection } = resolve(segs)
+  const { view, wizardStep, b2bSection, mobileSection, accSection } = resolve(segs)
   const q = parseHashQuery()
   const rescheduleFrom = q.get('from')
   const editFrom = q.get('edit')
   const b2bContract = q.get('contract')
-  const flowProps = { view, wizardStep, rescheduleFrom, editFrom, b2bSection, b2bContract, mobileSection }
+  const flowProps = { view, wizardStep, rescheduleFrom, editFrom, b2bSection, b2bContract, mobileSection, accSection }
 
   if (STUDY) {
     if (view === 'map') {

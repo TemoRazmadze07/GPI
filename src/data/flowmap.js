@@ -144,6 +144,28 @@ export const apps = [
       },
     ],
   },
+  {
+    id: 'accounts',
+    label: 'accounts',
+    icon: 'user',
+    sub: 'devaccounts.gpih.ge — identity console',
+    features: [
+      {
+        id: 'console',
+        label: 'account console',
+        status: 'in-progress',
+        flows: [
+          /* V2 is a SINGLE page, so /accounts/personal and /accounts/security
+             render the same screen — listing them as separate flows sent the
+             reviewer to the same place three times. One entry per real
+             destination: the live console, and the V1 sidebar kept for
+             comparison (Rule 4). Responsive — same links on desktop + mobile. */
+          { id: 'profile', path: 'accounts',       label: 'profile console (desktop + mobile)', status: 'in-progress', hash: '/accounts' },
+          { id: 'v1',      path: 'accounts?v=1',   label: 'v1 sidebar console — comparison',    status: 'in-progress', hash: '/accounts?v=1' },
+        ],
+      },
+    ],
+  },
 ]
 
 /* Resolve a flow's three links (null where the flow can't offer that link).

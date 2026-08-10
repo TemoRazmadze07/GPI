@@ -2362,3 +2362,58 @@
 :root[lang='en'] .gpi-bio__name {
   text-transform: none;
 }
+
+/* ==========================================================================
+   OtpInput — segmented one-time-code entry (shared; see components/OtpInput.jsx)
+   One box per digit: far easier to read back, to correct a single digit, and
+   to autofill from SMS than one long field. Digits stay LTR in any language.
+   Figma port pending (new system component).
+   ========================================================================== */
+.gpi-otp { display: flex; gap: var(--space-8); direction: ltr; }
+/* Boxes FLEX rather than sit at a fixed 48px: six fixed boxes + gaps overflow a
+   375px modal. They fill the available width, capped so they don't balloon on
+   wide containers, and never force horizontal scroll. */
+.gpi-otp__box { flex: 1 1 0; min-width: 0; max-width: 56px; height: 56px; box-sizing: border-box; padding: 0; text-align: center;
+  border: var(--border-width-sm) solid var(--border-field); border-radius: var(--radius-lg);
+  background: var(--surface-card); color: var(--text-main); font: 600 20px/1 var(--font-sans); }
+.gpi-otp__box:hover:not(:disabled) { border-color: var(--border-field-hover); }
+.gpi-otp__box:focus { outline: none; border-color: var(--border-focus); border-width: var(--border-width-md); }
+.gpi-otp__box:disabled { background: var(--interactive-disabled-bg); color: var(--text-disabled); }
+.gpi-otp.is-error .gpi-otp__box { border-color: var(--status-error-fg); border-width: var(--border-width-md); }
+
+/* Spinner — shared indeterminate loader (gray track + brand head). */
+.gpi-spinner { display: inline-block; width: var(--icon-md); height: var(--icon-md); box-sizing: border-box;
+  border: var(--border-width-lg) solid var(--border-default); border-top-color: var(--action-primary);
+  border-radius: var(--radius-full); animation: gpi-spin 0.7s linear infinite; flex: 0 0 auto; }
+@keyframes gpi-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  /* A progress indicator must keep moving, so slow it rather than stopping it. */
+  .gpi-spinner { animation-duration: 2.4s; }
+}
+
+/* ==========================================================================
+   Language switcher — flag + code trigger with a single-select popover.
+   Shared (Rule 6): mobile menu footer today, desktop top bar next.
+   The flag box is FIXED and object-fit: contain, so the two exported SVGs
+   (GE 28×20, GB clipped from a 33×25 artboard) can never render at different
+   sizes — never size a flag by its intrinsic box.
+   ========================================================================== */
+.gpi-langsw { position: relative; }
+.gpi-langsw__btn { display: flex; align-items: center; gap: var(--space-12); width: 100%; min-height: var(--control-lg); padding: var(--space-8) 0; border: 0; background: none; color: var(--color-indigo-800); font: 500 16px/24px var(--font-sans); text-align: left; cursor: pointer; }
+.gpi-langsw__btn:focus-visible { outline: var(--focus-ring-width) solid var(--border-focus); outline-offset: var(--focus-ring-offset); border-radius: var(--radius-md); }
+.gpi-langsw__lbl { flex: 1; min-width: 0; }
+.gpi-langsw__chev { color: var(--color-indigo-800); flex: 0 0 auto; }
+.gpi-langsw__flag { width: 28px; height: 20px; object-fit: contain; display: block; flex: 0 0 auto; }
+
+.gpi-langsw__panel { position: absolute; left: 0; right: 0; z-index: 20; padding: var(--space-8);
+  background: var(--surface-card); border-radius: var(--radius-xl); box-shadow: var(--elevation-popover); }
+.gpi-langsw--down .gpi-langsw__panel { top: calc(100% + var(--space-8)); }
+.gpi-langsw--up .gpi-langsw__panel { bottom: calc(100% + var(--space-8)); }
+/* Multi-row list → INSET per-row hover (2026-08-10 rule: a full-bleed hover is
+   only for a card that holds ONE action). The panel's 8px padding is what
+   insets the divider, matching the shipped card. */
+.gpi-langsw__item { display: flex; align-items: center; gap: var(--space-12); width: 100%; min-height: 56px; padding: var(--space-12); border: 0; border-radius: var(--radius-md); background: none; color: var(--color-indigo-800); font: 400 16px/24px var(--font-sans); text-align: left; cursor: pointer; }
+.gpi-langsw__item + .gpi-langsw__item { border-top: var(--border-width-sm) solid var(--border-divider); border-top-left-radius: 0; border-top-right-radius: 0; }
+.gpi-langsw__item:hover { background: var(--interactive-hover-bg); }
+.gpi-langsw__item:focus-visible { outline: var(--focus-ring-width) solid var(--border-focus); outline-offset: -2px; }
+.gpi-langsw__on { color: var(--color-indigo-800); flex: 0 0 auto; }

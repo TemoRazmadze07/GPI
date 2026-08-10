@@ -1,0 +1,318 @@
+/* ==========================================================================
+   Accounts console (devaccounts.gpih.ge redesign) — scoped .acc-*.
+   Visual language mirrors the SHIPPED login/registration screen (user-provided
+   SVG, 2026-08-07): surface-page bg · white full-pill top bar (h72, logo 40) ·
+   24px-radius cards · indigo-800 headings · 12px-radius fields · lavender
+   (alert-info) note boxes. Everything binds to tokens.css (Rule 8); shared
+   .gpi-* components (Button, Modal, InlineAlert, field/input) reused as-is.
+   Deliberate deviations from the login SVG, per system rules: CTA fill =
+   action-primary #de2773 (AA), not brand pink/500; shadows = gray elevation
+   tokens, not the SVG's navy-tinted shadow; buttons keep radius-lg 12.
+   ========================================================================== */
+
+.acc-page { min-height: 100vh; background: var(--surface-page); padding: var(--space-24) var(--space-32); box-sizing: border-box; font-family: var(--font-sans); }
+
+/* ---- Top bar: full-width white pill, as on the login screen ---- */
+.acc-topbar { display: flex; align-items: center; gap: var(--space-12); height: 72px; padding: 0 var(--space-32); background: var(--surface-card); border-radius: var(--radius-full); box-shadow: var(--elevation-card); }
+.acc-logo { height: 40px; display: block; }
+.acc-topbar__spacer { flex: 1; }
+
+.acc-pill { display: inline-flex; align-items: center; gap: var(--space-8); height: var(--control-md); padding: 0 var(--space-16); border-radius: var(--radius-full); border: var(--border-width-sm) solid var(--action-secondary); background: var(--surface-card); color: var(--action-secondary); font: 500 14px/16px var(--font-sans); white-space: nowrap; cursor: pointer; }
+.acc-pill:hover { background: var(--interactive-hover-bg); }
+.acc-pill:focus-visible { outline: var(--focus-ring-width) solid var(--border-focus); outline-offset: var(--focus-ring-offset); }
+
+.acc-account { position: relative; }
+.acc-menu { position: absolute; top: calc(100% + var(--space-8)); right: 0; min-width: 200px; background: var(--surface-card); border: var(--border-width-sm) solid var(--border-default); border-radius: var(--radius-lg); box-shadow: var(--elevation-popover); padding: var(--space-4); z-index: 30; }
+.acc-menu__item { display: flex; align-items: center; gap: var(--space-8); width: 100%; padding: var(--space-8) var(--space-12); border: 0; background: none; border-radius: var(--radius-md); color: var(--action-danger); font: 500 14px/20px var(--font-sans); cursor: pointer; }
+.acc-menu__item:hover { background: var(--status-error-bg); }
+
+/* ---- V2 single-page layout: centered 8-col container ----
+   840 = 8 columns of Grid/Desktop · 12 col (8×84 + 7×24). Header pill stays
+   full-width (login-screen pattern); content sits on the grid. */
+.acc-container { display: flex; flex-direction: column; gap: var(--space-16); max-width: 840px; margin: var(--space-24) auto 0; }
+
+/* Profile header — avatar (displayed 96, stored ≥200×200) + name + login */
+.acc-profile { display: flex; flex-direction: column; align-items: center; gap: var(--space-8); padding: var(--space-16) 0 var(--space-8); text-align: center; }
+.acc-avatar { position: relative; width: 96px; height: 96px; margin-bottom: var(--space-4); }
+.acc-avatar__img { width: 96px; height: 96px; border-radius: var(--radius-full); object-fit: cover; display: block; }
+.acc-avatar__init { display: flex; align-items: center; justify-content: center; width: 96px; height: 96px; border-radius: var(--radius-full); background: var(--alert-info-bg); color: var(--color-indigo-500); font: 600 32px/1 var(--font-sans); }
+.acc-avatar__edit { position: absolute; right: -2px; bottom: -2px; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: var(--radius-full); border: var(--border-width-sm) solid var(--border-default); background: var(--surface-card); color: var(--icon-default); box-shadow: var(--elevation-card); cursor: pointer; }
+.acc-avatar__edit:hover { background: var(--interactive-hover-bg); }
+.acc-avatar__edit:focus-visible { outline: var(--focus-ring-width) solid var(--border-focus); outline-offset: var(--focus-ring-offset); }
+
+/* Mini avatar inside the top-bar account chip (24 = avatar/sm) */
+.acc-chipav { display: flex; align-items: center; justify-content: center; width: var(--avatar-sm); height: var(--avatar-sm); border-radius: var(--radius-full); background: var(--alert-info-bg); color: var(--color-indigo-500); font: 600 11px/1 var(--font-sans); overflow: hidden; flex: 0 0 auto; }
+.acc-chipav img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.acc-uploaderr { width: 100%; max-width: 420px; margin-top: var(--space-8); text-align: left; }
+
+/* ---- Crop step (non-square uploads) ----
+   Frame = largest possible square, MOVED along the long axis only (never
+   scaled): the saved photo keeps maximum resolution and can't drop under the
+   200×200 floor. The dashed circle previews the round display crop. */
+.acc-cropmodal { max-width: 520px; }
+.acc-crop { display: flex; flex-direction: column; align-items: center; gap: var(--space-8); margin-top: var(--space-12); }
+.acc-crop__stage { position: relative; overflow: hidden; border-radius: var(--radius-lg); background: var(--surface-sunken); touch-action: none; }
+.acc-crop__img { width: 100%; height: 100%; display: block; user-select: none; -webkit-user-drag: none; }
+.acc-crop__frame { position: absolute; top: 0; left: 0; box-sizing: border-box; border: var(--border-width-lg) solid var(--color-white); box-shadow: 0 0 0 9999px var(--surface-overlay); touch-action: none; }
+.acc-crop__frame:active { cursor: grabbing; }
+.acc-crop__frame:focus-visible { outline: var(--focus-ring-width) solid var(--border-focus); outline-offset: var(--focus-ring-offset); }
+.acc-crop__circle { position: absolute; inset: 0; border-radius: var(--radius-full); border: var(--border-width-sm) dashed rgba(255, 255, 255, 0.85); }
+.acc-crop__size { color: var(--text-muted); margin: 0; }
+
+/* Card section heading. DOUBLED SPECIFICITY on purpose: `.acc-title { margin: 0 }`
+   is declared later in this file, so a single-class `.acc-sectitle` loses the tie
+   and the heading collapses onto the first row. Do not simplify to one class. */
+.acc-title.acc-sectitle { margin-bottom: var(--space-16); }
+
+/* Password modal: cap the form width to the modal body */
+.acc-pwmodal { max-width: 520px; }
+.acc-pwmodal .acc-form { max-width: none; }
+
+/* ---- V1 layout (kept for comparison at ?v=1): sidebar + content ---- */
+.acc-layout { display: flex; gap: var(--space-24); align-items: flex-start; max-width: var(--layout-max-width); margin: var(--space-24) auto 0; }
+
+.acc-side { display: flex; flex-direction: column; gap: var(--space-4); flex: 0 0 auto; width: var(--layout-sidebar-expanded); min-height: 480px; padding: var(--space-12); box-sizing: border-box; background: var(--surface-card); border-radius: var(--radius-2xl); box-shadow: var(--elevation-card); }
+.acc-nav { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+.acc-nav__item { display: flex; align-items: center; gap: var(--space-12); width: 100%; min-height: 44px; padding: var(--space-8) var(--space-12); border: 0; background: none; border-radius: var(--radius-md); color: var(--text-main); font: 500 14px/20px var(--font-sans); text-align: left; cursor: pointer; box-sizing: border-box; }
+.acc-nav__item svg { color: var(--icon-default); flex: 0 0 auto; }
+.acc-nav__item:hover { background: var(--interactive-hover-bg); }
+.acc-nav__item.is-active { background: var(--interactive-selected-bg); font-weight: 600; }
+.acc-nav__item.is-active svg { color: var(--text-brand); }
+.acc-nav__item:focus-visible { outline: var(--focus-ring-width) solid var(--border-focus); outline-offset: 1px; }
+.acc-nav__item--logout { margin-top: auto; color: var(--action-danger); }
+.acc-nav__item--logout svg { color: var(--action-danger); }
+.acc-nav__item--logout:hover { background: var(--status-error-bg); }
+
+.acc-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-16); }
+.acc-head { margin: var(--space-8) 0 var(--space-4); }
+.acc-title { color: var(--color-indigo-800); margin: 0; }
+.acc-sub { color: var(--text-muted); margin: var(--space-4) 0 0; }
+.acc-sub__mail { color: var(--text-main); font-weight: 500; }
+
+/* Outer card = 24 (login-card radius); nested boxes step down to 12. */
+.acc-card { background: var(--surface-card); border-radius: var(--radius-2xl); box-shadow: var(--elevation-card); padding: var(--space-24); box-sizing: border-box; }
+
+/* ---- Overview ---- */
+.acc-hero { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-24); }
+.acc-hero .gpi-btn { flex: 0 0 auto; }
+.acc-hero__txt { flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: var(--space-8); }
+.acc-desc { color: var(--text-muted); margin: 0; }
+.acc-once { display: inline-flex; align-items: center; gap: var(--space-4); color: var(--text-muted); margin: 0; }
+.acc-once svg { color: var(--icon-muted); }
+
+.acc-shortcuts { padding: var(--space-8); }
+/* Single-action card (V2 password row): the row IS the card, so hover grays
+   the FULL container edge-to-edge (user note 2026-08-10 — the inset rounded
+   hover inside a white rim read as a nested control). Multi-row shortcut
+   cards (V1 overview) keep the inset per-row hover — there two rows share one
+   card and a full-card hover would light both. */
+.acc-shortcuts--single { padding: 0; overflow: hidden; }
+/* Padding is EVEN on all four sides and equals `.acc-card`'s own inset (24), so
+   this single-action card is inset exactly like every other card on the page.
+   (Was 16/24 — the sides read heavier than the top and bottom.) */
+.acc-shortcuts--single .acc-short { padding: var(--space-24); border-radius: var(--radius-2xl); }
+.acc-short { display: flex; align-items: center; gap: var(--space-16); width: 100%; padding: var(--space-16); border: 0; background: none; border-radius: var(--radius-lg); text-align: left; cursor: pointer; font-family: var(--font-sans); }
+.acc-short + .acc-short { border-top: var(--border-width-sm) solid var(--border-divider); border-top-left-radius: 0; border-top-right-radius: 0; }
+.acc-short:hover { background: var(--interactive-hover-bg); }
+.acc-short:focus-visible { outline: var(--focus-ring-width) solid var(--border-focus); outline-offset: -2px; }
+.acc-short__ic { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--radius-md); background: var(--alert-info-bg); color: var(--color-indigo-500); flex: 0 0 auto; }
+.acc-short__txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.acc-short__lbl { color: var(--text-main); font-weight: 500; }
+.acc-short__hint { color: var(--text-muted); }
+.acc-short__chev { color: var(--icon-muted); flex: 0 0 auto; }
+
+.acc-privacy { color: var(--text-muted); text-align: center; margin: var(--space-8) 0 0; }
+.acc-link { color: var(--text-link); text-decoration: underline; background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
+.acc-link:hover { color: var(--action-link-hover); }
+
+/* ---- Personal info ---- */
+.acc-rows { margin: 0 0 var(--space-16); }
+.acc-row { display: flex; justify-content: space-between; gap: var(--space-16); padding: var(--space-12) 0; border-bottom: var(--border-width-sm) solid var(--border-divider); }
+/* Flush the first row to the card top ONLY when the list opens the card (V1's
+   dedicated page). Under a section heading (V2) the row keeps its 12px padding,
+   so heading→first row (16+12) breathes wider than row→row (12+12). */
+.acc-card > .acc-rows:first-child .acc-row:first-child { padding-top: 0; }
+/* No trailing divider — there is nothing below the last row to separate it from. */
+.acc-row:last-child { border-bottom: 0; padding-bottom: 0; }
+.acc-row__lbl { color: var(--text-muted); margin: 0; }
+.acc-row__val { color: var(--text-main); font-weight: 500; margin: 0; text-align: right; overflow-wrap: anywhere; }
+
+/* Contact rows (phone / email): value · verified badge · verify link · edit.
+   Wraps as a group on narrow widths; actions never collide with the label. */
+.acc-row__val--contact { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-8); flex-wrap: wrap; }
+.acc-row__val--contact .acc-link { font: inherit; font-size: 12px; }
+
+/* Contact edit/verify modal */
+.acc-contactmodal { max-width: 480px; }
+.acc-contactmodal__sent { margin: 0 0 var(--space-16); }
+.acc-contactmodal__ft { display: flex; justify-content: flex-end; gap: var(--space-16); margin-top: var(--space-24); }
+.acc-contactmodal__resend { margin: var(--space-8) 0 0; }
+.acc-contactmodal__input { height: var(--control-lg); }
+/* Auto-submit status row — reserves its height so the modal doesn't jump when
+   the spinner appears and is then replaced by the confirmation. */
+/* Code step: one centred axis (sent line · label · boxes · status · resend). */
+.acc-code { text-align: center; }
+.acc-code .gpi-otp { justify-content: center; }
+.acc-code .gpi-field__lbl { display: block; }
+.acc-code .acc-otpstatus { justify-content: center; }
+/* Waiting state: plain text (never a dead link), time emphasised — matches the
+   shipped registration OTP screen's „…გაგზავნა - 1:59". */
+.acc-resend--wait { color: var(--text-muted); }
+.acc-resend__t { color: var(--text-main); font-weight: 600; }
+
+.acc-otpstatus { display: flex; align-items: center; gap: var(--space-8); min-height: var(--icon-lg); margin-top: var(--space-16); }
+.acc-otpstatus__ok { color: var(--status-success-fg); }
+.acc-otpstatus__oktxt { color: var(--status-success-fg); font-weight: 500; }
+
+/* Lavender note — the login screen's info box (alert-info tokens), NOT the
+   sky status-info tone of InlineAlert. */
+.acc-note { display: flex; align-items: flex-start; gap: var(--space-12); padding: var(--space-16); background: var(--alert-info-bg); color: var(--alert-info-fg); border-radius: var(--radius-lg); }
+.acc-note svg { flex: 0 0 auto; margin-top: 2px; color: var(--action-link); }
+.acc-note p { margin: 0; }
+
+/* ---- Security ---- */
+.acc-form { display: flex; flex-direction: column; gap: var(--space-16); max-width: 480px; }
+.acc-pw { position: relative; }
+.acc-pw__input { height: var(--control-lg); padding-right: var(--space-48); }
+.acc-pw__toggle { position: absolute; right: var(--space-8); top: 50%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 0; background: none; border-radius: var(--radius-md); color: var(--icon-muted); cursor: pointer; }
+.acc-pw__toggle:hover { color: var(--icon-default); background: var(--interactive-hover-bg); }
+.acc-pw__toggle:focus-visible { outline: var(--focus-ring-width) solid var(--border-focus); }
+.acc-err { color: var(--status-error-fg); margin: var(--space-4) 0 0; }
+.acc-forgot { margin: calc(-1 * var(--space-8)) 0 0; }
+
+/* NOTE: the live 5-item rules checklist (.acc-rules/.acc-rule) was REMOVED
+   2026-08-10 — the shipped registration screen states the rules as one
+   lavender info sentence, and both password surfaces must read identically
+   (Rule 1). The rules still run as validation; only the display changed. */
+
+.acc-form__ft { display: flex; }
+
+/* ---- Linking modal ---- */
+.acc-linkmodal { max-width: 480px; }
+.acc-linkmodal .acc-desc + .acc-desc { margin-top: var(--space-8); }
+.acc-phone { display: flex; align-items: center; gap: var(--space-12); padding: var(--space-12) var(--space-16); background: var(--alert-info-bg); color: var(--alert-info-fg); border-radius: var(--radius-lg); margin: var(--space-12) 0; }
+.acc-phone svg { color: var(--action-link); }
+
+/* ==========================================================================
+   MOBILE MENU (shared Drawer, `acc-menudrawer`) — chrome 1:1 with GPI's
+   shipped mobile menu: title + ×, tall rows, language switcher pinned to the
+   bottom. Full-screen at every width because the burger that opens it is
+   mobile-only; sizing lives here so the shared Drawer keeps its defaults.
+   ========================================================================== */
+.acc-menudrawer { width: 100%; max-width: 100%; border-radius: 0; }
+.acc-menudrawer .gpi-drawer__body { padding: 0; gap: 0; }
+.acc-menudrawer .gpi-drawer__ft { display: block; padding: 0 var(--space-16) var(--space-8); }
+
+.acc-menuid { display: flex; align-items: center; gap: var(--space-12); padding: var(--space-16); border-bottom: var(--border-width-sm) solid var(--border-divider); }
+.acc-menuid__av { display: flex; align-items: center; justify-content: center; width: var(--avatar-lg); height: var(--avatar-lg); border-radius: var(--radius-full); background: var(--alert-info-bg); color: var(--color-indigo-500); font: 600 14px/1 var(--font-sans); overflow: hidden; flex: 0 0 auto; }
+.acc-menuid__av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.acc-menuid__txt { min-width: 0; display: flex; flex-direction: column; }
+.acc-menuid__name { color: var(--text-main); font-weight: 500; }
+/* The login email is one unbroken token — it MUST be allowed to break, or it
+   pushes the drawer wider than the screen. */
+.acc-menuid__mail { color: var(--text-muted); overflow-wrap: anywhere; }
+
+.acc-menurow { display: flex; align-items: center; gap: var(--space-12); width: 100%; min-height: 56px; padding: var(--space-16); border: 0; border-bottom: var(--border-width-sm) solid var(--border-divider); background: none; color: var(--action-danger); text-align: left; font-family: var(--font-sans); cursor: pointer; }
+.acc-menurow__lbl { flex: 1; min-width: 0; font-weight: 500; }
+.acc-menurow__chev { flex: 0 0 auto; }
+.acc-menurow:hover { background: var(--status-error-bg); }
+.acc-menurow:focus-visible { outline: var(--focus-ring-width) solid var(--border-focus); outline-offset: -2px; }
+
+/* Burger lives in the DOM at every width — CSS alone decides visibility, so
+   desktop rendering is byte-identical (same idiom as .gpi-burger). */
+.acc-burger { display: none; }
+
+/* ==========================================================================
+   MOBILE ≤767 — additive overrides only; every rule sits inside the query.
+   ========================================================================== */
+@media (max-width: 767px) {
+  /* ---- Shell: flush header band, not a floating pill --------------------
+     Locked mobile rule (2026-07-17): on mobile the header continues the white
+     surface edge-to-edge and casts the elevation — never a rounded card with
+     a shadow floating inside a padded page. */
+  .acc-page { padding: 0 0 var(--space-32); }
+  .acc-topbar { height: 64px; padding: 0 var(--space-16); border-radius: 0; box-shadow: var(--elevation-dropdown); position: relative; z-index: 10; }
+  .acc-logo { height: 32px; }
+  /* The right cluster is 266px of unshrinkable email — it becomes the menu. */
+  .acc-topbar .acc-pill,
+  .acc-topbar .acc-account { display: none; }
+  .acc-burger { display: grid; place-items: center; width: 40px; height: 40px; margin-right: calc(-1 * var(--space-8)); border: 0; background: none; border-radius: var(--radius-md); color: var(--color-indigo-800); cursor: pointer; }
+  .acc-burger:hover { background: var(--interactive-hover-bg); }
+  .acc-burger:focus-visible { outline: var(--focus-ring-width) solid var(--border-focus); outline-offset: var(--focus-ring-offset); }
+
+  /* ---- Content: ONE 16px left rail (user, 2026-08-10) -------------------
+     Inset cards put their text at 32 (16 page gutter + 16 card padding) while
+     the logo sat at 16 — two left rails down the same screen. Cards go
+     FULL-BLEED instead: white bands separated by page-gray gaps, content at
+     16, exactly like the shipped registration screen. Side radius is dropped
+     with the side margin — a rounded corner against a screen edge reads as a
+     notch. Revert = restore `margin: var(--space-16)` + radius-xl here. */
+  .acc-container { max-width: none; margin: var(--space-12) 0 0; gap: var(--space-12); }
+  .acc-card { padding: var(--space-16); border-radius: 0; }
+  /* The single-action password card: its ROW carries the padding, so the card
+     must stay at 0. DOUBLED SPECIFICITY on purpose — `.acc-card` above is
+     declared later in this file than `.acc-shortcuts--single`, so a
+     single-class rule loses the tie and the row ends up double-padded (32).
+     Same trap as the .acc-sectitle fix; do not simplify it back. */
+  .acc-card.acc-shortcuts--single { padding: 0; }
+  .acc-shortcuts--single .acc-short { padding: var(--space-16); border-radius: 0; }
+  /* Text that is NOT in a card still owes the 16px rail. */
+  .acc-profile { padding: var(--space-8) var(--space-16) var(--space-12); }
+  .acc-privacy { padding-inline: var(--space-16); }
+
+  /* ---- Type: the page title is a NAME, not a hero ----------------------
+     24/32 dominated a 390px screen. 20 matches the shipped registration
+     screen's page heading, and keeps the ladder at 20 → 18 → 16 → 12. */
+  .acc-profile .acc-title { font-size: 20px; line-height: 28px; }
+
+  /* V1 (?v=1) is history kept for comparison, but it shares this shell — a
+     fixed 256px sidebar beside the content overflowed 92px at 390. Stack it,
+     so the comparison route isn't the one broken thing on a phone. */
+  .acc-layout { flex-direction: column; max-width: none; margin: var(--space-16); gap: var(--space-12); }
+  .acc-side { width: 100%; min-height: 0; border-radius: var(--radius-xl); }
+
+  /* ---- Hero: stack, CTA full width ------------------------------------- */
+  .acc-hero { flex-direction: column; align-items: stretch; gap: var(--space-16); }
+  .acc-hero__txt { flex: 0 0 auto; }
+  .acc-hero .gpi-btn { width: 100%; justify-content: center; }
+
+  /* ---- Info rows: label ABOVE value ------------------------------------
+     A Georgian label plus a 29-character email cannot share a 328px line, and
+     a right-aligned value under a left-aligned label has no shared edge to
+     read down. Stacked + left-aligned throughout. */
+  .acc-row { flex-direction: column; align-items: stretch; gap: var(--space-4); }
+  .acc-row__val { text-align: left; }
+
+  /* Contact rows: value takes the full line, then badge · verify · edit wrap
+     onto their own line beneath it. */
+  .acc-row__val--contact { justify-content: flex-start; gap: var(--space-8) var(--space-12); }
+  .acc-row__val--contact > span:first-child { flex: 1 0 100%; }
+  /* The pencil stays ICON-ONLY on mobile too (user, 2026-08-10) — the contact
+     row must read the same on both platforms. This NARROWS the 2026-07-28
+     icon-label rule rather than reversing it: that rule was written for an
+     unlabelled DESTRUCTIVE action, where a wrong guess is unrecoverable. A
+     pencil beside a value is conventional and its worst case is an extra tap.
+     `aria-label` is still set by IconButton, so the accessible name is intact
+     — only the visible word goes. Keep labels on destructive icon actions. */
+  /* „დადასტურება" is a standalone action sharing a row with a 40px button, so
+     the inline-link exemption in WCAG 2.2 target-size does NOT apply — it has
+     to be a real touch target (measured 22px before this). */
+  .acc-row__val--contact .acc-link { display: inline-flex; align-items: center; min-height: var(--control-md); }
+
+  /* ---- Dialogs become BOTTOM SHEETS ------------------------------------
+     Scoped to .acc-page on purpose: My-Cabinet and B2B modals must not change
+     underneath us. Promote globally only if that is decided separately. */
+  .acc-page .gpi-modal-overlay { place-items: end stretch; padding: 0; }
+  .acc-page .gpi-modal { width: 100%; max-width: none; max-height: 92vh; display: flex; flex-direction: column; border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
+  /* Grabber — the affordance that says "this sheet came from the bottom". */
+  .acc-page .gpi-modal__hd { position: relative; padding-top: var(--space-24); }
+  .acc-page .gpi-modal__hd::before { content: ''; position: absolute; top: var(--space-8); left: 50%; transform: translateX(-50%); width: 36px; height: 4px; border-radius: var(--radius-full); background: var(--border-default); }
+  .acc-page .gpi-modal__body { flex: 1; min-height: 0; overflow-y: auto; }
+  .acc-page .gpi-modal__ft { flex-wrap: wrap; }
+  .acc-page .acc-form { max-width: none; }
+  .acc-page .acc-form__ft .gpi-btn,
+  .acc-page .acc-contactmodal__ft .gpi-btn { flex: 1 1 auto; justify-content: center; }
+  .acc-page .acc-contactmodal__ft { flex-wrap: wrap; }
+  .acc-uploaderr { max-width: none; }
+}

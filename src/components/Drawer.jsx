@@ -8,8 +8,11 @@ import { t } from '../i18n/index.js'
    record-specific facts live in the body. Overlay click, × and Escape dismiss
    via onClose. The go-to pattern for expanding table-row details across the
    app (contracts today; requests/claims/invoices later) — a dedicated page is
-   only added when a record outgrows the drawer. */
-export default function Drawer({ title, onClose, closeLabel, children, footer }) {
+   only added when a record outgrows the drawer.
+   `className` is an ADDITIVE optional prop (2026-08-10, accounts mobile menu):
+   a consumer may re-position/re-size the panel — e.g. full-screen on mobile —
+   but must never override its typography or colours from the outside. */
+export default function Drawer({ title, onClose, closeLabel, children, footer, className }) {
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose()
     document.addEventListener('keydown', onKey)
@@ -18,7 +21,7 @@ export default function Drawer({ title, onClose, closeLabel, children, footer })
 
   return (
     <div className="gpi-drawer-overlay" onClick={onClose}>
-      <aside className="gpi-drawer" role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
+      <aside className={`gpi-drawer${className ? ` ${className}` : ''}`} role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
         <div className="gpi-drawer__hd">
           <h3 className="gpi-drawer__title">{title}</h3>
           <button className="gpi-drawer__close" onClick={onClose} aria-label={closeLabel || t.actions.close}>

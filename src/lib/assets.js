@@ -6,6 +6,8 @@
    keeps only the downloads/ snapshots (and the old copies until pruned). */
 import logo from '../assets/logo.png'
 import clientLogo from '../assets/client-logo.svg'
+import flagKa from '../assets/flags/GE.svg'
+import flagEn from '../assets/flags/GB.svg'
 import bookingEmpty from '../assets/illustrations/booking-empty.svg'
 import productHealth from '../assets/products/health.png'
 import productAuto from '../assets/products/auto.png'
@@ -13,6 +15,13 @@ import productTravel from '../assets/products/travel.png'
 import productProperty from '../assets/products/property.png'
 
 export const ASSETS = { logo, clientLogo, bookingEmpty }
+
+/* Country flags for the language switcher (user export, 2026-08-10), keyed by
+   locale code. Both were normalised to the same 28×20 box with a 1.75 corner
+   radius; GB's Figma drop shadow was stripped (a 20px flag needs no elevation,
+   and the export's shadow was black-tinted). Render them in a fixed box with
+   object-fit: contain so the two intrinsic sizes can never diverge. */
+export const FLAGS = { ka: flagKa, en: flagEn }
 
 /* Keyed by the `img` filename in PRODUCTS (data/contracts.js). */
 export const PRODUCT_IMG = {
