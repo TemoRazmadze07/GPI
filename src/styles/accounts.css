@@ -22,6 +22,13 @@
 .acc-pill:focus-visible { outline: var(--focus-ring-width) solid var(--border-focus); outline-offset: var(--focus-ring-offset); }
 
 .acc-account { position: relative; }
+/* Account chip: the avatar sits in the pill's ROUNDED END, so its leading inset
+   must equal the vertical one — two concentric circles with a fat gap on one
+   side only read as mis-aligned (user, 2026-08-10). 16px lead vs a 7px vertical
+   gap was the tell. Derived, not hardcoded, so it survives a taller pill or a
+   different avatar token: (pill height - both borders - avatar) / 2 = 3px.
+   Trailing padding stays 16 — that end holds text, not a circle. */
+.acc-account .acc-pill { padding-left: calc((var(--control-md) - 2 * var(--border-width-sm) - var(--avatar-md)) / 2); }
 .acc-menu { position: absolute; top: calc(100% + var(--space-8)); right: 0; min-width: 200px; background: var(--surface-card); border: var(--border-width-sm) solid var(--border-default); border-radius: var(--radius-lg); box-shadow: var(--elevation-popover); padding: var(--space-4); z-index: 30; }
 .acc-menu__item { display: flex; align-items: center; gap: var(--space-8); width: 100%; padding: var(--space-8) var(--space-12); border: 0; background: none; border-radius: var(--radius-md); color: var(--action-danger); font: 500 14px/20px var(--font-sans); cursor: pointer; }
 .acc-menu__item:hover { background: var(--status-error-bg); }
@@ -40,8 +47,10 @@
 .acc-avatar__edit:hover { background: var(--interactive-hover-bg); }
 .acc-avatar__edit:focus-visible { outline: var(--focus-ring-width) solid var(--border-focus); outline-offset: var(--focus-ring-offset); }
 
-/* Mini avatar inside the top-bar account chip (24 = avatar/sm) */
-.acc-chipav { display: flex; align-items: center; justify-content: center; width: var(--avatar-sm); height: var(--avatar-sm); border-radius: var(--radius-full); background: var(--alert-info-bg); color: var(--color-indigo-500); font: 600 11px/1 var(--font-sans); overflow: hidden; flex: 0 0 auto; }
+/* Mini avatar inside the top-bar account chip (32 = avatar/md, up from sm/24 so
+   the circle fills the pill's end with an even 3px surround). Initials track the
+   shared Avatar's ratio: fontSize ≈ 0.4 × size. */
+.acc-chipav { display: flex; align-items: center; justify-content: center; width: var(--avatar-md); height: var(--avatar-md); border-radius: var(--radius-full); background: var(--alert-info-bg); color: var(--color-indigo-500); font: 600 13px/1 var(--font-sans); overflow: hidden; flex: 0 0 auto; }
 .acc-chipav img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 .acc-uploaderr { width: 100%; max-width: 420px; margin-top: var(--space-8); text-align: left; }
@@ -138,10 +147,40 @@
 .acc-row__lbl { color: var(--text-muted); margin: 0; }
 .acc-row__val { color: var(--text-main); font-weight: 500; margin: 0; text-align: right; overflow-wrap: anywhere; }
 
-/* Contact rows (phone / email): value · verified badge · verify link · edit.
-   Wraps as a group on narrow widths; actions never collide with the label. */
+/* Contact rows (phone / email): [linked check] · value · edit.
+   The amber state and the inline „დადასტურება" link are GONE (2026-08-10):
+   linking got its own box (.acc-linkbox), so the row states one calm fact —
+   check = linked as a credential, nothing = contact-only. */
 .acc-row__val--contact { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-8); flex-wrap: wrap; }
-.acc-row__val--contact .acc-link { font: inherit; font-size: 12px; }
+
+/* The status icon BINDS to the value it qualifies: 6px (user, 2026-08-10),
+   tighter than the 8px separating the value from the independent actions after
+   it — proximity is what says "this icon is about THIS value".
+   6 is a deliberate half-step of the 4px scale, composed from tokens rather
+   than hardcoded; promote to a real --space-6 if it starts recurring.
+   Written as an OFFSET against the row's own column-gap so it stays 6 if that
+   gap is ever retuned — mobile overrides the gap to 12 and re-offsets there. */
+.acc-row__val--contact { --acc-status-gap: calc(var(--space-4) + var(--space-2)); }
+.acc-row__val--contact .gpi-tip { margin-right: calc(var(--acc-status-gap) - var(--space-8)); }
+
+/* Linked status — check icon, label on hover/focus (Tooltip).
+   24px box around the 18px glyph: the icon is the only way to reach the label,
+   so the hover/focus area follows the Rule 7 target floor even though a
+   tooltip trigger performs no action and 2.5.8 does not strictly bind it.
+   (--warn variant removed 2026-08-10 with the two-state model: the actionable
+   exception moved into .acc-linkbox.) */
+.acc-status { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; min-height: 24px; }
+.acc-status--ok { color: var(--status-success-fg); }
+
+/* ---- Linking box — the page's ONE actionable exception -------------------
+   Info surface (the registration screens' lavender) so it reads as guidance,
+   not danger; it carries the call to action the rows deliberately lost.
+   Sits on .acc-card for radius/padding/mobile behaviour; shadow off — a tinted
+   surface floating on elevation reads as a toast, not a section. */
+.acc-linkbox { background: var(--alert-info-bg); box-shadow: none; }
+.acc-linkbox__title { display: flex; align-items: center; gap: var(--space-8); color: var(--alert-info-fg); margin: 0 0 var(--space-8); }
+.acc-linkbox__body { color: var(--alert-info-fg); margin: 0 0 var(--space-16); }
+.acc-linkbox__actions { display: flex; gap: var(--space-8); flex-wrap: wrap; }
 
 /* Contact edit/verify modal */
 .acc-contactmodal { max-width: 480px; }
@@ -241,25 +280,32 @@
   .acc-burger:hover { background: var(--interactive-hover-bg); }
   .acc-burger:focus-visible { outline: var(--focus-ring-width) solid var(--border-focus); outline-offset: var(--focus-ring-offset); }
 
-  /* ---- Content: ONE 16px left rail (user, 2026-08-10) -------------------
-     Inset cards put their text at 32 (16 page gutter + 16 card padding) while
-     the logo sat at 16 — two left rails down the same screen. Cards go
-     FULL-BLEED instead: white bands separated by page-gray gaps, content at
-     16, exactly like the shipped registration screen. Side radius is dropped
-     with the side margin — a rounded corner against a screen edge reads as a
-     notch. Revert = restore `margin: var(--space-16)` + radius-xl here. */
-  .acc-container { max-width: none; margin: var(--space-12) 0 0; gap: var(--space-12); }
-  .acc-card { padding: var(--space-16); border-radius: 0; }
+  /* ---- Content: INSET BOXES on one continuous background ----------------
+     REVERSED 2026-08-10 (user: "move these sections into the boxes and have a
+     single background"). Earlier the same day these were full-bleed white
+     bands, to hold ONE 16px left rail; the cost was that the page-gray only
+     survived as stripes BETWEEN the bands, so it read as a stack of dividers
+     rather than a canvas. Boxes on a continuous gray read as objects — which
+     is also what the shipped travel-insurance review step does.
+     Accepted trade-off: card text now sits at 32 (16 gutter + 16 padding)
+     while the logo stays at 16. That is fine HERE because the card edge is
+     itself a visible rail; it was not fine when the "rail" was invisible.
+     Revert = `padding-inline: 0` + `border-radius: 0` on these two rules. */
+  .acc-container { max-width: none; margin: var(--space-12) 0 0; padding-inline: var(--space-16); gap: var(--space-12); }
+  .acc-card { padding: var(--space-16); border-radius: var(--radius-xl); }
   /* The single-action password card: its ROW carries the padding, so the card
      must stay at 0. DOUBLED SPECIFICITY on purpose — `.acc-card` above is
      declared later in this file than `.acc-shortcuts--single`, so a
      single-class rule loses the tie and the row ends up double-padded (32).
      Same trap as the .acc-sectitle fix; do not simplify it back. */
   .acc-card.acc-shortcuts--single { padding: 0; }
-  .acc-shortcuts--single .acc-short { padding: var(--space-16); border-radius: 0; }
-  /* Text that is NOT in a card still owes the 16px rail. */
-  .acc-profile { padding: var(--space-8) var(--space-16) var(--space-12); }
-  .acc-privacy { padding-inline: var(--space-16); }
+  /* The row fills the card, so it must carry the card's radius or the hover
+     paint squares off the corners (locked full-bleed-hover rule). */
+  .acc-shortcuts--single .acc-short { padding: var(--space-16); border-radius: var(--radius-xl); }
+  /* Non-card text: the CONTAINER now owns the 16px gutter, so these must not
+     add their own — that was the double-inset (32) trap. */
+  .acc-profile { padding: var(--space-8) 0 var(--space-12); }
+  .acc-privacy { padding-inline: 0; }
 
   /* ---- Type: the page title is a NAME, not a hero ----------------------
      24/32 dominated a 390px screen. 20 matches the shipped registration
@@ -280,25 +326,65 @@
   /* ---- Info rows: label ABOVE value ------------------------------------
      A Georgian label plus a 29-character email cannot share a 328px line, and
      a right-aligned value under a left-aligned label has no shared edge to
-     read down. Stacked + left-aligned throughout. */
-  .acc-row { flex-direction: column; align-items: stretch; gap: var(--space-4); }
-  .acc-row__val { text-align: left; }
+     read down. Stacked + left-aligned throughout.
+     Pattern 1:1 with the SHIPPED mobile review step (user reference,
+     2026-08-10, after rejecting a 13px-gray-label attempt as "not fixed at
+     all"): label REGULAR with a trailing colon, value BOLD 700 directly
+     beneath, BOTH in the title navy (indigo-800, same as .acc-title) —
+     hierarchy comes from WEIGHT, not from size or gray. NO dividers at all;
+     pairs separated by even spacing only.
+     DIVIDERS STAY (user, 2026-08-10 — I removed them copying the reference and
+     that was wrong): this card is a flat 6-row list with no sub-grouping, so
+     the rules are what tell one pair from the next. Only the TYPOGRAPHY comes
+     from the reference; the base row rhythm (12/0 padding, hairline, none on
+     the last row) is inherited untouched. */
+  .acc-row { flex-direction: column; align-items: stretch; gap: var(--space-2); }
+  .acc-row .acc-row__lbl { color: var(--color-indigo-800); }
+  /* Colon lives in CSS, not the strings — desktop's side-by-side rows don't
+     want it, and the ka labels stay shared. Empty alt so SRs don't read it. */
+  .acc-row .acc-row__lbl::after { content: ':' / ''; }
+  .acc-row__val { text-align: left; font-weight: 700; color: var(--color-indigo-800); }
 
-  /* Contact rows: value takes the full line, then badge · verify · edit wrap
-     onto their own line beneath it. */
+  /* Contact rows: the badge (and verify/pencil) flow INLINE after the bold
+     value and wrap when they must — the reference's own idiom for compound
+     values („50,000€ | ყოველ მოგზაურზე"): bold value first, meta after it on
+     the same line. Phone fits on one line; the email row wraps its actions
+     onto a second line at 390. */
   .acc-row__val--contact { justify-content: flex-start; gap: var(--space-8) var(--space-12); }
-  .acc-row__val--contact > span:first-child { flex: 1 0 100%; }
+  /* Column-gap is 12 here, so the icon→value offset has to be re-derived to
+     land on the same 6px pairing as desktop. */
+  .acc-row__val--contact .gpi-tip { margin-right: calc(var(--acc-status-gap) - var(--space-12)); }
+
+  /* ---- Edit button: row's right edge, centred on the label+value pair -----
+     (user, 2026-08-10.) Two things this fixes at once: the pencil stops being
+     the last word of the VALUE line, and — because a 36px control no longer
+     sits in that line — the line collapses back to text height, so the
+     label→value gap finally matches the identity rows (name / surname / …).
+     TAKEN OUT OF FLOW rather than made a grid item: the button lives inside
+     the <dd>, and a <div> inside a <dl> may contain ONLY dt/dd, so promoting
+     it to a sibling of the label would be invalid HTML. `padding-right`
+     reserves its lane so a long email or the verify link never slides under. */
+  .acc-row:has(.acc-row__val--contact) { position: relative; padding-right: calc(36px + var(--space-8)); }
+  .acc-row__val--contact .gpi-iconbtn { position: absolute; right: 0; top: 50%; transform: translateY(-50%); }
+
+  /* HANGING INDENT so anything that wraps lines up under the VALUE rather
+     than under the status icon. The dd is indented by icon + pairing gap; the
+     icon is pulled back out by the same amount, so the first line is unchanged
+     and every wrapped line starts on the value's rail.
+     SCOPED with :has to rows that HAVE the check — since the two-state model
+     went (2026-08-10), a contact-only row has NO icon, and an unconditional
+     indent would push its value 30px right of everything, pointing at air. */
+  .acc-row__val--contact:has(.gpi-tip) { padding-left: calc(var(--control-xs) + var(--acc-status-gap)); }
+  .acc-row__val--contact .gpi-tip { margin-left: calc(-1 * (var(--control-xs) + var(--acc-status-gap))); }
   /* The pencil stays ICON-ONLY on mobile too (user, 2026-08-10) — the contact
      row must read the same on both platforms. This NARROWS the 2026-07-28
      icon-label rule rather than reversing it: that rule was written for an
      unlabelled DESTRUCTIVE action, where a wrong guess is unrecoverable. A
      pencil beside a value is conventional and its worst case is an extra tap.
      `aria-label` is still set by IconButton, so the accessible name is intact
-     — only the visible word goes. Keep labels on destructive icon actions. */
-  /* „დადასტურება" is a standalone action sharing a row with a 40px button, so
-     the inline-link exemption in WCAG 2.2 target-size does NOT apply — it has
-     to be a real touch target (measured 22px before this). */
-  .acc-row__val--contact .acc-link { display: inline-flex; align-items: center; min-height: var(--control-md); }
+     — only the visible word goes. Keep labels on destructive icon actions.
+     (The inline „დადასტურება" link and its 40px-target rule left with the
+     two-state model — the linking box's real Buttons carry the action now.) */
 
   /* ---- Dialogs become BOTTOM SHEETS ------------------------------------
      Scoped to .acc-page on purpose: My-Cabinet and B2B modals must not change

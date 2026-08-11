@@ -7,6 +7,7 @@ import MapScreen from './screens/MapScreen.jsx'
 import B2BApp from './b2b/B2BApp.jsx'
 import MobileApp from './mobile/MobileApp.jsx'
 import AccountsApp from './accounts/AccountsApp.jsx'
+import StudentApp from './student/StudentApp.jsx'
 import { t } from './i18n/index.js'
 
 /* Tiny hash-router. URLs mirror the Flow Map hierarchy: app → feature → flow.
@@ -48,6 +49,7 @@ function resolve(segs) {
   if (segs[0] === 'b2b') return { view: 'b2b', wizardStep: 0, b2bSection: segs.slice(1).join('/') || 'home' }
   if (segs[0] === 'mobile') return { view: 'mobile', wizardStep: 0, mobileSection: segs[1] || 'health' }
   if (segs[0] === 'accounts') return { view: 'accounts', wizardStep: 0, accSection: segs[1] || 'home' }
+  if (segs[0] === 'student') return { view: 'student', wizardStep: 0 }
   const ai = segs.indexOf('appointments')
   if (ai !== -1) {
     if (segs[ai + 1] === 'book') {
@@ -75,6 +77,9 @@ function StudyFallback() {
 function Flow({ view, wizardStep, rescheduleFrom, editFrom, b2bSection, b2bContract, mobileSection, accSection }) {
   if (view === 'accounts') {
     return <AccountsApp section={accSection} />
+  }
+  if (view === 'student') {
+    return <StudentApp />
   }
   if (view === 'mobile') {
     return <MobileApp section={mobileSection} />

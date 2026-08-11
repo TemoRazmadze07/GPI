@@ -1,7 +1,8 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Icon from '../lib/Icon.jsx'
 import { Button, IconButton } from '../components/Button.jsx'
-import Badge from '../components/Badge.jsx'
+import Tooltip from '../components/Tooltip.jsx'
+import DemoBar from '../components/DemoBar.jsx'
 import InlineAlert from '../components/InlineAlert.jsx'
 import PasswordModal from './PasswordModal.jsx'
 import CropModal from './CropModal.jsx'
@@ -9,6 +10,24 @@ import ContactModal from './ContactModal.jsx'
 import { kaAcc as ka } from './strings.js'
 
 const MIN_PHOTO = 200 // px — shortest edge; matches the stated upload spec
+
+/* `?demo=` inside the hash — the same shareable-quick-link idiom as B2B's
+   `#/b2b/insured/add/excel?demo=errors`, registered in the Flow Map so the
+   states are FINDABLE without knowing the URL by heart.
+     email  → email is contact-only (the default seed)
+     phone  → phone is contact-only (exercises the „ამ ნომრით" grammar, which
+              the seed data can never reach)
+     linked → both linked, no box
+   A demo link also OVERRIDES the „მოგვიანებით" session flag: the whole point of
+   the link is to show the box, so a dismissal from earlier in the tab must not
+   silently win. */
+function demoKey() {
+  const h = window.location.hash
+  const qi = h.indexOf('?')
+  if (qi === -1) return null
+  const v = new URLSearchParams(h.slice(qi + 1)).get('demo')
+  return v === 'phone' || v === 'linked' || v === 'email' ? v : null
+}
 
 /* ProfileScreen — V2 single-page console. Order: profile header (avatar +
    name; the "signed in as" line was REMOVED 2026-08-10 — the email already
@@ -32,11 +51,29 @@ export default function ProfileScreen({ linked, linking, onOpenLink, photo, onPh
   const [pwOpen, setPwOpen] = useState(false)
   const [cropSrc, setCropSrc] = useState(null)
   const [uploadErr, setUploadErr] = useState(null)
-  const [contacts, setContacts] = useState({
-    phone: { value: ka.user.phone, verified: true },
-    email: { value: ka.user.email, verified: false },
+  /* `linked` = usable as a SIGN-IN credential, not merely reachable (user
+     model, 2026-08-10). Every account has ≥1 linked channel — that's how they
+     log in at all. Demo: phone linked, email contact-only, so the linking box
+     has something to offer on first load. */
+  /* Exactly ONE channel is contact-only in each demo state — never both. An
+     account with nothing linked could not log in, so it is not a state the
+     product can be in, and the box would otherwise offer the phone while the
+     email silently lost its check too. */
+  const [contacts, setContacts] = useState(() => {
+    const d = demoKey()
+    return {
+      phone: { value: ka.user.phone, linked: d !== 'phone' },
+      email: { value: ka.user.email, linked: d === 'phone' || d === 'linked' },
+    }
   })
-  const [contactModal, setContactModal] = useState(null) // { type: 'phone'|'email', mode: 'edit'|'verify' }
+  const [contactModal, setContactModal] = useState(null) // { type: 'phone'|'email', mode: 'edit'|'verify', intent?: 'link' }
+  /* „მოგვიანებით" hides the box for THIS SESSION only — the locked decision is
+     that the offer persists until linked, but a user who said "not now" isn't
+     nagged within the same visit. */
+  const [linkLater, setLinkLater] = useState(
+    () => !demoKey() && sessionStorage.getItem('gpi.acc.linkLater') === '1',
+  )
+  const [justLinked, setJustLinked] = useState(null) // 'phone' | 'email' — success alert until reload
   const fileRef = useRef(null)
 
   /* Upload gate: type → minimum size → shape. A square image needs no crop and
@@ -73,10 +110,56 @@ export default function ProfileScreen({ linked, linking, onOpenLink, photo, onPh
     setCropSrc(null)
   }
 
-  const confirmContact = (value) => {
-    setContacts((prev) => ({ ...prev, [contactModal.type]: { value, verified: true } }))
+  /* Linking flips `linked`; editing swaps the VALUE and deliberately keeps the
+     linked flag as it was. The edit OTP proves possession of the new address —
+     it does not decide whether that address is a login credential. So editing
+     an unlinked email leaves the linking box standing, now offering the new
+     address; editing a linked one keeps it a credential. */
+  const confirmContact = () => {
+    const { type, intent } = contactModal
+    setContactModal(null)
+    if (intent === 'link') {
+      setContacts((prev) => ({ ...prev, [type]: { ...prev[type], linked: true } }))
+      setJustLinked(type)
+    }
+  }
+
+  const confirmEdit = (value) => {
+    const { type } = contactModal
+    setContacts((prev) => ({ ...prev, [type]: { ...prev[type], value } }))
     setContactModal(null)
   }
+
+  /* Demo jumps. The linking box is the one state a demo cannot get back to on
+     its own: „მოგვიანებით" writes a session flag, and after a successful link
+     the only reset is a new tab. These set both channels explicitly and always
+     clear the flag + the success alert, so each jump lands on a clean,
+     predictable screen rather than whatever was left over. */
+  const setLinkState = (phoneLinked, emailLinked) => {
+    sessionStorage.removeItem('gpi.acc.linkLater')
+    setLinkLater(false)
+    setJustLinked(null)
+    setContactModal(null)
+    setContacts((prev) => ({
+      phone: { ...prev.phone, linked: phoneLinked },
+      email: { ...prev.email, linked: emailLinked },
+    }))
+  }
+  const demoState = (phoneLinked, emailLinked) => () => setLinkState(phoneLinked, emailLinked)
+
+  /* Re-apply on hashchange, not just at mount: the SPA keeps this component
+     mounted when only the hash QUERY changes, so a `?demo=` link clicked from
+     the Flow Map (or swapped in the address bar) would otherwise show whatever
+     state was already on screen. useState initialisers run once — this is the
+     part that makes the quick links actually work as links. */
+  useEffect(() => {
+    const apply = () => {
+      const d = demoKey()
+      if (d) setLinkState(d !== 'phone', d === 'phone' || d === 'linked')
+    }
+    window.addEventListener('hashchange', apply)
+    return () => window.removeEventListener('hashchange', apply)
+  }, [])
 
   const contactRow = (type, label) => {
     const c = contacts[type]
@@ -84,19 +167,21 @@ export default function ProfileScreen({ linked, linking, onOpenLink, photo, onPh
       <div className="acc-row" key={type}>
         <dt className="t-body acc-row__lbl">{label}</dt>
         <dd className="t-body acc-row__val acc-row__val--contact">
-          <span>{c.value}</span>
-          <Badge color={c.verified ? 'success' : 'warning'} size="sm">
-            {c.verified ? ka.contact.verified : ka.contact.unverified}
-          </Badge>
-          {!c.verified && (
-            <button
-              type="button"
-              className="acc-link t-caption"
-              onClick={() => setContactModal({ type, mode: 'verify' })}
-            >
-              {ka.contact.verify}
-            </button>
+          {/* ONE calm state (user, 2026-08-10): a leading check = linked as a
+              sign-in credential, nothing = contact-only. The row states a
+              fact; the CALL TO ACTION lives in the linking box above, so the
+              amber icon and the inline „დადასტურება" link are gone. The label
+              is never hover-only — the sr-only span keeps it in the a11y tree
+              for touch (see the Tooltip contract). */}
+          {c.linked && (
+            <Tooltip label={ka.linking.linkedTip}>
+              <span className="acc-status acc-status--ok">
+                <Icon name="check-circle" size={18} />
+                <span className="gpi-sr-only">{ka.linking.linkedTip}</span>
+              </span>
+            </Tooltip>
           )}
+          <span>{c.value}</span>
           <IconButton
             icon="pencil"
             title={ka.contact.edit}
@@ -150,6 +235,50 @@ export default function ProfileScreen({ linked, linking, onOpenLink, photo, onPh
         </div>
         <Button variant="primary" size="lg" trailingIcon="arrow-right">{ka.home.mygpiCta}</Button>
       </section>
+
+      {/* ---- Per-channel credential linking (user model, 2026-08-10) --------
+          Shown only when a channel is contact-only AND the user hasn't said
+          „მოგვიანებით" this session. Highlighted (info surface) because it is
+          the ONE actionable exception on the page — the rows stay calm. After
+          OTP success it resolves to a green alert until reload. */}
+      {justLinked && (
+        <InlineAlert tone="success" title={ka.linking.successTitle(justLinked === 'phone')}>
+          {ka.linking.successBody(justLinked === 'phone')}
+        </InlineAlert>
+      )}
+      {(() => {
+        const unlinkedType = !contacts.phone.linked ? 'phone' : !contacts.email.linked ? 'email' : null
+        if (!unlinkedType || linkLater) return null
+        const isPhone = unlinkedType === 'phone'
+        return (
+          <section className="acc-card acc-linkbox">
+            <h2 className="t-h4 acc-linkbox__title">
+              <Icon name="link" size={20} />
+              {ka.linking.boxTitle(isPhone)}
+            </h2>
+            <p className="t-body acc-linkbox__body">
+              {ka.linking.boxBody(isPhone, contacts[unlinkedType].value)}
+            </p>
+            <div className="acc-linkbox__actions">
+              <Button
+                variant="secondary"
+                onClick={() => setContactModal({ type: unlinkedType, mode: 'verify', intent: 'link' })}
+              >
+                {ka.linking.cta}
+              </Button>
+              <Button
+                variant="tertiary"
+                onClick={() => {
+                  sessionStorage.setItem('gpi.acc.linkLater', '1')
+                  setLinkLater(true)
+                }}
+              >
+                {ka.linking.later}
+              </Button>
+            </div>
+          </section>
+        )
+      })()}
 
       {linking && (linked ? (
         <InlineAlert tone="success" title={ka.home.linkedTitle}>{ka.home.linkedText}</InlineAlert>
@@ -207,11 +336,24 @@ export default function ProfileScreen({ linked, linking, onOpenLink, photo, onPh
         <ContactModal
           type={contactModal.type}
           mode={contactModal.mode}
+          intent={contactModal.intent}
           current={contacts[contactModal.type].value}
           onCancel={() => setContactModal(null)}
-          onConfirm={confirmContact}
+          onConfirm={contactModal.mode === 'edit' ? confirmEdit : confirmContact}
         />
       )}
+
+      {/* Both single-unlinked states are offered because the box's copy is
+          grammar-switched per channel („ამ ნომრით" vs „ამ ელ.ფოსტით") — the
+          phone variant is otherwise unreachable in the demo, since the seed
+          data has the phone already linked. */}
+      <DemoBar
+        actions={[
+          { label: 'email not linked', onClick: demoState(true, false) },
+          { label: 'phone not linked', onClick: demoState(false, true) },
+          { label: 'both linked', onClick: demoState(true, true), ghost: true },
+        ]}
+      />
 
       {cropSrc && (
         <CropModal

@@ -135,6 +135,9 @@
   --surface-card: #ffffff;
   --surface-sunken: #eef0f4;
   --surface-overlay: #11172273;
+  /* Dark surface that carries text/inverse + icon/inverse. Added 2026-08-10 for
+     the Tooltip; the pair already existed with no surface to sit on. */
+  --surface-inverse: var(--color-neutral-900);
 
   --text-main: #111722;
   --text-muted: #6b7280;

@@ -9,6 +9,9 @@ export default function WizardFooter({
   canContinue = true,
   continueLabel,
   continueIcon = 'arrow-right',
+  continueLeadingIcon,
+  backLabel,
+  showBack = true,
   hint = null,
 }) {
   const t = strings.wizard.footer
@@ -19,14 +22,25 @@ export default function WizardFooter({
   return (
     <div className="gpi-wizard-footer">
       <div className={`gpi-wizard-footer__inner ${showHint ? 'has-hint' : ''}`}>
-        <Button variant="tertiary" size="md" leadingIcon="arrow-left" onClick={onBack}>
-          {t.back}
-        </Button>
+        {/* First step of a flow has nothing to go back to. The inner is a
+            space-between row, so the button is replaced by an empty span rather
+            than removed — otherwise Continue would jump to the left edge.
+            `backLabel` lets a non-booking flow name its own destination. */}
+        {showBack ? (
+          <Button variant="tertiary" size="md" leadingIcon="arrow-left" onClick={onBack}>
+            {backLabel || t.back}
+          </Button>
+        ) : (
+          <span />
+        )}
         {showHint && <span className="gpi-wizard-footer__hint">{hint}</span>}
+        {/* A terminal action (pay, confirm) reads better with a leading cue than a
+            forward arrow — `continueIcon={null}` drops the arrow entirely. */}
         <Button
           variant="primary"
           size="md"
-          trailingIcon={continueIcon}
+          leadingIcon={continueLeadingIcon}
+          trailingIcon={continueIcon || undefined}
           onClick={onContinue}
           disabled={!canContinue}
         >

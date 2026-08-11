@@ -1,0 +1,283 @@
+/* ===========================================================================
+   Foreign Student Insurance — purchase flow (own Rule 5 surface, prefix `stu-`)
+
+   Layout is 1:1 with the source mockup (two columns, three numbered field
+   groups, sticky policy rail). Every value below resolves to a foundation
+   token — the mockup's hardcoded #de2773 / #fde7f1 / 0.5px borders / 8px
+   control radius are all gone. Control radius, card radius and the field
+   anatomy are inherited from the shared components, not restated here.
+   =========================================================================== */
+
+/* ===========================================================================
+   CHROME — aligned to the reference design (user SVG, 2026-08-10)
+
+   Colour mapping is NOT invented here: the foundation already locks a
+   navy→indigo mapping for GPI's Figma navies (see tokens.css). Applied:
+     design #0A1C5A (headings/labels)  → indigo/800   (the locked navy text)
+     design #404C76 (secondary text)   → indigo/500   (= indicator-todo-fg)
+     design #F1F0FF (hairline, todo)   → link/25      (exact, already locked)
+     design #BDC4DB (rules/connectors) → border/strong (#c5cad5)
+   Geometry is read straight off the design and matches the existing grid:
+   1216 content column = layout-max-width 1280 − 2×32 gutters.
+   =========================================================================== */
+.stu-shell { min-height: 100vh; background: var(--surface-page); }
+
+.stu-topbar {
+  background: var(--surface-card);
+  border-bottom: var(--border-width-sm) solid var(--color-link-25);
+}
+.stu-topbar__inner,
+.stu-main__inner {
+  max-width: var(--layout-max-width);
+  margin: 0 auto;
+  padding-inline: var(--space-32);
+}
+.stu-topbar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+}
+.stu-logo { display: flex; align-items: center; text-decoration: none; }
+.stu-logo__img { height: 40px; width: auto; display: block; }
+
+/* Two-column body: 800 + 384 with a 32 gutter (the design's 912→944 gap). */
+.stu-wizard .gpi-wizard__body {
+  grid-template-columns: minmax(0, 1fr) 384px;
+  gap: var(--space-32);
+}
+
+/* Stepper: the design's metrics already match the shared component (8px inset,
+   32px circles, 12 gaps, full-round pill). Only the UPCOMING label differs —
+   the design uses the same navy as the upcoming numeral, where the shared
+   component muted it. Scoped, so the booking wizard is untouched. */
+.stu-wizard .gpi-step--todo .gpi-step__label,
+.stu-wizard .gpi-step--done .gpi-step__label {
+  color: var(--indicator-todo-fg);
+}
+
+/* Footer bar: design is 72 tall around a 40px button → 16px inset (the shared
+   bar sits at 12). */
+.stu-shell .gpi-wizard-footer__inner { padding-block: var(--space-16); }
+
+/* Fields: the design's controls are 48 tall (control/lg), not the 40 the rest
+   of the system uses. Labels + values carry the navy. */
+.stu-card .gpi-input,
+.stu-card .gpi-fsel__btn { height: var(--control-lg); }
+.stu-card .gpi-field__lbl { color: var(--color-indigo-800); }
+.stu-card .gpi-input,
+.stu-card .gpi-fsel__btn { color: var(--color-indigo-800); }
+
+/* ---- Step card ----------------------------------------------------------- */
+.stu-card { padding: var(--space-24); }
+
+.stu-eyebrow {
+  color: var(--text-brand);
+  margin: 0 0 var(--space-4);
+}
+/* Headings + body carry the design's navy, via the locked navy→indigo mapping
+   (#0A1C5A → indigo/800, #404C76 → indigo/500). Scoped to this surface: it is
+   GPI's Figma language for the purchase flow, not a system-wide re-point of
+   text/main — that would be a foundation change, not a screen one. */
+.stu-title {
+  color: var(--color-indigo-800);
+  margin: 0 0 var(--space-4);
+}
+.stu-subtitle {
+  color: var(--color-indigo-500);
+  margin: 0 0 var(--space-24);
+  max-width: 60ch; /* keeps the intro readable instead of running the full card */
+}
+
+/* ---- Numbered field group ------------------------------------------------ */
+.stu-group + .stu-group { margin-top: var(--space-24); }
+
+.stu-group__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  color: var(--color-indigo-800);
+  margin: 0 0 var(--space-12);
+}
+/* Decorative counter. Brand tint rather than the brand fill: at 20px with an
+   11px numeral, solid pink/600 next to three more of itself out-shouts the
+   field labels it is meant to organise. */
+.stu-group__n {
+  display: grid;
+  place-items: center;
+  width: var(--space-20);
+  height: var(--space-20);
+  flex: 0 0 auto;
+  border-radius: var(--radius-full);
+  background: var(--color-pink-50);
+  color: var(--text-brand);
+  font: 600 11px/1 var(--font-sans);
+}
+
+/* ---- Form grid ----------------------------------------------------------- */
+/* Same two-up rhythm as the B2B insured form, so the two form surfaces in the
+   system stay identical rather than each inventing a gap. */
+.stu-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-20) var(--space-16);
+}
+.stu-grid .wide { grid-column: 1 / -1; }
+
+/* ---- Step 3: review & pay ------------------------------------------------ */
+/* Aligned to the shipped travel review step (user screenshot, 2026-08-10):
+   single title over the section stack, card choice as a two-up option grid,
+   two plain consents with document links at the card's bottom. */
+.stu-title--review { margin-bottom: var(--space-24); }
+
+.stu-reviews {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+  margin-bottom: var(--space-24);
+}
+/* The premium is the one number in the review worth pulling out of the neutral
+   value colour — it is what the Pay button is about to charge. */
+.stu-premium { color: var(--text-brand); font-weight: 600; }
+
+.stu-paylbl {
+  color: var(--color-indigo-800);
+  margin: var(--space-24) 0 var(--space-12);
+}
+
+/* Two-up option grid, like the reference's saved-card picker; today it holds
+   only "New card", and saved cards become extra grid items later. */
+.stu-pay {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-12);
+}
+.stu-pay__opt {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-12) var(--space-16);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+}
+.stu-pay__opt:hover { border-color: var(--border-strong); }
+.stu-pay__opt.is-selected {
+  border-color: var(--action-primary);
+  background: var(--interactive-selected-bg);
+}
+.stu-pay__opt .gpi-radiopt { flex: 1 1 auto; }
+
+/* ---- Consents ------------------------------------------------------------ */
+.stu-consents {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  margin-top: var(--space-24);
+}
+/* Consent text carries the surface navy at body weight — the bold shared
+   checkrow title reads as a heading, not a legal sentence. */
+.stu-consents .gpi-checkrow__title {
+  font-weight: 400;
+  color: var(--color-indigo-800);
+}
+.stu-doclink { color: var(--text-brand); text-decoration: underline; }
+.stu-doclink:hover { color: var(--action-primary-hover); }
+.stu-req { color: var(--status-error-fg); font-weight: 600; }
+
+.stu-payhelp {
+  color: var(--text-muted);
+  margin: var(--space-16) 0 0;
+}
+
+/* ---- Sticky policy rail -------------------------------------------------- */
+/* Priced layout mirrors the reference summary card: navy heading, dates +
+   duration row, divider-separated groups, promo affordance at the bottom. */
+.stu-sum {
+  padding: var(--space-24);
+  position: sticky;
+  top: var(--space-24);
+}
+.stu-sum__title { color: var(--color-indigo-800); margin: 0; }
+
+.stu-sum__period {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-12);
+  padding: var(--space-12) 0 var(--space-16);
+}
+.stu-sum__dates { color: var(--color-indigo-800); }
+.stu-sum__dur { color: var(--color-indigo-800); font-weight: 600; white-space: nowrap; }
+
+.stu-sum__person {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  margin-top: var(--space-16);
+  padding-bottom: var(--space-16);
+  border-bottom: var(--border-width-sm) solid var(--border-divider);
+}
+.stu-sum__who { display: flex; flex-direction: column; min-width: 0; }
+.stu-sum__name { color: var(--color-indigo-800); font-weight: 600; }
+.stu-sum__sub { color: var(--color-indigo-500); }
+
+.stu-sum__empty {
+  color: var(--color-indigo-500);
+  margin: var(--space-16) 0 0;
+}
+
+.stu-sum__rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-16) 0;
+  border-top: var(--border-width-sm) solid var(--border-divider);
+}
+.stu-sum__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+.stu-sum__lbl { color: var(--color-indigo-500); flex: 0 0 auto; }
+.stu-sum__val { color: var(--color-indigo-800); font-weight: 600; text-align: right; min-width: 0; }
+/* The insured line reads name → price, so its "label" is a person, not a key —
+   it carries the value navy (reference: „თემო რაზმაძე · 24.00₾"). */
+.stu-sum__row--person .stu-sum__lbl { color: var(--color-indigo-800); }
+
+.stu-sum__total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-12);
+  padding: var(--space-16) 0;
+  border-top: var(--border-width-sm) solid var(--border-divider);
+}
+.stu-sum__totallbl { color: var(--color-indigo-800); }
+.stu-sum__totalnote { color: var(--text-muted); }
+.stu-sum__amount { color: var(--text-brand); white-space: nowrap; }
+
+/* Promo affordance — outlined row with a ticket glyph; the link swaps to an
+   input (demo only, nothing validates). */
+.stu-sum__promo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  margin-top: var(--space-8);
+  padding: var(--space-12) var(--space-16);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-lg);
+}
+.stu-sum__promo > svg { flex: 0 0 auto; color: var(--color-indigo-800); }
+.stu-sum__promoq { color: var(--color-indigo-800); flex: 1 1 auto; }
+.stu-sum__promolink {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text-link);
+  text-decoration: underline;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.stu-sum__promoinput { height: var(--control-sm); flex: 1 1 auto; min-width: 0; }

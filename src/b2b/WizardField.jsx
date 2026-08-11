@@ -1,34 +1,9 @@
-import Icon from '../lib/Icon.jsx'
+/* Field moved to the shared library (components/Field.jsx) 2026-08-10 — the
+   foreign-student purchase flow became the second form to need it, which is the
+   trigger the form-validation rule set for promoting it.
 
-/* Field — label + control + ONE message line.
-
-   Moved out of AddInsuredScreen.jsx (2026-08) so the Excel importer's repair
-   drawer can render the same fields as the single-person form without a
-   circular import. Behaviour is unchanged.
-
-   Message priority is exclusive (user rule 2026-07-06): inline error (red) >
-   success check (green) > hint. A success message can never render in the
-   error tone. */
-export default function Field({ label, required, hint, success, errorMsg, wide, children }) {
-  return (
-    <div className={`gpi-field ${wide ? 'wide' : ''}`}>
-      <span className="gpi-field__lbl">
-        {label}
-        {required && <span className="gpi-field__req">*</span>}
-      </span>
-      {children}
-      {errorMsg ? (
-        <span className="gpi-field__hint b2b-hint-err" role="alert">
-          {errorMsg}
-        </span>
-      ) : success ? (
-        <span className="gpi-field__hint b2b-hint-ok">
-          <Icon name="check" size={14} />
-          {success}
-        </span>
-      ) : hint ? (
-        <span className="gpi-field__hint">{hint}</span>
-      ) : null}
-    </div>
-  )
-}
+   This file stays as a re-export so b2b's importers (AddInsuredScreen,
+   ImportRowDrawer) are untouched. The shared version renders the same anatomy
+   with semantic hint classes (gpi-field__hint--err/--ok) that resolve to the
+   same status tokens the b2b-hint-* utilities used, so b2b is unchanged. */
+export { default } from '../components/Field.jsx'

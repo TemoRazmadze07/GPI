@@ -25,6 +25,14 @@ export const LANGS = ['ka', 'en']
 const STORAGE_KEY = 'gpi.lang'
 const DEFAULT_LANG = 'ka'
 
+/* Routes whose PRODUCT language is English, not Georgian. The foreign-student
+   purchase flow is sold to non-Georgian-speaking students, so its shell has to
+   read English too — a Georgian nav around an English form is the mismatch the
+   user asked to remove. These routes default to `en` and ignore a `ka` stored
+   by another surface; an explicit ?lang= still wins, so the toggle keeps working
+   and nothing about any other route changes. */
+const ENGLISH_FIRST = /^#\/?student\b/
+
 const isLang = (v) => LANGS.includes(v)
 
 /* The hash carries its own query string (e.g. #/…/book/schedule?from=a5), so `lang`
@@ -46,10 +54,13 @@ function stored() {
 function resolveLang() {
   if (typeof window === 'undefined') return DEFAULT_LANG
   const fromQuery = new URLSearchParams(window.location.search).get('lang')
-  for (const candidate of [fromQuery, fromHash(), stored()]) {
+  // An explicit choice in the URL always wins, on every route.
+  for (const candidate of [fromQuery, fromHash()]) {
     if (isLang(candidate)) return candidate
   }
-  return DEFAULT_LANG
+  if (ENGLISH_FIRST.test(window.location.hash || '')) return 'en'
+  const remembered = stored()
+  return isLang(remembered) ? remembered : DEFAULT_LANG
 }
 
 export const lang = resolveLang()

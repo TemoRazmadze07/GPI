@@ -22,6 +22,11 @@ const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
               "sent" to that new value → confirm applies it as VERIFIED.
    · verify → straight to the code step for the CURRENT value.
 
+   intent (optional): 'link' re-titles the verify flow as CREDENTIAL LINKING
+   („ელ.ფოსტის დაკავშირება" / success „დაკავშირდა") — the per-channel linking
+   box (2026-08-10) proves possession with the SAME OTP step; only the words
+   change, so the flow stays one component.
+
    The code step uses the shared segmented OtpInput (6 boxes) and AUTO-SUBMITS
    the moment the last digit lands — no confirm button to hunt for. The status
    line below it runs idle → spinner „მოწმდება…" → green check „დადასტურდა",
@@ -35,7 +40,7 @@ const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 const strip = (v) => v.replace(/\D/g, '')
 const formatPhone = (digits) => `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`
 
-export default function ContactModal({ type, mode, current, onCancel, onConfirm }) {
+export default function ContactModal({ type, mode, current, intent, onCancel, onConfirm }) {
   const isPhone = type === 'phone'
   const [step, setStep] = useState(mode === 'edit' ? 'value' : 'code')
   const [value, setValue] = useState('')
@@ -91,7 +96,8 @@ export default function ContactModal({ type, mode, current, onCancel, onConfirm 
     )
   }
 
-  const title = ka.contact.titles[`${type}${mode === 'edit' ? 'Edit' : 'Verify'}`]
+  const title =
+    intent === 'link' ? ka.linking.titles[type] : ka.contact.titles[`${type}${mode === 'edit' ? 'Edit' : 'Verify'}`]
   const target = mode === 'edit' ? (isPhone && strip(value).length === 9 ? formatPhone(strip(value)) : value) : current
 
   const next = (e) => {
@@ -176,7 +182,9 @@ export default function ContactModal({ type, mode, current, onCancel, onConfirm 
             {status === 'success' && (
               <>
                 <Icon name="check" size={20} className="acc-otpstatus__ok" />
-                <span className="t-body-sm acc-otpstatus__oktxt">{ka.contact.verifiedMsg}</span>
+                <span className="t-body-sm acc-otpstatus__oktxt">
+                  {intent === 'link' ? ka.linking.linkedMsg : ka.contact.verifiedMsg}
+                </span>
               </>
             )}
             {status === 'idle' && resent && (

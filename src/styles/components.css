@@ -377,6 +377,96 @@
 .gpi-badge--neutral { color: var(--status-neutral-fg); background: var(--status-neutral-bg); }
 .gpi-badge--brand   { color: var(--color-pink-700);    background: var(--color-pink-50); }
 
+/* ---- Tooltip (design-system component; Figma port pending) -----------------
+   Hover/focus label for icon-only elements. Visibility is opacity+visibility,
+   never `display`, so the bubble keeps a box for `aria-describedby` and the
+   fade can run. `visibility` (not just opacity) is what keeps a hidden bubble
+   out of the pointer's way. */
+.gpi-tip { position: relative; display: inline-flex; }
+/* Focusable by default (a tooltip only a mouse can reach is a tooltip half the
+   users never see), so it owes a visible ring like any other tab stop. */
+.gpi-tip__trigger { display: inline-flex; align-items: center; border-radius: var(--radius-sm); }
+.gpi-tip__trigger:focus-visible { outline: var(--focus-ring-width) solid var(--border-focus); outline-offset: var(--focus-ring-offset); }
+.gpi-tip__bubble {
+  position: absolute;
+  left: 50%;
+  z-index: 60;
+  transform: translateX(-50%);
+  max-width: 220px;
+  width: max-content;
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-md);
+  background: var(--surface-inverse);
+  color: var(--text-inverse);
+  font: 400 12px/16px var(--font-sans);
+  text-align: center;
+  box-shadow: var(--elevation-popover);
+  opacity: 0;
+  visibility: hidden;
+  /* Literal 120ms: the foundation has no motion/duration scale yet. When one
+     is added (checklist item), this is a find-and-replace, not a redesign. */
+  transition: opacity 120ms ease;
+  pointer-events: none;
+}
+/* 6px clear of the trigger — enough that the bubble reads as a separate layer
+   without breaking the pointer's path onto it (the wrapper owns the hover). */
+.gpi-tip__bubble--top { bottom: calc(100% + var(--space-4)); }
+.gpi-tip__bubble--bottom { top: calc(100% + var(--space-4)); }
+.gpi-tip__bubble.is-open { opacity: 1; visibility: visible; pointer-events: auto; }
+@media (prefers-reduced-motion: reduce) { .gpi-tip__bubble { transition: none; } }
+
+/* ---- DemoBar (PROTOTYPE affordance — NOT a design-system component) --------
+   Promoted from .b2b-demobar 2026-08-10 when the accounts console became the
+   second consumer; a b2b-namespaced class on another surface would break the
+   Rule 5 platform separation. Deliberately un-GPI: dark pill, monospace,
+   English, so it never reads as product UI. Hidden on ?study links
+   (participants must not see it). Sits below the Drawer (900) and Modal (1000)
+   layers so a real dialog always covers it. Delete with DemoBar.jsx when the
+   prototype stops being a demo. */
+.gpi-demobar {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: var(--space-16);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--color-neutral-900);
+  box-shadow: var(--elevation-popover);
+  z-index: 60;
+  /* Idles slightly back so it never competes with the rows being repaired
+     underneath it, and comes fully forward on hover/keyboard focus. */
+  opacity: .82;
+  transition: opacity .12s ease;
+}
+.gpi-demobar:hover,
+.gpi-demobar:focus-within { opacity: 1; }
+.gpi-demobar__tag {
+  padding: 0 var(--space-8);
+  font: 400 11px/24px var(--font-mono);
+  letter-spacing: .04em;
+  color: rgba(255, 255, 255, .55);
+}
+.gpi-demobar__btn {
+  min-height: 28px;
+  padding: 0 var(--space-12);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, .14);
+  color: #fff;
+  font: 400 12px/28px var(--font-mono);
+  cursor: pointer;
+}
+.gpi-demobar__btn:hover { background: rgba(255, 255, 255, .26); }
+.gpi-demobar__btn:focus-visible {
+  outline: var(--focus-ring-width) solid #fff;
+  outline-offset: var(--focus-ring-offset);
+}
+.gpi-demobar__btn--ghost { background: transparent; color: rgba(255, 255, 255, .72); }
+.gpi-demobar__btn--ghost:hover { background: rgba(255, 255, 255, .14); color: #fff; }
+
 /* ---- Inline Alert (design-system component; Figma port pending) ------------ */
 .gpi-alert {
   display: flex;
@@ -1345,6 +1435,11 @@
 .gpi-field__req { color: var(--status-error-fg); margin-left: 2px; }
 .gpi-field__hint { display: flex; align-items: flex-start; gap: var(--space-4); font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
 .gpi-field__hint svg { flex: 0 0 auto; margin-top: 1px; }
+/* Message tones for the shared Field. Exclusive priority is enforced in the
+   component (error > success > hint); these only carry the colour. Same tokens
+   the b2b-hint-* utilities used, so promoting Field changed nothing in b2b. */
+.gpi-field__hint--ok { color: var(--status-success-fg); }
+.gpi-field__hint--err { color: var(--status-error-fg); }
 .gpi-input { width: 100%; height: var(--control-md); box-sizing: border-box; padding: 0 var(--space-16);
   border: var(--border-width-sm) solid var(--border-field); border-radius: var(--radius-lg);
   background: var(--surface-card); font: 400 14px/1 var(--font-sans); color: var(--text-main); }
@@ -1374,6 +1469,33 @@
 .gpi-checkrow__text { display: flex; flex-direction: column; gap: 2px; }
 .gpi-checkrow__title { font: 500 14px/20px var(--font-sans); color: var(--text-main); }
 .gpi-checkrow__help { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+/* Checkbox component (components/Checkbox.jsx). Input-hiding + offset focus ring
+   mirror .gpi-radiopt exactly, so the two selection controls behave identically.
+   `--boxed` is the consent/opt-in treatment: the whole box is the target, and
+   the checked state tints it with the same selected background a Radio Card uses. */
+.gpi-checkrow__input { position: absolute; width: 1px; height: 1px; opacity: 0; margin: 0; }
+.gpi-checkrow__input:focus-visible + .gpi-check {
+  box-shadow: 0 0 0 var(--focus-ring-offset) var(--surface-card),
+              0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--border-focus);
+}
+.gpi-checkrow:not(.is-disabled):hover .gpi-check { border-color: var(--border-field-hover); }
+.gpi-checkrow.is-checked:not(.is-disabled):hover .gpi-check { border-color: var(--action-primary); }
+.gpi-checkrow.is-disabled { cursor: default; }
+.gpi-checkrow.is-disabled .gpi-check { background: var(--interactive-disabled-bg); border-color: var(--border-field); }
+.gpi-checkrow.is-disabled .gpi-checkrow__title { color: var(--text-muted); }
+
+.gpi-checkrow--boxed {
+  align-items: flex-start;
+  padding: var(--space-16);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+}
+.gpi-checkrow--boxed:not(.is-disabled):hover { border-color: var(--border-strong); }
+.gpi-checkrow--boxed.is-checked {
+  border-color: var(--action-primary);
+  background: var(--interactive-selected-bg);
+}
 
 .gpi-link { display: inline-flex; align-items: center; gap: 4px; padding: 0; border: none; background: none;
   font: 500 13px/1.5 var(--font-sans); color: var(--color-link-600); cursor: pointer; }

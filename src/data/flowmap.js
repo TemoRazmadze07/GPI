@@ -162,6 +162,35 @@ export const apps = [
              comparison (Rule 4). Responsive — same links on desktop + mobile. */
           { id: 'profile', path: 'accounts',       label: 'profile console (desktop + mobile)', status: 'in-progress', hash: '/accounts' },
           { id: 'v1',      path: 'accounts?v=1',   label: 'v1 sidebar console — comparison',    status: 'in-progress', hash: '/accounts?v=1' },
+          /* Credential-linking states. Same `?demo=` quick-link idiom as the
+             B2B excel import: the box is otherwise unreachable once dismissed
+             („მოგვიანებით" writes a session flag), and the PHONE variant is
+             unreachable full stop, since the seed data ships the phone linked.
+             A demo link overrides the dismissal flag on purpose. */
+          { id: 'linkEmail', path: 'accounts?demo=email',  label: 'linking — email not linked (box shown)', status: 'in-progress', hash: '/accounts?demo=email' },
+          { id: 'linkPhone', path: 'accounts?demo=phone',  label: 'linking — phone not linked (box shown)', status: 'in-progress', hash: '/accounts?demo=phone' },
+          { id: 'linkDone',  path: 'accounts?demo=linked', label: 'linking — both linked (no box)',         status: 'in-progress', hash: '/accounts?demo=linked' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'student',
+    label: 'student',
+    icon: 'graduation-cap',
+    sub: 'Foreign Student Insurance — English-language purchase flow',
+    features: [
+      {
+        id: 'purchase',
+        label: 'buy a policy',
+        status: 'in-progress',
+        /* ONE destination: the wizard holds its step in React state rather than
+           the URL (steps 2/3 are reached with Continue), so a per-step entry
+           here would send the reviewer to the same screen three times — the
+           stale-flow-map trap hit on the accounts console. Revisit if the steps
+           ever get their own routes. */
+        flows: [
+          { id: 'flow', path: 'student', label: 'purchase wizard — step 1 built, step 3 built', status: 'in-progress', hash: '/student' },
         ],
       },
     ],

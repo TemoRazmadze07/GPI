@@ -10,6 +10,7 @@ import './styles/b2b.css'
 import './styles/mobile.css'
 import './styles/mga.css'
 import './styles/accounts.css'
+import './styles/student.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

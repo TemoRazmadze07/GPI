@@ -32,7 +32,16 @@ export const kaAcc = {
     greeting: 'მოგესალმებით, მარიამ',
     signedInAs: 'შესული ხართ:',
     mygpiTitle: 'MyGPI — პირადი კაბინეტი',
-    mygpiDesc: 'ჩაეწერეთ ექიმთან, მოითხოვეთ მიმართვა ან სამედიცინო ანაზღაურება.',
+    /* PRODUCT-NEUTRAL on purpose (user, 2026-08-10). The old line — „ჩაეწერეთ
+       ექიმთან, მოითხოვეთ მიმართვა ან სამედიცინო ანაზღაურება." — described the
+       HEALTH journey on the one card every customer sees, so an Auto Fix or
+       Travel policyholder read "this isn't for me" at the exact moment we want
+       them to cross into MyGPI. პოლისები is the only noun true for every
+       product, and ანაზღაურება covers auto/travel claims as well as medical.
+       OPEN with GPI: confirm MyGPI actually surfaces non-health policies — if
+       it is health-only today, this over-promises and the fallback is
+       „მართეთ თქვენი პოლისები ერთ სივრცეში." */
+    mygpiDesc: 'იხილეთ თქვენი პოლისები, მართეთ დაზღვევა და მოითხოვეთ ანაზღაურება.',
     mygpiCta: 'კაბინეტში გადასვლა',
     linkTitle: 'ანგარიშის დაკავშირება',
     linkDesc: 'დაუკავშირეთ ანგარიში GPI-ის მონაცემებს, რომ თქვენი პოლისები და სერვისები ერთ სივრცეში გამოჩნდეს.',
@@ -110,6 +119,27 @@ export const kaAcc = {
     errPhone: 'ნომერი უნდა შედგებოდეს 9 ციფრისგან და იწყებოდეს 5-ით.',
     errEmail: 'შეიყვანეთ სწორი ელ.ფოსტის მისამართი.',
     errCode: 'კოდი არასწორია. სცადეთ ხელახლა.',
+  },
+
+  /* Per-channel credential linking (user model, 2026-08-10): a phone/email on
+     the account may be CONTACT info only — linking makes it a SIGN-IN
+     credential too. The offer lives in its own highlighted box, not in the
+     info rows; the rows show one calm state (check = linked, nothing = not).
+     Channel grammar differs (ნომრით/ელ.ფოსტით), so functions — the i18n rule. */
+  linking: {
+    titles: { phone: 'ნომრის დაკავშირება', email: 'ელ.ფოსტის დაკავშირება' },
+    boxTitle: (isPhone) =>
+      isPhone ? 'დაუკავშირეთ ტელეფონის ნომერი ანგარიშს' : 'დაუკავშირეთ ელ.ფოსტა ანგარიშს',
+    boxBody: (isPhone, value) =>
+      `${value} მითითებულია საკონტაქტოდ, თუმცა ანგარიშთან დაკავშირებული არ არის. დააკავშირეთ, რომ შეძლოთ ${isPhone ? 'ამ ნომრით' : 'ამ ელ.ფოსტით'} შესვლაც.`,
+    cta: 'დაკავშირება',
+    later: 'მოგვიანებით',
+    linkedMsg: 'დაკავშირდა',
+    successTitle: (isPhone) =>
+      isPhone ? 'ტელეფონის ნომერი დაკავშირებულია' : 'ელ.ფოსტა დაკავშირებულია',
+    successBody: (isPhone) =>
+      `ახლა შეგიძლიათ ${isPhone ? 'ამ ნომრითაც' : 'ამ ელ.ფოსტითაც'} შეხვიდეთ ანგარიშზე.`,
+    linkedTip: 'დაკავშირებულია ანგარიშთან',
   },
 
   security: {

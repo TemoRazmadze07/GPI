@@ -5,6 +5,7 @@ import FilterChips from '../components/FilterChips.jsx'
 import FileDropzone from '../components/FileDropzone.jsx'
 import InlineAlert from '../components/InlineAlert.jsx'
 import ConfirmDialog from '../components/ConfirmDialog.jsx'
+import DemoBar from '../components/DemoBar.jsx'
 import Badge from '../components/Badge.jsx'
 import { Button, IconButton } from '../components/Button.jsx'
 import Icon from '../lib/Icon.jsx'
@@ -89,35 +90,10 @@ const STATUS_LABEL = {
 const STATUS_ORDER = { error: 0, warning: 1, exists: 2, ok: 3 }
 const SORT_FIRST_DIR = { row: 'asc', status: 'asc' }
 
-/* Usability-study links (?study) are locked to one flow and go to participants —
-   the demo bar must never appear there. */
-const STUDY = new URLSearchParams(window.location.search).has('study')
-
-/* DemoBar — a PROTOTYPE affordance, deliberately NOT a design-system component
-   and deliberately not styled like one: dark pill, monospace, English labels,
-   so nobody in the room mistakes it for part of the GPI interface. One click
-   puts the screen in the uploaded state with real, broken rows to repair.
-   Delete it (and .b2b-demobar) when the prototype stops being a demo. */
-function DemoBar({ loaded, onLoad, onReset }) {
-  return (
-    <div className="b2b-demobar" role="group" aria-label="prototype demo controls">
-      <span className="b2b-demobar__tag" aria-hidden="true">
-        demo
-      </span>
-      <button type="button" className="b2b-demobar__btn" onClick={() => onLoad('errors')}>
-        file with errors
-      </button>
-      <button type="button" className="b2b-demobar__btn" onClick={() => onLoad('clean')}>
-        clean file
-      </button>
-      {loaded && (
-        <button type="button" className="b2b-demobar__btn b2b-demobar__btn--ghost" onClick={onReset}>
-          reset
-        </button>
-      )}
-    </div>
-  )
-}
+/* DemoBar moved to components/DemoBar.jsx 2026-08-10 (second consumer: the
+   accounts console). The ?study guard moved with it, so this file no longer
+   needs its own STUDY constant — a study participant still never sees the bar.
+   One click here puts the screen in the uploaded state with real broken rows. */
 
 export default function StepExcel({ excel, onImportState, startSeq, ctxToday, contract, onContract }) {
   const { file, result } = excel
@@ -693,7 +669,13 @@ export default function StepExcel({ excel, onImportState, startSeq, ctxToday, co
         />
       )}
 
-      {!STUDY && <DemoBar loaded={!!file || !!result} onLoad={loadDemo} onReset={handleClear} />}
+      <DemoBar
+        actions={[
+          { label: 'file with errors', onClick: () => loadDemo('errors') },
+          { label: 'clean file', onClick: () => loadDemo('clean') },
+          ...(file || result ? [{ label: 'reset', onClick: handleClear, ghost: true }] : []),
+        ]}
+      />
 
       {editingRow && (
         <ImportRowDrawer
