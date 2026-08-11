@@ -629,6 +629,11 @@
 .b2b-page__filters {
   margin-bottom: var(--space-16);
 }
+/* Page-level status banner (e.g. the edit-insured change-request success) —
+   sits between the tabs/head and the filter bar. */
+.b2b-page__alert {
+  margin-bottom: var(--space-16);
+}
 .b2b-page__actions {
   display: flex;
   align-items: center;
@@ -1087,64 +1092,14 @@
 
 .b2b-xl__rowactions { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-4); }
 .b2b-xl__trayhd     { display: flex; align-items: center; justify-content: space-between; gap: var(--space-12); }
-.b2b-xl__drawergrid { margin-top: var(--space-16); }
+/* Renamed from .b2b-xl__drawergrid 2026-08-11 — the edit-insured drawer became
+   a second consumer, so the form-in-drawer spacing is a shared pattern now. */
+.b2b-drawer__grid { margin-top: var(--space-16); }
 
 /* Row tints removed 2026-08-06 (user): the status badge + red note carry the
    state; a full-row wash was noise. Tints were decorative-only (SC 1.4.1), so
    nothing semantic was lost. */
 
-/* ---- prototype demo bar (NOT product UI) ------------------------------------
-   A presenter affordance for the Excel import: one click loads a bundled sample
-   workbook and the screen jumps to the uploaded/results state with real broken
-   rows to repair. Styled ON PURPOSE as a dev overlay — dark pill, monospace,
-   English — so it can never be mistaken for part of the GPI interface, and it
-   is not a design-system component. Hidden on ?study links (participants must
-   not see it). Sits below the Drawer (900) and Modal layers so a repair panel
-   always covers it. Delete with DemoBar in StepExcel.jsx when the demo phase
-   ends. */
-.b2b-demobar {
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: var(--space-16);
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-4);
-  border-radius: var(--radius-full);
-  background: var(--color-neutral-900);
-  box-shadow: var(--elevation-popover);
-  z-index: 60;
-  /* Idles slightly back so it never competes with the rows being repaired
-     underneath it, and comes fully forward on hover/keyboard focus. */
-  opacity: .82;
-  transition: opacity .12s ease;
-}
-.b2b-demobar:hover,
-.b2b-demobar:focus-within { opacity: 1; }
-.b2b-demobar__tag {
-  padding: 0 var(--space-8);
-  font: 400 11px/24px var(--font-mono);
-  letter-spacing: .04em;
-  color: rgba(255, 255, 255, .55);
-}
-.b2b-demobar__btn {
-  min-height: 28px;
-  padding: 0 var(--space-12);
-  border: 0;
-  border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, .14);
-  color: #fff;
-  font: 400 12px/28px var(--font-mono);
-  cursor: pointer;
-}
-.b2b-demobar__btn:hover { background: rgba(255, 255, 255, .26); }
-.b2b-demobar__btn:focus-visible {
-  outline: var(--focus-ring-width) solid #fff;
-  outline-offset: var(--focus-ring-offset);
-}
-.b2b-demobar__btn--ghost { background: transparent; color: rgba(255, 255, 255, .72); }
-.b2b-demobar__btn--ghost:hover { background: rgba(255, 255, 255, .14); color: #fff; }
 
 /* ---- Notification center (bell popover) ---------------------------------- */
 /* Concept locked 2026-08-06: flat list (no day grouping), all/unread pills +

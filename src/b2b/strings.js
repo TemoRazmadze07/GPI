@@ -165,12 +165,47 @@ export const kaB2B = {
     actions: {
       menu: 'მოქმედებები',
       details: 'დეტალურად',
+      /* One action, one label (Rule 1): used by the ⋮ menu AND the view-mode
+         drawer footer — both flip the drawer into edit mode. */
+      edit: 'პოლისის ცვლილება',
       pdf: 'PDF-ის გაგზავნა',
       cancel: 'პოლისის გაუქმება',
     },
     emptyTitle: 'პოლისი ვერ მოიძებნა',
     emptyHint: 'შეცვალეთ ან გაასუფთავეთ ფილტრები და ძიება',
     emptyAction: 'ყველას ჩვენება',
+    /* Edit-insured drawer (2026-08-11): row click / „დეტალურად" on the HEALTH
+       tab opens the step-2 form pre-populated; save = change REQUEST to GPI
+       (no review step in the UI, but the async pipeline stays — the info alert
+       reuses addIns.side.nextBody so the two flows describe it identically). */
+    editDrawer: {
+      title: 'დაზღვეულის რედაქტირება',
+      /* View mode (2026-08-11): „დეტალურად" / row click open READ-ONLY facts
+         first; the edit form is behind the explicit „პოლისის ცვლილება". */
+      viewTitle: 'დაზღვეულის დეტალები',
+      close: 'დახურვა',
+      policyLabel: 'პოლისი',
+      introTitle: 'რა მოხდება შენახვის შემდეგ',
+      save: 'შენახვა',
+      cancel: 'გაუქმება',
+      closeConfirm: 'შეტანილი ცვლილებები დაიკარგება. დახურავთ?',
+      pending: 'მუშავდება',
+      successTitle: 'მოთხოვნა გაიგზავნა',
+      successBody: (no, name) => `${name} — ცვლილებების მოთხოვნა ${no} მიღებულია. პასუხი ≤ 24 საათში.`,
+    },
+    /* Remove-policy confirmation (2026-08-11): the ⋮ „პოლისის გაუქმება" action
+       opens a ConfirmDialog (danger variant — red confirm + safe keep). The
+       keep label is „დატოვება", NOT „გაუქმება" — the destructive verb itself
+       is გაუქმება here, so a გაუქმება cancel button would read as confirming. */
+    removeDialog: {
+      title: 'პოლისის გაუქმება',
+      body: (subject, id) =>
+        `${subject} — პოლისი ${id} გაუქმდება და დაზღვევა შეწყდება. გაუქმების შემდეგ დაბრუნება ვერ ხერხდება — საჭიროებისას პოლისს თავიდან დაამატებთ.`,
+      confirm: 'პოლისის გაუქმება',
+      keep: 'დატოვება',
+      pending: 'უქმდება',
+      successBody: (no, subject) => `${subject} — პოლისის გაუქმების მოთხოვნა ${no} მიღებულია. პასუხი ≤ 24 საათში.`,
+    },
   },
   contracts: {
     all: 'ყველა',

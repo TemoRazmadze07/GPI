@@ -3,13 +3,11 @@ import Stepper from '../components/Stepper.jsx'
 import WizardFooter from '../components/WizardFooter.jsx'
 import Breadcrumbs from '../components/Breadcrumbs.jsx'
 import InlineAlert from '../components/InlineAlert.jsx'
-import Radio from '../components/Radio.jsx'
-import Select from '../components/Select.jsx'
 import Avatar from '../components/Avatar.jsx'
 import Badge from '../components/Badge.jsx'
 import { Button } from '../components/Button.jsx'
 import Icon from '../lib/Icon.jsx'
-import Field from './WizardField.jsx'
+import InsuredFields from './InsuredFields.jsx'
 import StepExcel from './StepExcel.jsx'
 import ContractSelect from './ContractSelect.jsx'
 import { kaB2B } from './strings.js'
@@ -17,11 +15,10 @@ import {
   defaultContract,
   contractById,
   existingEmployeesFor,
-  packages,
   packageByValue,
-  relations,
   relationByValue,
   registryLookup,
+  validateDraft,
   emptyDraft,
 } from './data/addInsured.js'
 import ConfirmDialog from '../components/ConfirmDialog.jsx'
@@ -34,6 +31,17 @@ import { importable, toPerson } from './data/insuredImport.js'
    component instance survives step changes so the batch state persists. */
 
 const t = kaB2B.addIns
+
+/* Stepper HIDDEN 2026-08-11 (user), NOT removed — same idiom as the topbar's
+   SHOW_GLOBAL_SEARCH. Why: the method step forks into flows with DIFFERENT
+   step counts (Excel is planned to end at its results step, no review; single
+   add may collapse to details → apply), so one global 3-step stepper misleads
+   from the very first screen. Navigation = the WizardFooter's back/continue
+   only; the continue label already names what comes next. Flip the flag to
+   restore. If a per-flow stepper ever returns, mount it INSIDE the flow with
+   that flow's own steps, not up here. Do not prune STEPS/stepIndex — the
+   labels feed the footer's continue labels, and both feed the restore. */
+const SHOW_STEPPER = false
 
 const STEPS = [
   { id: 'method', label: t.steps.method },
@@ -115,11 +123,8 @@ function StepMethod({ onMethod, contract, onContract }) {
 
 function StepData({ people, draft, onField, onWho, errors, lookup, editingId, onAddToList, onClearForm, onEditRow, onRemoveRow, onAddFamily, contract, onContract }) {
   const f = t.form
-  const set = (k) => (e) => onField(k, e.target.value)
   /* Per-field inline message (user rule): required vs format, cleared live. */
   const errMsg = (k) => (errors.has(k) ? (errors.get(k) === 'format' ? f.errPid : f.errRequired) : undefined)
-  const isFamily = draft.who === 'family'
-  const pkg = packageByValue(draft.pkg)
 
   const linkOptions = [
     ...existingEmployeesFor(contract.id).map((e) => ({ value: e.id, label: e.name })),
@@ -132,90 +137,17 @@ function StepData({ people, draft, onField, onWho, errors, lookup, editingId, on
     <div className="b2b-wiz__cols">
       <div className="b2b-wiz__main">
         <ContractSelect contract={contract} onSelect={onContract} />
-        <div className="b2b-wiz__grid">
-          <Field label={t.who.label} wide>
-            <div className="b2b-wiz__radios" role="radiogroup" aria-label={t.who.label}>
-              <Radio name={`who-${editingId || 'new'}`} value="employee" checked={!isFamily} onChange={() => onWho('employee')} label={t.who.employee} />
-              <Radio name={`who-${editingId || 'new'}`} value="family" checked={isFamily} onChange={() => onWho('family')} label={t.who.family} />
-            </div>
-          </Field>
-
-          {isFamily && (
-            <>
-              <Field label={f.linkedTo} required errorMsg={errMsg('linkedTo')}>
-                <Select value={draft.linkedTo} placeholder={f.linkedToPh} options={linkOptions} onChange={(v) => onField('linkedTo', v)} error={errors.has('linkedTo')} />
-              </Field>
-              <Field label={f.relation} required errorMsg={errMsg('relation')}>
-                <Select value={draft.relation} placeholder={f.relationPh} options={relations} onChange={(v) => onField('relation', v)} error={errors.has('relation')} />
-              </Field>
-            </>
-          )}
-
-          <Field label={f.citizen} wide>
-            <div className="b2b-wiz__radios" role="radiogroup" aria-label={f.citizen}>
-              <Radio name={`cit-${editingId || 'new'}`} value="resident" checked={draft.citizen === 'resident'} onChange={(v) => onField('citizen', v)} label={f.resident} />
-              <Radio name={`cit-${editingId || 'new'}`} value="nonresident" checked={draft.citizen === 'nonresident'} onChange={(v) => onField('citizen', v)} label={f.nonresident} />
-            </div>
-          </Field>
-
-          <Field
-            label={f.personalId}
-            required
-            errorMsg={errMsg('pid')}
-            success={lookup === 'found' ? f.found : undefined}
-            hint={lookup === 'notFound' ? f.notFound : undefined}
-          >
-            <input className={`gpi-input ${errors.has('pid') ? 'is-error' : ''}`} value={draft.pid} placeholder={f.personalIdPh} inputMode="numeric" maxLength={11} onChange={set('pid')} />
-          </Field>
-          <Field label={f.birthDate} required errorMsg={errMsg('birth')}>
-            <input className={`gpi-input ${errors.has('birth') ? 'is-error' : ''}`} value={draft.birth} placeholder={f.birthDatePh} onChange={set('birth')} />
-          </Field>
-
-          <Field label={f.firstName} required errorMsg={errMsg('firstName')}>
-            <input className={`gpi-input ${errors.has('firstName') ? 'is-error' : ''}`} value={draft.firstName} onChange={set('firstName')} />
-          </Field>
-          <Field label={f.lastName} required errorMsg={errMsg('lastName')}>
-            <input className={`gpi-input ${errors.has('lastName') ? 'is-error' : ''}`} value={draft.lastName} onChange={set('lastName')} />
-          </Field>
-
-          <Field label={f.gender} required errorMsg={errMsg('gender')}>
-            <Select
-              value={draft.gender}
-              placeholder={f.genderPh}
-              options={[
-                { value: 'male', label: f.male },
-                { value: 'female', label: f.female },
-              ]}
-              onChange={(v) => onField('gender', v)}
-              error={errors.has('gender')}
-            />
-          </Field>
-          <Field label={f.mobile}>
-            <input className="gpi-input" value={draft.mobile} placeholder={f.mobilePh} onChange={set('mobile')} />
-          </Field>
-
-          <Field label={f.email}>
-            <input className="gpi-input" type="email" value={draft.email} placeholder={f.emailPh} onChange={set('email')} />
-          </Field>
-          <Field label={f.address}>
-            <input className="gpi-input" value={draft.address} placeholder={f.addressPh} onChange={set('address')} />
-          </Field>
-
-          <Field
-            label={f.package}
-            required
-            errorMsg={errMsg('pkg')}
-            hint={pkg ? `${f.premium}: ${fmtGel(pkg.premium)} · ${f.systemTag}` : undefined}
-          >
-            <Select
-              value={draft.pkg}
-              placeholder={f.packagePh}
-              options={packages.map((p) => ({ value: p.value, label: p.label }))}
-              onChange={(v) => onField('pkg', v)}
-              error={errors.has('pkg')}
-            />
-          </Field>
-        </div>
+        <InsuredFields
+          value={draft}
+          onChange={(k, v) => (k === 'who' ? onWho(v) : onField(k, v))}
+          linkOptions={linkOptions}
+          idPrefix={editingId || 'new'}
+          invalid={(k) => errors.has(k)}
+          msg={errMsg}
+          pidSuccess={lookup === 'found' ? f.found : undefined}
+          pidHint={lookup === 'notFound' ? f.notFound : undefined}
+          pidMaxLength={11}
+        />
 
         <div className="b2b-wiz__formactions">
           <Button variant="tertiary" size="md" onClick={onClearForm}>
@@ -491,11 +423,7 @@ export default function AddInsuredScreen({ step = 'method' }) {
   }
 
   const validate = () => {
-    const req = ['pid', 'birth', 'firstName', 'lastName', 'gender', 'pkg']
-    if (draft.who === 'family') req.push('linkedTo', 'relation')
-    const bad = new Map()
-    for (const k of req) if (!String(draft[k]).trim()) bad.set(k, 'required')
-    if (!bad.has('pid') && !/^\d{11}$/.test(draft.pid)) bad.set('pid', 'format')
+    const bad = validateDraft(draft)
     setErrors(bad)
     return bad.size === 0
   }
@@ -584,9 +512,11 @@ export default function AddInsuredScreen({ step = 'method' }) {
               {t.cancel}
             </Button>
           </div>
-          <div className="b2b-wiz__stepper">
-            <Stepper steps={STEPS} current={stepIndex} />
-          </div>
+          {SHOW_STEPPER && (
+            <div className="b2b-wiz__stepper">
+              <Stepper steps={STEPS} current={stepIndex} />
+            </div>
+          )}
         </>
       )}
 

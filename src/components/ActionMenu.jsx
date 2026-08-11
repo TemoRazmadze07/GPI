@@ -85,7 +85,15 @@ export default function ActionMenu({ items, label }) {
                   type="button"
                   role="menuitem"
                   className={`gpi-actmenu__item${it.destructive ? ' is-destructive' : ''}`}
-                  onClick={() => {
+                  onClick={(e) => {
+                    /* The portal moves the panel in the DOM, but React still
+                       bubbles its events through the REACT tree — up through
+                       ActionMenu into the row's onRowClick. Without this stop,
+                       picking „გაუქმება" also opened the row's detail drawer
+                       underneath the confirm (found 2026-08-11 on Policies;
+                       invisible on Contracts, where both paths open the same
+                       drawer). */
+                    e.stopPropagation()
                     setPos(null)
                     it.onSelect?.()
                   }}

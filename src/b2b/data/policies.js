@@ -164,3 +164,57 @@ const property = STREETS.map((address) => {
 
 export const POLICIES = { health, auto, travel, property }
 export const PROP_TYPE_ORDER = PROP_TYPES
+
+/* Status → Badge colour, shared by the policies table and the edit drawer. */
+export const STATUS_BADGE = { active: 'success', ended: 'neutral', canceled: 'error' }
+
+/* ---- edit-insured drawer: pre-populated draft for a health policy row ------
+   The table rows don't carry birth/gender/contacts (the back office does), so
+   the drawer derives them DETERMINISTICALLY from the row's pid — same person,
+   same values, every reload. Deliberately computed on demand and OUTSIDE the
+   seeded LCG above: inserting extra rnd() calls into the generator would
+   reshuffle every downstream table (names, plates, addresses). */
+
+const hash = (s) => {
+  let h = 0
+  for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) % 999983
+  return h
+}
+
+/* Practical Georgian → Latin transliteration, enough for the name pools. */
+const TRANSLIT = {
+  ა: 'a', ბ: 'b', გ: 'g', დ: 'd', ე: 'e', ვ: 'v', ზ: 'z', თ: 't', ი: 'i',
+  კ: 'k', ლ: 'l', მ: 'm', ნ: 'n', ო: 'o', პ: 'p', ჟ: 'zh', რ: 'r', ს: 's',
+  ტ: 't', უ: 'u', ფ: 'p', ქ: 'k', ღ: 'gh', ყ: 'q', შ: 'sh', ჩ: 'ch',
+  ც: 'ts', ძ: 'dz', წ: 'ts', ჭ: 'ch', ხ: 'kh', ჯ: 'j', ჰ: 'h', '-': '-',
+}
+const translit = (s) => [...s].map((ch) => TRANSLIT[ch] ?? '').join('')
+
+/* Table rows store the package by its Georgian LABEL; the form draft stores
+   the value key (data/addInsured.js `packages`). */
+const PKG_VALUE = { 'ბაზისი': 'basic', 'ოპტიმალი': 'optimal', 'პრემიუმი': 'premium' }
+
+export function insuredDraftFor(row) {
+  const h = hash(row.pid)
+  const [first = '', last = ''] = row.name.split(' ')
+  const employee = row.relation === 'employee'
+  /* Family birth years skew younger/older by relation; employees 1965–1999. */
+  const year =
+    row.relation === 'child' ? 2005 + (h % 15) : row.relation === 'parent' ? 1950 + (h % 12) : 1965 + (h % 35)
+  const pad2 = (n) => String(n).padStart(2, '0')
+  return {
+    who: employee ? 'employee' : 'family',
+    citizen: 'resident',
+    pid: row.pid,
+    birth: `${pad2(1 + (h % 28))}/${pad2(1 + ((h >> 5) % 12))}/${year}`,
+    firstName: first,
+    lastName: last,
+    gender: h % 2 === 0 ? 'female' : 'male',
+    linkedTo: row.linkedTo || '',
+    relation: employee ? '' : row.relation,
+    mobile: `+995 5${row.pid.slice(2, 4)} ${row.pid.slice(4, 7)} ${row.pid.slice(7, 10)}`,
+    email: `${translit(first)}.${translit(last)}@mail.ge`,
+    address: `თბილისი, ${STREETS[h % STREETS.length]}`,
+    pkg: PKG_VALUE[row.package] || '',
+  }
+}

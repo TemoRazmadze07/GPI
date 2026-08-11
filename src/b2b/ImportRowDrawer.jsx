@@ -2,19 +2,17 @@ import { useEffect, useRef } from 'react'
 import Drawer from '../components/Drawer.jsx'
 import Avatar from '../components/Avatar.jsx'
 import Badge from '../components/Badge.jsx'
-import Radio from '../components/Radio.jsx'
-import Select from '../components/Select.jsx'
 import InlineAlert from '../components/InlineAlert.jsx'
 import { Button } from '../components/Button.jsx'
-import Field from './WizardField.jsx'
+import InsuredFields from './InsuredFields.jsx'
 import { kaB2B } from './strings.js'
-import { packages, relations, existingEmployees, packageByValue } from './data/addInsured.js'
+import { existingEmployees } from './data/addInsured.js'
 /* NB `existingEmployees` here is the default-contract fallback only — the
    caller passes the selected contract's roster via the `employees` prop. */
 
-/* ImportRowDrawer — repair one imported row, using the SAME controls as the
-   single-person form (Field + gpi-input + Select + Radio) so a person edited
-   here and a person typed by hand go through identical affordances.
+/* ImportRowDrawer — repair one imported row, using the SAME form as the
+   single-person step (shared InsuredFields since 2026-08-11) so a person
+   edited here and a person typed by hand go through identical affordances.
 
    Edits apply LIVE: there is no save button and no dirty state. That is
    deliberate — Escape, ×, or an overlay click can never destroy work, so this
@@ -32,8 +30,6 @@ const STATUS_LABEL = {
   exists: x.exists.label,
   ok: x.status.ready,
 }
-
-const fmtGel = (n) => `₾ ${n.toFixed(2)}`
 
 export const rowRef = (r) =>
   (r.firstName || r.lastName) ? `${r.firstName} ${r.lastName}`.trim()
@@ -55,19 +51,16 @@ export default function ImportRowDrawer({ row, rows, onChange, onRemove, onNext,
 
   if (!row) return null
 
-  const set = (key) => (e) => onChange(row.id, key, e.target.value)
-  const pick = (key) => (v) => onChange(row.id, key, v)
-
   const issueFields = new Set(row.issues.map((i) => i.field).filter(Boolean))
-  const bad = (k) => issueFields.has(k)
-  const msgFor = (k) => row.issues.find((i) => i.field === k && i.severity === 'error')?.message
+  /* The importer's issue records use `linkPid` where the form field is
+     `linkedTo` (a spreadsheet links by personal №) — translate at the seam. */
+  const alias = (k) => (k === 'linkedTo' ? 'linkPid' : k)
+  const bad = (k) => issueFields.has(alias(k))
+  const msgFor = (k) => row.issues.find((i) => i.field === alias(k) && i.severity === 'error')?.message
   /* The first field carrying an error gets the autofocus marker. */
   const firstBad = ['pid', 'birth', 'firstName', 'lastName', 'gender', 'pkg', 'relation', 'linkPid', 'who', 'citizen']
     .find((k) => row.issues.some((i) => i.field === k && i.severity === 'error'))
-  const mark = (k) => (k === firstBad ? { 'data-autofocus': 'true' } : {})
-
-  const isFamily = row.who === 'family'
-  const pkg = packageByValue(row.pkg)
+  const mark = (k) => (alias(k) === firstBad ? { 'data-autofocus': 'true' } : {})
 
   /* Same two namespaces the single form offers: employees already on the
      contract, plus the employees this file itself introduces (`b:` prefixed —
@@ -124,105 +117,16 @@ export default function ImportRowDrawer({ row, rows, onChange, onRemove, onNext,
           </InlineAlert>
         )}
 
-        <div className="b2b-wiz__grid b2b-xl__drawergrid">
-          <Field label={t.who.label} wide>
-            <div className="b2b-wiz__radios" role="radiogroup" aria-label={t.who.label}>
-              <Radio name={`dwho-${row.id}`} value="employee" checked={!isFamily} onChange={() => onChange(row.id, 'who', 'employee')} label={t.who.employee} />
-              <Radio name={`dwho-${row.id}`} value="family" checked={isFamily} onChange={() => onChange(row.id, 'who', 'family')} label={t.who.family} />
-            </div>
-          </Field>
-
-          {isFamily && (
-            <>
-              <Field label={f.linkedTo} required errorMsg={msgFor('linkPid')} {...mark('linkPid')}>
-                <Select
-                  value={row.linkedTo}
-                  placeholder={f.linkedToPh}
-                  options={linkOptions}
-                  onChange={pick('linkedTo')}
-                  error={bad('linkPid')}
-                />
-              </Field>
-              <Field label={f.relation} required errorMsg={msgFor('relation')} {...mark('relation')}>
-                <Select
-                  value={row.relation}
-                  placeholder={f.relationPh}
-                  options={relations}
-                  onChange={pick('relation')}
-                  error={bad('relation')}
-                />
-              </Field>
-            </>
-          )}
-
-          <Field label={f.citizen} wide>
-            <div className="b2b-wiz__radios" role="radiogroup" aria-label={f.citizen}>
-              <Radio name={`dcit-${row.id}`} value="resident" checked={row.citizen === 'resident'} onChange={() => onChange(row.id, 'citizen', 'resident')} label={f.resident} />
-              <Radio name={`dcit-${row.id}`} value="nonresident" checked={row.citizen === 'nonresident'} onChange={() => onChange(row.id, 'citizen', 'nonresident')} label={f.nonresident} />
-            </div>
-          </Field>
-
-          <div {...mark('pid')}>
-            <Field label={f.personalId} required errorMsg={msgFor('pid')}>
-              <input className={`gpi-input ${bad('pid') ? 'is-error' : ''}`} value={row.pid} placeholder={f.personalIdPh} inputMode="numeric" onChange={set('pid')} />
-            </Field>
-          </div>
-          <div {...mark('birth')}>
-            <Field label={f.birthDate} required errorMsg={msgFor('birth')}>
-              <input className={`gpi-input ${bad('birth') ? 'is-error' : ''}`} value={row.birth} placeholder={f.birthDatePh} onChange={set('birth')} />
-            </Field>
-          </div>
-
-          <div {...mark('firstName')}>
-            <Field label={f.firstName} required errorMsg={msgFor('firstName')}>
-              <input className={`gpi-input ${bad('firstName') ? 'is-error' : ''}`} value={row.firstName} onChange={set('firstName')} />
-            </Field>
-          </div>
-          <div {...mark('lastName')}>
-            <Field label={f.lastName} required errorMsg={msgFor('lastName')}>
-              <input className={`gpi-input ${bad('lastName') ? 'is-error' : ''}`} value={row.lastName} onChange={set('lastName')} />
-            </Field>
-          </div>
-
-          <Field label={f.gender} required errorMsg={msgFor('gender')} {...mark('gender')}>
-            <Select
-              value={row.gender}
-              placeholder={f.genderPh}
-              options={[
-                { value: 'male', label: f.male },
-                { value: 'female', label: f.female },
-              ]}
-              onChange={pick('gender')}
-              error={bad('gender')}
-            />
-          </Field>
-          <Field label={f.mobile}>
-            <input className="gpi-input" value={row.mobile} placeholder={f.mobilePh} onChange={set('mobile')} />
-          </Field>
-
-          <Field label={f.email}>
-            <input className="gpi-input" type="email" value={row.email} placeholder={f.emailPh} onChange={set('email')} />
-          </Field>
-          <Field label={f.address}>
-            <input className="gpi-input" value={row.address} placeholder={f.addressPh} onChange={set('address')} />
-          </Field>
-
-          <Field
-            label={f.package}
-            required
-            errorMsg={msgFor('pkg')}
-            hint={pkg ? `${f.premium}: ${fmtGel(pkg.premium)} · ${f.systemTag}` : undefined}
-            {...mark('pkg')}
-          >
-            <Select
-              value={row.pkg}
-              placeholder={f.packagePh}
-              options={packages.map((p) => ({ value: p.value, label: p.label }))}
-              onChange={pick('pkg')}
-              error={bad('pkg')}
-            />
-          </Field>
-        </div>
+        <InsuredFields
+          className="b2b-wiz__grid b2b-drawer__grid"
+          value={row}
+          onChange={(k, v) => onChange(row.id, k, v)}
+          linkOptions={linkOptions}
+          idPrefix={`d-${row.id}`}
+          invalid={bad}
+          msg={msgFor}
+          mark={mark}
+        />
 
         <div className="b2b-wiz__formactions">
           <Button variant="danger-tertiary" size="md" type="button" leadingIcon="trash" onClick={() => onRemove(row.id)}>

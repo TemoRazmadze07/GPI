@@ -92,6 +92,26 @@ export const emptyDraft = () => ({
   pkg: '',
 })
 
+/* Mock request numbers — ONE sequence for every change request the portal
+   fakes (edit insured, remove policy…), continuing the wizard's #43512 so two
+   surfaces can't both claim #43513. */
+let reqSeq = 43513
+export const nextRequestNo = () => `#${reqSeq++}`
+
+/* Draft validation — required fields + PID format (extracted 2026-08-11 so the
+   edit-insured drawer and the wizard share ONE rule set). Returns a Map of
+   key → 'required' | 'format'; empty Map = valid. NB the 11-digit PID rule
+   applies even to non-residents here — documented live bug, the Excel importer
+   deliberately relaxes it (see session_log 2026-08-04). */
+export const validateDraft = (draft) => {
+  const req = ['pid', 'birth', 'firstName', 'lastName', 'gender', 'pkg']
+  if (draft.who === 'family') req.push('linkedTo', 'relation')
+  const bad = new Map()
+  for (const k of req) if (!String(draft[k]).trim()) bad.set(k, 'required')
+  if (!bad.has('pid') && !/^\d{11}$/.test(draft.pid)) bad.set('pid', 'format')
+  return bad
+}
+
 /* Mock Revenue-Service lookup: 11-digit ID + birth date → person or null.
    Deterministic: hash of the ID picks a sample; ID 11111111111 = not found
    (same test trigger as the My-Cabinet add-insured modal). */

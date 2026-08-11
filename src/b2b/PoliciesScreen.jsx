@@ -9,9 +9,13 @@ import FilterBar from '../components/FilterBar.jsx'
 import { datePresets } from '../components/FilterPopover.jsx'
 import Pagination from '../components/Pagination.jsx'
 import Tabs from '../components/Tabs.jsx'
+import InlineAlert from '../components/InlineAlert.jsx'
+import ConfirmDialog from '../components/ConfirmDialog.jsx'
+import EditInsuredDrawer from './EditInsuredDrawer.jsx'
 import { kaB2B } from './strings.js'
 import { PRODUCTS, PRODUCT_ORDER } from './data/contracts.js'
-import { POLICIES, PROP_TYPE_ORDER } from './data/policies.js'
+import { nextRequestNo } from './data/addInsured.js'
+import { POLICIES, PROP_TYPE_ORDER, STATUS_BADGE } from './data/policies.js'
 
 /* PoliciesScreen — one page, product tabs (concept locked 2026-07-15).
    Each product = its OWN table because the policy identifier differs, but the
@@ -26,7 +30,6 @@ import { POLICIES, PROP_TYPE_ORDER } from './data/policies.js'
    only the identifier block + extras vary per product. B2BApp remounts the
    screen per tab (key=product) → clean state per tab. */
 
-const STATUS_BADGE = { active: 'success', ended: 'neutral', canceled: 'error' }
 const PAGE_SIZE = 10
 
 const toDate = (s) => {
@@ -219,6 +222,35 @@ export default function PoliciesScreen({ product = 'health', initialContract = n
     }
   })
   const [customizeOpen, setCustomizeOpen] = useState(false)
+  /* Edit-insured drawer (2026-08-11, HEALTH tab only — the form is health-
+     shaped: packages, family links). Row click / „დეტალურად" open the drawer;
+     save = change request → success alert + a session-only pending badge on
+     the row. State lives here, so it resets per tab (B2BApp remounts). */
+  const canEdit = product === 'health'
+  /* drawer = { row, mode: 'view' | 'edit' } — row click and ⋮ „დეტალურად" land
+     on the read-only view; ⋮ „პოლისის ცვლილება" deep-links into edit
+     (user, 2026-08-11). */
+  const [drawerState, setDrawerState] = useState(null)
+  /* Remove policy (2026-08-11, every tab): ⋮ „პოლისის გაუქმება" → ConfirmDialog
+     (danger). Both flows are async change REQUESTS, so they share the success
+     alert and the pending map (id → 'edit' | 'remove'). ONE badge per row —
+     while a request is open, the pending badge REPLACES the status badge
+     (user rule 2026-08-11: only one status in the table). */
+  const [removeRow, setRemoveRow] = useState(null)
+  const [saved, setSaved] = useState(null)
+  const [pending, setPending] = useState(() => new Map())
+  const subjectFor = (r) => r.name || r.plate || r.address
+  const onEditSaved = (row, requestNo) => {
+    setPending((m) => new Map(m).set(row.id, 'edit'))
+    setSaved({ title: p.editDrawer.successTitle, body: p.editDrawer.successBody(requestNo, row.name) })
+    setDrawerState(null)
+  }
+  const onRemoveConfirm = () => {
+    const r = removeRow
+    setPending((m) => new Map(m).set(r.id, 'remove'))
+    setSaved({ title: p.editDrawer.successTitle, body: p.removeDialog.successBody(nextRequestNo(), subjectFor(r)) })
+    setRemoveRow(null)
+  }
   /* Sorting (user rule 2026-07-16): only VARIABLE columns sort — status,
      premium, period (by start date), property's insured sum. Identifiers
      (№s, names, package) don't. Default = latest policy first; first click
@@ -262,11 +294,12 @@ export default function PoliciesScreen({ product = 'health', initialContract = n
   const pageRows = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
   const total = PRODUCT_ORDER.reduce((n, pr) => n + POLICIES[pr].length, 0)
 
-  const rowActions = [
-    { id: 'details', label: p.actions.details },
+  const rowActionsFor = (r) => [
+    { id: 'details', label: p.actions.details, ...(canEdit ? { onSelect: () => setDrawerState({ row: r, mode: 'view' }) } : {}) },
+    ...(canEdit ? [{ id: 'edit', label: p.actions.edit, onSelect: () => setDrawerState({ row: r, mode: 'edit' }) }] : []),
     ...(cfg.rowActions === 'travel' ? [{ id: 'pdf', label: p.actions.pdf }] : []),
     { divider: true },
-    { id: 'cancel', label: p.actions.cancel, destructive: true },
+    { id: 'cancel', label: p.actions.cancel, destructive: true, onSelect: () => setRemoveRow(r) },
   ]
   /* Shared tail — same columns in the same places on every tab.
      premium/period/status opt into sorting; №s stay plain headers. */
@@ -292,11 +325,18 @@ export default function PoliciesScreen({ product = 'health', initialContract = n
       header: p.cols.status,
       width: 128,
       sortable: true,
-      render: (r) => (
-        <Badge color={STATUS_BADGE[r.status]} dot>
-          {p.status[r.status]}
-        </Badge>
-      ),
+      render: (r) => {
+        const pend = pending.get(r.id)
+        return pend ? (
+          <Badge color={pend === 'remove' ? 'warning' : 'info'} dot>
+            {pend === 'remove' ? p.removeDialog.pending : p.editDrawer.pending}
+          </Badge>
+        ) : (
+          <Badge color={STATUS_BADGE[r.status]} dot>
+            {p.status[r.status]}
+          </Badge>
+        )
+      },
     },
   ]
 
@@ -338,7 +378,7 @@ export default function PoliciesScreen({ product = 'health', initialContract = n
       ),
       width: 48,
       align: 'right',
-      render: () => <ActionMenu items={rowActions} label={p.actions.menu} />,
+      render: (r) => <ActionMenu items={rowActionsFor(r)} label={p.actions.menu} />,
     },
   ]
 
@@ -383,6 +423,13 @@ export default function PoliciesScreen({ product = 'health', initialContract = n
           label={p.tabsLabel}
         />
       </div>
+      {saved && (
+        <div className="b2b-page__alert">
+          <InlineAlert tone="success" title={saved.title}>
+            {saved.body}
+          </InlineAlert>
+        </div>
+      )}
       <div className="b2b-page__filters">
         <FilterBar
           categories={categories}
@@ -398,6 +445,7 @@ export default function PoliciesScreen({ product = 'health', initialContract = n
         columns={columns}
         rows={pageRows}
         rowKey={(r) => r.id}
+        onRowClick={canEdit ? (r) => setDrawerState({ row: r, mode: 'view' }) : undefined}
         sort={sort}
         onSort={onSort}
         empty={{
@@ -416,6 +464,24 @@ export default function PoliciesScreen({ product = 'health', initialContract = n
         <div className="b2b-page__pagination">
           <Pagination current={page} total={pages} onChange={setPage} />
         </div>
+      )}
+      {drawerState && (
+        <EditInsuredDrawer
+          row={drawerState.row}
+          initialMode={drawerState.mode}
+          onClose={() => setDrawerState(null)}
+          onSaved={onEditSaved}
+        />
+      )}
+      {removeRow && (
+        <ConfirmDialog
+          title={p.removeDialog.title}
+          body={p.removeDialog.body(subjectFor(removeRow), removeRow.id)}
+          confirmLabel={p.removeDialog.confirm}
+          keepLabel={p.removeDialog.keep}
+          onConfirm={onRemoveConfirm}
+          onClose={() => setRemoveRow(null)}
+        />
       )}
       {customizeOpen && (
         <ColumnsModal
