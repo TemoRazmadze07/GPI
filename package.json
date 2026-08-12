@@ -8,6 +8,7 @@
     "build": "vite build",
     "build:share": "SINGLEFILE=1 vite build",
     "build:share:b2b": "B2B_SHARE=1 vite build",
+    "build:share:accounts": "SHARE_ROUTE='#/accounts' vite build",
     "preview": "vite preview --port 4173"
   },
   "dependencies": {
