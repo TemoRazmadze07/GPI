@@ -27,6 +27,10 @@ export const NAV_MAIN = [
       { id: 'statement', label: t.statement },
     ],
   },
+  /* მიმოწერა (2026-08-15) — org↔GPI conversations. 9th top-level leaf, placed
+     with the communication/service items; its badge is LIVE (injected by
+     B2BShell from the messages store), not a static count like requests'. */
+  { id: 'messages', label: t.messages, icon: 'mail' },
   { id: 'guide', label: t.guide, icon: 'graduation-cap' },
   { id: 'offers', label: t.offers, icon: 'tag' },
   {

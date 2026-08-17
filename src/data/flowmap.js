@@ -139,7 +139,20 @@ export const apps = [
         label: 'guide',
         status: 'in-progress',
         flows: [
-          { id: 'guide', path: 'b2b/guide', label: 'employee guide — library & send', status: 'in-progress', hash: '/b2b/guide' },
+          { id: 'guide', path: 'b2b/guide', label: 'employee guide — library & send (A|B via demo pill)', status: 'in-progress', hash: '/b2b/guide' },
+          // Version B (2026-08-17): per-item detail + the EXTERNAL employee page
+          // (#/guide/… — the SMS/email deep link, deliberately outside the shell).
+          { id: 'guideItem', path: 'b2b/guide/onboarding', label: 'guide v B — bundle detail (internal)', status: 'in-progress', hash: '/b2b/guide/onboarding' },
+          { id: 'guidePublic', path: 'guide/onboarding', label: 'guide v B — external employee page', status: 'in-progress', hash: '/guide/onboarding' },
+        ],
+      },
+      {
+        id: 'messages',
+        label: 'messages',
+        status: 'in-progress',
+        flows: [
+          { id: 'messages', path: 'b2b/messages', label: 'მიმოწერა — org↔GPI conversations', status: 'in-progress', hash: '/b2b/messages' },
+          { id: 'thread', path: 'b2b/messages/c1', label: 'thread view (deep-link)', status: 'in-progress', hash: '/b2b/messages/c1' },
         ],
       },
     ],

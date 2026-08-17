@@ -2,6 +2,12 @@
    strings so the two platform contexts stay cleanly splittable (Rule 5). */
 import { ASSETS } from '../lib/assets.js'
 
+/* The message-body prompt is deliberately GENERAL: the same words serve a
+   brand-new letter and a reply inside an open thread, so it is defined ONCE here
+   and read by both the compose drawer (compose_.bodyPh) and the thread composer
+   (msgs.msgPlaceholder) — Rule 1, never re-inline. */
+const MSG_PLACEHOLDER = 'დაწერე შეტყობინება'
+
 export const kaB2B = {
   /* Shared action labels — one action, one label, one string. The add-policy CTA
      appears in the topbar (global), on Contracts and on Policies; all three route to
@@ -38,6 +44,7 @@ export const kaB2B = {
     finances: 'ფინანსები',
     invoices: 'ინვოისები',
     statement: 'ამონაწერი',
+    messages: 'მიმოწერა',
     service: 'სერვისი',
     guide: 'გზამკვლევი',
     offers: 'შეთავაზებები',
@@ -83,6 +90,88 @@ export const kaB2B = {
     emptyUnread: 'ყველაფერი წაკითხულია',
     emptyFilter: 'ამ კატეგორიაში შეტყობინებები არ არის',
     clearFilter: 'ფილტრის გასუფთავება',
+  },
+  /* Messaging (მიმოწერა) — org↔GPI conversations. Category labels are NOT
+     duplicated here: messaging reuses kaB2B.notif.categories verbatim (one
+     taxonomy, Rule 1). „შეტყობინებები" stays the bell's word; two-way threads
+     are „მიმოწერა" — the two surfaces must never share a name. */
+  msgs: {
+    title: 'მიმოწერა',
+    iconUnread: (n) => `მიმოწერა — ${n} წაუკითხავი`,
+    compose: 'ახალი წერილი',
+    viewAll: 'ყველას ნახვა',
+    search: 'ძიება თემით…',
+    searchClear: 'ძიების გასუფთავება',
+    subtitle: (n) => `${n} მიმოწერა GPI-სთან`,
+    you: 'თქვენ',
+    gpi: 'GPI',
+    unreadMark: 'წაუკითხავი',
+    attachedMark: 'დანართით',
+    filterLabel: 'წერილების ფილტრი',
+    statusLabel: 'სტატუსი',
+    categoryLabel: 'კატეგორია',
+    filterAll: 'ყველა',
+    filterUnread: 'წაუკითხავი',
+    categoryAll: 'ყველა',
+    emptyList: 'მიმოწერა არ არის',
+    emptyListHint: 'დაიწყეთ პირველი წერილი GPI-სთან',
+    emptyUnread: 'ყველაფერი წაკითხულია',
+    emptyFilter: 'ამ ფილტრით წერილები არ არის',
+    clearFilter: 'ფილტრის გასუფთავება',
+    emptyThread: 'აირჩიეთ მიმოწერა სიიდან',
+    emptyThreadHint: 'ან დაიწყეთ ახალი წერილი',
+    msgPlaceholder: MSG_PLACEHOLDER,
+    replyLabel: 'პასუხი',
+    send: 'გაგზავნა',
+    attach: 'დანართის დამატება',
+    removeAttachment: (name) => `დანართის მოხსნა — ${name}`,
+    /* Sent-attachment card: the name opens a preview, the ↓ downloads, the ⋮ holds
+       both as explicit labels (Slack's grammar — open and download stay separate). */
+    att: {
+      openLabel: (name) => `${name} — გახსნა`,
+      open: 'გახსნა',
+      close: 'დახურვა',
+      download: 'ჩამოტვირთვა',
+      downloadLabel: (name) => `${name} — ჩამოტვირთვა`,
+      actions: (name) => `${name} — მოქმედებები`,
+      noFile: 'ფაილი მიუწვდომელია',
+      noFileHint: 'ამ დემო დანართს ფაილი არ ახლავს — პროტოტიპში ვიდეო არ გენერირდება.',
+      previewUnsupported: 'ამ ტიპის ფაილის ნახვა ბრაუზერში ვერ ხდება',
+      previewUnsupportedHint: 'ჩამოტვირთეთ და გახსენით შესაბამის პროგრამაში.',
+      sheetRows: (n) => `ნაჩვენებია პირველი ${n} სტრიქონი`,
+      sheetEmpty: 'ფაილი ცარიელია',
+      sheetError: 'ფაილის წაკითხვა ვერ მოხერხდა',
+      loading: 'იტვირთება…',
+    },
+    catSettings: 'კატეგორიების ჩვენება',
+    catSettingsHint: 'რომელი კატეგორიების წერილები გაჩვენოთ?',
+    catHiddenNote: 'დამალული კატეგორიის წერილები არ იკარგება — მხოლოდ თქვენ არ გიჩანთ.',
+    /* Compact, ALWAYS-present counter beside the ⚙ trigger: shown/total. Replaced the
+       „N კატეგორია დამალულია" chip, which wrapped to two lines and shifted the footer.
+       Numbers are decorative — catCountLabel carries the meaning for assistive tech. */
+    catCount: (shown, total) => `${shown}/${total}`,
+    catCountLabel: (shown, total) => `${total}-დან ${shown} კატეგორია ჩანს`,
+    compose_: {
+      title: 'ახალი წერილი',
+      category: 'კატეგორია',
+      categoryPh: 'აირჩიეთ კატეგორია',
+      subject: 'თემა',
+      subjectPh: 'მოკლედ აღწერეთ საკითხი',
+      body: 'წერილი',
+      bodyPh: MSG_PLACEHOLDER,
+      attachTitle: 'ჩააგდეთ ფაილი აქ',
+      attachBrowse: 'ფაილის არჩევა',
+      attachHint: 'PDF, Word, Excel ან ვიდეო (MP4/MOV) · მაქს. 25 MB',
+      attachTypeErr: 'ფაილის ეს ტიპი მხარდაჭერილი არ არის',
+      attachSizeErr: 'ფაილი აღემატება 25 MB-ს',
+      cancel: 'გაუქმება',
+      send: 'გაგზავნა',
+      required: 'სავალდებულო ველი',
+      discard: 'წერილი არ გაიგზავნება — დახუროთ?',
+      sideTitle: 'როგორ მუშაობს',
+      sideBody:
+        'წერილი გადაეცემა თქვენს მომსახურე გუნდს GPI-ში. პასუხი ჩვეულებრივ 1 სამუშაო დღეშია — შეტყობინებას აქვე მიიღებთ.',
+    },
   },
   crumbsLabel: 'გვერდის მდებარეობა',
   stub: {
@@ -641,7 +730,10 @@ export const kaB2B = {
       results: (n) => `ნაპოვნია ${n} მასალა`,
       noResults: 'ვერაფერი მოიძებნა',
       noResultsHint: 'სცადეთ სხვა საძიებო სიტყვა',
-      types: { video: 'ვიდეო', faq: 'FAQ', handbook: 'PDF', kit: 'კიტი' },
+      /* bundle/blog = version-B item types; the shared send drawer labels them.
+         'bundle' is the TECHNICAL key only — the user-facing label is
+         „გზამკვლევი" (user, 2026-08-17). */
+      types: { video: 'ვიდეო', faq: 'FAQ', handbook: 'PDF', kit: 'კიტი', bundle: 'გზამკვლევი', blog: 'ბლოგი' },
       expand: 'პასუხის ნახვა',
     },
     history: {
@@ -686,6 +778,87 @@ export const kaB2B = {
       successTitle: 'მასალა გაიგზავნა',
       successBody: (n) => `მასალა გაეგზავნა ${n} ადამიანს. ჩართულობის ანგარიში ხელმისაწვდომი იქნება 24 საათში.`,
       close: 'დახურვა',
+    },
+    /* VERSION B (concept locked 2026-08-17) — feed of GPI-published items
+       (bundles + blogs), per-item detail pages, external employee page.
+       v A strings above stay untouched; the demo A/B switch is DemoBar. */
+    b: {
+      subtitle: 'გზამკვლევები და ბლოგები თანამშრომლებისთვის — გაგზავნეთ და თვალი ადევნეთ ჩართულობას',
+      filters: { all: 'ყველა', bundle: 'გზამკვლევები', blog: 'ბლოგები' },
+      filtersLabel: 'მასალის ტიპი',
+      /* Named by scope — the library card below has its own material search. */
+      search: 'ძებნა გზამკვლევებსა და ბლოგებში…',
+      libraryTitle: 'მასალების ბიბლიოთეკა',
+      libraryHint: 'ცალკეული ვიდეო, FAQ და სახელმძღვანელო — იგზავნება გზამკვლევის გარეშეც',
+      by: 'GPI Holding',
+      publishedAt: (d) => `გამოქვეყნდა ${d}`,
+      open: 'გახსნა',
+      openTo: (title) => `გახსნა — ${title}`,
+      sentMeta: (n, p) => `გაეგზავნა ${n} თანამშრომელს · გახსნა ${p}%`,
+      notSent: 'ჯერ არ გაგზავნილა',
+      stats: {
+        sends: 'გაგზავნილი მასალა',
+        lastSend: (d) => `ბოლო გაგზავნა — ${d}`,
+        noSends: 'გაგზავნები ჯერ არ არის',
+      },
+      item: {
+        sections: { videos: 'ვიდეოები', faqs: 'ხშირი კითხვები', instruction: 'ინსტრუქცია' },
+        engagement: 'ჩართულობა',
+        /* „შეფასება" replaced „სასარგებლო %" 2026-08-17: the number now comes
+           from the employees' 5-star votes on the external page, so it is a
+           real average, not an invented percentage. */
+        engRows: { sent: 'გაეგზავნა', open: 'გახსნა', rating: 'შეფასება' },
+        engPeople: (n) => `${n} პირი`,
+        ratingValue: (avg) => `${avg} / 5`,
+        ratingCount: (n) => `${n} შეფასება`,
+        noRating: 'ჯერ არ არის შეფასებული',
+        engNote: 'განახლდება გაგზავნიდან 24 საათში',
+        historyEmpty: 'ეს მასალა ჯერ არ გაგზავნილა — გააგზავნეთ პირველად.',
+        viewAs: 'ნახვა როგორც თანამშრომელმა',
+        notFound: 'მასალა ვერ მოიძებნა',
+        backToGuide: 'გზამკვლევზე დაბრუნება',
+      },
+      /* v B send flow (user feedback 2026-08-17): one audience Select,
+         email+SMS checkboxes, editable SMS text, copyable guide link. */
+      send2: {
+        audience: 'აუდიტორია',
+        channels: 'არხები',
+        atLeastOne: 'აირჩიეთ მინიმუმ ერთი არხი',
+        both: 'ელ. ფოსტა + SMS',
+        confirmBoth: 'ელ. ფოსტით და SMS-ით',
+        smsLabel: 'SMS ტექსტი',
+        smsHint: 'სტანდარტული ტექსტია — შეცვალეთ საჭიროებისას.',
+        chars: (n) => `${n} სიმბოლო`,
+        linkNote: 'ბმული ავტომატურად დაემატება',
+        copyLink: 'ბმულის კოპირება',
+        /* Toast text — success feedback lives beside the flow, the link
+           controls themselves never change (user rule 2026-08-17). */
+        linkCopied: 'ბმული დაკოპირდა',
+        copyFailed: 'კოპირება ვერ მოხერხდა — მონიშნეთ ბმული ხელით',
+      },
+      /* External-page rating (user 2026-08-17): ONE click = the vote; the
+         follow-up question appears only on a low score, so a happy reader is
+         never asked twice. */
+      rate: {
+        q: 'რამდენად სასარგებლო იყო ეს გზამკვლევი?',
+        hint: 'შეფასება ანონიმურია',
+        star: (n) => `${n} ვარსკვლავი`,
+        scaleLabel: 'შეფასება 5-დან',
+        thanks: 'გმადლობთ გამოხმაურებისთვის',
+        yours: (n) => `თქვენი შეფასება — ${n}/5`,
+        lowTitle: 'რა დააკლდა?',
+        lowPh: 'მოკლედ აღწერეთ — არასავალდებულოა',
+        send: 'გაგზავნა',
+        commentThanks: 'თქვენი კომენტარი გადაეცა GPI-ს',
+      },
+      pub: {
+        tagline: 'თანამშრომლის გზამკვლევი',
+        from: (c) => `„${c}" გიზიარებთ სასარგებლო მასალას`,
+        onThisPage: 'ამ გვერდზე',
+        footHelp: 'კითხვები დაზღვევაზე? ცხელი ხაზი 24/7:',
+        hotline: '2 505 111',
+        footNote: '© GPI Holding',
+      },
     },
   },
   pages: {

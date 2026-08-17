@@ -1448,6 +1448,51 @@
 .gpi-input.is-error { border-color: var(--status-error-fg); border-width: var(--border-width-md); }
 .gpi-input--select { padding-right: var(--space-12); cursor: pointer; }
 
+/* Switch (components/Switch.jsx) — built to the Figma Switch set (node 80:111).
+   Track sizes md 44×24 / sm 36×20 with a 2px inset knob (20 / 16), pill radius.
+   The track is its own ≥24px-tall hit area (Figma's switchHit frame) so the
+   target clears WCAG 2.2 target-size even at sm, where the track is only 20 tall.
+   Input-hiding + offset focus ring mirror .gpi-checkrow exactly, so all three
+   selection controls behave identically. No error state — instant-effect control.
+   The track is always on the LEFT with the label after it (interface-wide rule,
+   user 2026-08-17) — same alignment as .gpi-checkrow / .gpi-radiopt. Do not add a
+   right-pinned modifier without changing that rule first. */
+.gpi-switchrow { display: flex; gap: var(--space-12); align-items: center; width: 100%;
+  padding: 0; border: none; background: none; text-align: left; cursor: pointer; }
+.gpi-switchrow__input { position: absolute; width: 1px; height: 1px; opacity: 0; margin: 0; }
+.gpi-switchrow__text { display: flex; flex-direction: column; gap: 2px; }
+.gpi-switchrow__title { font: 500 14px/20px var(--font-sans); color: var(--text-main); }
+.gpi-switchrow__help { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+.gpi-switch { flex: 0 0 auto; position: relative; display: flex; align-items: center;
+  box-sizing: border-box; width: 44px; height: 24px; padding: 2px;
+  border-radius: var(--radius-full); background: var(--border-strong);
+  transition: background 0.15s ease; }
+.gpi-switch__knob { width: 20px; height: 20px; border-radius: var(--radius-full);
+  background: var(--surface-card); box-shadow: var(--elevation-card);
+  transition: transform 0.15s ease; }
+.gpi-switchrow--sm .gpi-switch { width: 36px; height: 20px; }
+.gpi-switchrow--sm .gpi-switch__knob { width: 16px; height: 16px; }
+/* Figma's switchHit frame: sm's track is only 20px tall, so stretch the hit area
+   back to 24px (Rule 7) without changing the drawn track. md is already 24. */
+.gpi-switchrow--sm .gpi-switch::before { content: ''; position: absolute; inset: -2px 0; }
+.gpi-switchrow.is-checked .gpi-switch { background: var(--action-primary); }
+/* On = knob right, Off = left. Travel = inner width − knob = (track − 2×2) − knob. */
+.gpi-switchrow.is-checked .gpi-switch__knob { transform: translateX(20px); }
+.gpi-switchrow--sm.is-checked .gpi-switch__knob { transform: translateX(16px); }
+.gpi-switchrow:not(.is-disabled):hover .gpi-switch { background: var(--border-field-hover); }
+.gpi-switchrow.is-checked:not(.is-disabled):hover .gpi-switch { background: var(--action-primary-hover); }
+.gpi-switchrow__input:focus-visible + .gpi-switch {
+  box-shadow: 0 0 0 var(--focus-ring-offset) var(--surface-card),
+              0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--border-focus);
+}
+.gpi-switchrow.is-disabled { cursor: default; }
+.gpi-switchrow.is-disabled .gpi-switch { background: var(--interactive-disabled-bg); }
+.gpi-switchrow.is-disabled.is-checked .gpi-switch { background: var(--action-primary); opacity: 0.4; }
+.gpi-switchrow.is-disabled .gpi-switchrow__title { color: var(--text-muted); }
+@media (prefers-reduced-motion: reduce) {
+  .gpi-switch, .gpi-switch__knob { transition: none; }
+}
+
 .gpi-errbar { display: flex; gap: var(--space-8); align-items: flex-start; background: var(--status-error-bg);
   border-radius: var(--radius-lg); padding: var(--space-12) var(--space-16);
   font: 400 13px/1.45 var(--font-sans); color: var(--status-error-fg); }
@@ -2539,3 +2584,66 @@
 .gpi-langsw__item:hover { background: var(--interactive-hover-bg); }
 .gpi-langsw__item:focus-visible { outline: var(--focus-ring-width) solid var(--border-focus); outline-offset: -2px; }
 .gpi-langsw__on { color: var(--color-indigo-800); flex: 0 0 auto; }
+
+/* ---- Toast (design-system component v1, 2026-08-17; Figma port pending).
+   First consumer of the foundation's --elevation-toast token. Fixed above the
+   DemoBar band and above Drawer (900) / Modal (1000) so feedback fired from
+   inside an overlay stays visible. ---- */
+.gpi-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--space-48) + var(--space-24));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-16);
+  background: var(--surface-card);
+  border: 1px solid var(--border-divider);
+  border-radius: var(--radius-full);
+  box-shadow: var(--elevation-toast);
+  font: 500 13px/20px var(--font-sans);
+  color: var(--text-main);
+  z-index: 1200;
+  animation: gpi-toast-in 0.16s ease-out;
+}
+.gpi-toast__ic { display: inline-flex; color: var(--status-success-fg); }
+@keyframes gpi-toast-in {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gpi-toast { animation: none; }
+}
+.gpi-toast--warning .gpi-toast__ic { color: var(--status-warning-fg); }
+
+/* ---- Rating (design-system component v1, 2026-08-17; Figma port pending).
+   1-click star scale. 40px targets (Rule 7 floor is 24). The filled state is
+   the same outline icon with a currentColor fill — no second icon asset. ---- */
+.gpi-rating { display: inline-flex; gap: var(--space-4); }
+.gpi-rating__star {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-neutral-300);
+  cursor: pointer;
+  transition: color .12s ease, transform .12s ease;
+}
+.gpi-rating__star:hover { background: var(--surface-sunken); }
+.gpi-rating__star:focus-visible {
+  outline: var(--focus-ring-width) solid var(--border-focus);
+  outline-offset: var(--focus-ring-offset);
+}
+.gpi-rating__star.is-on { color: var(--status-warning-fg); }
+.gpi-rating__star.is-on svg { fill: currentColor; }
+.gpi-rating.is-readonly { pointer-events: none; }
+.gpi-rating.is-readonly .gpi-rating__star { width: 24px; height: 24px; }
+@media (prefers-reduced-motion: reduce) {
+  .gpi-rating__star { transition: none; }
+}

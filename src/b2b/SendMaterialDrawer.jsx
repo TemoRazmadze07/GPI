@@ -18,7 +18,8 @@ import { RECIPIENTS } from './data/guide.js'
    individual recipient picking is deferred). The preview shows the actual
    message the employee receives — trust-critical for SMS (phishing wariness). */
 
-const TYPE_ICON = { kit: 'graduation-cap', video: 'play', faq: 'message-circle', handbook: 'file-text' }
+/* bundle/blog = version-B item types (2026-08-17) — same drawer, same flow. */
+const TYPE_ICON = { kit: 'graduation-cap', video: 'play', faq: 'message-circle', handbook: 'file-text', bundle: 'graduation-cap', blog: 'file-text' }
 
 export default function SendMaterialDrawer({ material, history, onSent, onClose }) {
   const t = kaB2B

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Icon from '../lib/Icon.jsx'
 import Badge from '../components/Badge.jsx'
+import PopoverFilter from './PopoverFilter.jsx'
 import { kaB2B } from './strings.js'
 import { NOTIFICATIONS, NOTIF_CATEGORIES, CATEGORY_ICON } from './data/notifications.js'
 
@@ -13,29 +14,9 @@ import { NOTIFICATIONS, NOTIF_CATEGORIES, CATEGORY_ICON } from './data/notificat
    only reading does (auto-clear on open would silently dismiss an unconfirmed
    claim). Read state is session-only by design (prototype). */
 
-/* "all" + every category, in filter-menu order. */
+/* "all" + every category, in filter-menu order. The menu itself is the shared
+   PopoverFilter (extracted 2026-08-15 when messaging became its 2nd consumer). */
 const CATEGORY_OPTIONS = ['all', ...NOTIF_CATEGORIES]
-
-/* One radio-style row of the filter menu. Trailing slot: check when selected,
-   otherwise the unread count (the menu's triage signal) when > 0. */
-function FilterOption({ selected, label, count = 0, onPick }) {
-  return (
-    <button
-      type="button"
-      role="menuitemradio"
-      aria-checked={selected}
-      className={`b2b-notif__fopt ${selected ? 'is-sel' : ''}`}
-      onClick={onPick}
-    >
-      <span className="b2b-notif__foptlabel">{label}</span>
-      {selected ? (
-        <Icon name="check" size={16} />
-      ) : (
-        count > 0 && <span className="b2b-notif__foptcount">{count}</span>
-      )}
-    </button>
-  )
-}
 
 /* Row anatomy (hierarchy pass, 2026-08-06): title is ONE style regardless of
    read state; the optional meta line carries context only, never the
@@ -236,48 +217,32 @@ export default function NotificationsBell() {
               apply) and STAYS OPEN so status + category are one visit. Trigger,
               count bubble and chips reuse the FilterBar/​fchip classes 1:1. */}
           <div className="b2b-notif__toolbar" role="group" aria-label={t.filterLabel}>
-            <span className="b2b-notif__fanchor" ref={menuRef}>
-              <button
-                type="button"
-                className={`gpi-btn gpi-btn--secondary gpi-btn--sm gpi-filterbar__btn${activeCount ? ' has-active' : ''}`}
-                aria-haspopup="menu"
-                aria-expanded={menuOpen}
-                onClick={() => setMenuOpen((v) => !v)}
-              >
-                <Icon name="filter" size={16} />
-                <span>{kaB2B.filterBar.filter}</span>
-                {activeCount > 0 && <span className="gpi-filterbar__count">{activeCount}</span>}
-                <Icon name={menuOpen ? 'chevron-up' : 'chevron-down'} size={16} />
-              </button>
-              {menuOpen && (
-                <div className="b2b-notif__fmenu" role="menu" aria-label={t.filterLabel}>
-                  <div className="b2b-notif__fgroup">{t.statusLabel}</div>
-                  <FilterOption
-                    selected={filter === 'all'}
-                    label={t.filterAll}
-                    onPick={() => setFilter('all')}
-                  />
-                  <FilterOption
-                    selected={filter === 'unread'}
-                    label={t.filterUnread}
-                    count={unreadCount}
-                    onPick={() => setFilter('unread')}
-                  />
-                  <div className="b2b-notif__fgroup b2b-notif__fgroup--divided">
-                    {t.categoryLabel}
-                  </div>
-                  {CATEGORY_OPTIONS.map((c) => (
-                    <FilterOption
-                      key={c}
-                      selected={category === c}
-                      label={c === 'all' ? t.categoryAll : t.categories[c]}
-                      count={c === 'all' ? 0 : unreadByCat[c] || 0}
-                      onPick={() => setCategory(c)}
-                    />
-                  ))}
-                </div>
-              )}
-            </span>
+            <PopoverFilter
+              open={menuOpen}
+              onToggle={() => setMenuOpen((v) => !v)}
+              anchorRef={menuRef}
+              activeCount={activeCount}
+              menuLabel={t.filterLabel}
+              groups={[
+                {
+                  label: t.statusLabel,
+                  options: [
+                    { id: 'all', label: t.filterAll, selected: filter === 'all', onPick: () => setFilter('all') },
+                    { id: 'unread', label: t.filterUnread, count: unreadCount, selected: filter === 'unread', onPick: () => setFilter('unread') },
+                  ],
+                },
+                {
+                  label: t.categoryLabel,
+                  options: CATEGORY_OPTIONS.map((c) => ({
+                    id: c,
+                    label: c === 'all' ? t.categoryAll : t.categories[c],
+                    count: c === 'all' ? 0 : unreadByCat[c] || 0,
+                    selected: category === c,
+                    onPick: () => setCategory(c),
+                  })),
+                },
+              ]}
+            />
             {filter !== 'all' && (
               <span className="gpi-fchip">
                 {t.filterUnread}

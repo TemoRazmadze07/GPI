@@ -1,17 +1,21 @@
 import B2BShell from './B2BShell.jsx'
+import MessagesScreen from './MessagesScreen.jsx'
 import ContractsScreen from './ContractsScreen.jsx'
 import PoliciesScreen from './PoliciesScreen.jsx'
 import InvoicesScreen from './InvoicesScreen.jsx'
 import StatementScreen from './StatementScreen.jsx'
 import AddInsuredScreen from './AddInsuredScreen.jsx'
-import GuideScreen from './GuideScreen.jsx'
+import GuideSection from './GuideSection.jsx'
+import GuideItemScreen from './GuideItemScreen.jsx'
 import { PRODUCT_ORDER } from './data/contracts.js'
 import Breadcrumbs from '../components/Breadcrumbs.jsx'
 import { Button } from '../components/Button.jsx'
 import { kaB2B } from './strings.js'
 import { NAV_MAIN, parentOf } from './nav.js'
 
-const SCREENS = { contracts: ContractsScreen, invoices: InvoicesScreen, statement: StatementScreen, guide: GuideScreen }
+/* guide mounts through GuideSection — the demo A/B switch between the live
+   concept (v A) and the 2026-08-17 feed concept (v B). */
+const SCREENS = { contracts: ContractsScreen, invoices: InvoicesScreen, statement: StatementScreen, guide: GuideSection }
 
 /* B2BApp — routes #/b2b/<sectionId> to a stub page inside the shell.
    Real flows replace stubs one by one (per the agreed priority order). */
@@ -68,6 +72,27 @@ export default function B2BApp({ section = 'home', contract = null }) {
   /* Policies: #/b2b/policies/<product> — key remounts the screen per tab so
      filter/search/page state starts clean on every product. Legacy kind-based
      routes (persons/vehicles/objects) map to their product tab. */
+  /* Messages: #/b2b/messages[/<id>] — the id rides the hash so popover rows,
+     shared links and in-page selection are ONE flow (no separate state). NOT
+     keyed: a hash-only change must not remount the page and lose list state. */
+  if (segs[0] === 'messages') {
+    return (
+      <B2BShell active="messages" onNavigate={navigate}>
+        <MessagesScreen activeId={segs[1] || null} />
+      </B2BShell>
+    )
+  }
+
+  /* Guide item detail (version B): #/b2b/guide/<id>. The landing (#/b2b/guide,
+     no id) falls through to SCREENS.guide below. */
+  if (segs[0] === 'guide' && segs[1]) {
+    return (
+      <B2BShell active="guide" onNavigate={navigate}>
+        <GuideItemScreen key={segs[1]} id={segs[1]} />
+      </B2BShell>
+    )
+  }
+
   const LEGACY_KIND = { persons: 'health', vehicles: 'auto', objects: 'property' }
   if (segs[0] === 'policies' || LEGACY_KIND[segs[0]]) {
     const product = LEGACY_KIND[segs[0]] || (PRODUCT_ORDER.includes(segs[1]) ? segs[1] : 'health')

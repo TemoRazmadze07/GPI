@@ -5,10 +5,12 @@ import Avatar from '../components/Avatar.jsx'
 import { Button } from '../components/Button.jsx'
 import ContactLauncher from './ContactLauncher.jsx'
 import NotificationsBell from './NotificationsBell.jsx'
+import MessagesButton from './MessagesButton.jsx'
 import CompanySwitcher from './CompanySwitcher.jsx'
 import { kaB2B } from './strings.js'
 import { NAV_MAIN, parentOf, bubbled } from './nav.js'
 import { COMPANIES, DEFAULT_COMPANY_ID } from './data/companies.js'
+import { useMessages, unreadCount as msgUnreadCount } from './data/messages.js'
 
 /* B2BShell — CORPO portal application chrome (Rule 5: separate platform
    context from My Cabinet). Light chrome on surface/page, content floats as
@@ -175,6 +177,15 @@ export default function B2BShell({ active = 'home', onNavigate, children }) {
 
   const navProps = { active, openGroup, flyout, collapsed, onNavigate: navigate, onToggle: toggle }
 
+  /* მიმოწერა badge is LIVE from the messages store (unlike the static seed
+     counts on requests/claims): reading a thread anywhere — popover or page —
+     clears it immediately. Hidden categories are already excluded. */
+  useMessages()
+  const msgUnread = msgUnreadCount()
+  const navItems = NAV_MAIN.map((item) =>
+    item.id === 'messages' ? { ...item, badge: msgUnread || undefined } : item
+  )
+
   return (
     <div className="b2b-shell">
       <header className="b2b-topbar">
@@ -229,6 +240,7 @@ export default function B2BShell({ active = 'home', onNavigate, children }) {
           >
             {t.actions.addPolicy}
           </Button>
+          <MessagesButton />
           <NotificationsBell />
           <button className="b2b-user" aria-label={`${t.topbar.user} · ${t.topbar.role}`}>
             <Avatar name={t.topbar.user} size={32} />
@@ -240,7 +252,7 @@ export default function B2BShell({ active = 'home', onNavigate, children }) {
       <div className="b2b-body">
         <aside className={`b2b-sidebar ${collapsed ? 'is-collapsed' : ''}`} ref={sidebarRef}>
           <nav className="b2b-nav">
-            {NAV_MAIN.map((item) => (
+            {navItems.map((item) => (
               <NavItem key={item.id} item={item} {...navProps} />
             ))}
           </nav>

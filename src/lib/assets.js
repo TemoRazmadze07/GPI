@@ -5,6 +5,9 @@
    shared single index.html would point at files that aren't there). public/
    keeps only the downloads/ snapshots (and the old copies until pruned). */
 import logo from '../assets/logo.png'
+/* Square emblem cut from the official GPI lockup — the compact mark for avatars,
+   where the full horizontal logo is illegible. See the SVG's own header. */
+import gpiMark from '../assets/gpi-mark.svg'
 import clientLogo from '../assets/client-logo.svg'
 import flagKa from '../assets/flags/GE.svg'
 import flagEn from '../assets/flags/GB.svg'
@@ -14,7 +17,7 @@ import productAuto from '../assets/products/auto.png'
 import productTravel from '../assets/products/travel.png'
 import productProperty from '../assets/products/property.png'
 
-export const ASSETS = { logo, clientLogo, bookingEmpty }
+export const ASSETS = { logo, gpiMark, clientLogo, bookingEmpty }
 
 /* Country flags for the language switcher (user export, 2026-08-10), keyed by
    locale code. Both were normalised to the same 28×20 box with a 1.75 corner
