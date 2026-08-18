@@ -19,11 +19,14 @@ import { M } from './strings.js'
 import { DOCTOR, getPickedDoctor, ONLINE_STATUS_ENABLED } from './data.js'
 import { go } from './nav.js'
 import { useOtpGate } from './otp.jsx'
+import { usePurchaseGate, GateLock } from './purchase.jsx'
 
 const noop = () => {}
 
 export default function DoctorScreen() {
   const { unlocked, request, gate } = useOtpGate()
+  /* #14 — booking and the phone consult are insurance-funded; the profile itself is not. */
+  const { gated, guard, sheet } = usePurchaseGate()
   /* #1 (2026-08-18): a doctor picked via docselect overrides the default;
      cabinet/hours keep DOCTOR values, nextVisit is honestly empty. */
   const doc = { ...DOCTOR, ...(getPickedDoctor() || {}) }
@@ -53,11 +56,13 @@ export default function DoctorScreen() {
               not in a block of their own: they act on THIS doctor, so they belong
               under the identity. Same pair, same order, same styling as the dash card. */}
           <div className="mga-doc__btns mga-doc__btns--stack mga-doc__btns--sep">
-            <button className="mga-obtn mga-obtn--pink" onClick={noop}>
+            <button className="mga-obtn mga-obtn--pink" onClick={guard(noop)}>
               {M.doc.bookClinic}
+              <GateLock gated={gated} />
             </button>
-            <button className="mga-obtn" onClick={noop}>
+            <button className="mga-obtn" onClick={guard(noop)}>
               {M.doc.bookPhone}
+              <GateLock gated={gated} />
             </button>
           </div>
         </div>
@@ -99,6 +104,7 @@ export default function DoctorScreen() {
       </div>
 
       {gate}
+      {sheet}
     </>
   )
 }

@@ -54,6 +54,8 @@ export const M = {
     v2: 'ვერსია 2 · 3 ტაბი',
     docOn: 'ექიმი ჰყავს',
     docOff: 'ექიმი არ ჰყავს',
+    insOn: 'დაზღვეული',
+    insOff: 'დაუზღვეველი',
   },
   /* V2 — Curatio tab dashboard + OTP gate for history-class data. */
   dash: {
@@ -308,6 +310,23 @@ export const M = {
     hints: {
       curatio: 'პირადი ექიმი · სამედიცინო ისტორია · რიგის ბილეთი',
     },
+  },
+  /* #14 (2026-08-18) — uninsured mode. ⚠ PLACEHOLDER COPY: the cover list is shaped
+     from the MVP1 spec, not confirmed by the business, and it deliberately says
+     nothing about price or self-pay — both are open questions. */
+  ins: {
+    bannerTitle: 'GPI ჯანმრთელობის დაზღვევა არ გაქვს',
+    bannerBody: 'შენი სამედიცინო ჩანაწერები ღიაა · ჩაწერა და კონსულტაციები — დაზღვევით',
+    sheetTitle: 'ეს სერვისი დაზღვევით ხელმისაწვდომია',
+    sheetBody: 'GPI-ს ჯანმრთელობის დაზღვევა ფარავს კურაციოს ქსელის სერვისებს. შენი სამედიცინო ისტორია დაზღვევის გარეშეც შენთანაა.',
+    covers: [
+      'ექიმთან ჩაწერა კურაციოს ქსელში',
+      'სატელეფონო კონსულტაცია პირად ექიმთან',
+      'რეცეპტის განახლება ვიზიტით',
+      'პრევენციული სქრინინგები და ვაქცინაცია',
+    ],
+    cta: 'ნახე პაკეტები',
+    later: 'მოგვიანებით',
   },
   hub: {
     title: 'ჩემი კურაციო',

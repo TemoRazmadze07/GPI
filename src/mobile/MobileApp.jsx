@@ -11,7 +11,7 @@
 
 import Icon from '../lib/Icon.jsx'
 import { M } from './strings.js'
-import { isVisitDay, isV2, hasDoctor, go } from './nav.js'
+import { isVisitDay, isV2, hasDoctor, isInsured, go } from './nav.js'
 import { clearPickedDoctor, clearArrived } from './data.js'
 import HealthHomeScreen from './HealthHomeScreen.jsx'
 import CuratioHubScreen from './CuratioHubScreen.jsx'
@@ -105,6 +105,7 @@ export default function MobileApp({ section = 'health' }) {
 
   const sect = SCREENS[section] ? section : 'health'
   const noDoc = !hasDoctor()
+  const insured = isInsured()
   /* #5 — flipping the visit-day scenario resets the arrival check-in. */
   const setDay = (visit) => {
     clearArrived()
@@ -116,6 +117,8 @@ export default function MobileApp({ section = 'health' }) {
     clearPickedDoctor()
     go(sect, { doc: on })
   }
+  /* #14 — insured / uninsured is a whole-module state, not a per-screen one. */
+  const setIns = (on) => go(sect, { ins: on })
 
   return (
     <div className="mga-stage">
@@ -160,6 +163,19 @@ export default function MobileApp({ section = 'health' }) {
                 onClick={() => setDoc(false)}
               >
                 {M.demo.docOff}
+              </button>
+              <span className="mga-demo__sep" aria-hidden="true" />
+              <button
+                className={'mga-demo__chip' + (insured ? ' mga-demo__chip--on' : '')}
+                onClick={() => setIns(true)}
+              >
+                {M.demo.insOn}
+              </button>
+              <button
+                className={'mga-demo__chip' + (!insured ? ' mga-demo__chip--on' : '')}
+                onClick={() => setIns(false)}
+              >
+                {M.demo.insOff}
               </button>
             </>
           )}

@@ -1608,6 +1608,51 @@
   margin: 0 0 10px;
 }
 
+/* ═══ #14 (2026-08-18) — uninsured mode ═══ */
+
+/* States the situation ONCE at the top of the Curatio tab. Deliberately not an alarm:
+   having no cover is not an error, it is a fact with an offer attached. */
+.mga-stage .mga-ins__banner {
+  display: flex;
+  align-items: center;
+  gap: var(--mga-sp-md);
+  width: 100%;
+  text-align: left;
+  background: var(--mga-card);
+  border: 0.5px solid var(--mga-border);
+  border-radius: var(--mga-r-card);
+  padding: var(--mga-sp-md) var(--mga-sp-lg);
+  margin-bottom: var(--mga-sp-md);
+  box-shadow: var(--mga-shadow);
+}
+.mga-ins__bnrtxt {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.35;
+}
+.mga-ins__list {
+  list-style: none;
+  margin: 0 0 var(--mga-sp-lg);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--mga-sp-sm);
+}
+.mga-ins__list li {
+  display: flex;
+  align-items: center;
+  gap: var(--mga-sp-sm);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mga-text);
+}
+.mga-ins__list svg {
+  color: var(--mga-green-fg);
+  flex-shrink: 0;
+}
+
 /* ═══ #7 (2026-08-18) — SourceTag + in-context upload ═══ */
 
 /* Origin tag. Label always present (WCAG 1.4.1) — the tint only reinforces it.

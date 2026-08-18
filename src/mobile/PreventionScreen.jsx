@@ -16,6 +16,7 @@ import Icon from '../lib/Icon.jsx'
 import { M } from './strings.js'
 import { V2_PREVENTION } from './data.js'
 import { go } from './nav.js'
+import { usePurchaseGate, GateLock } from './purchase.jsx'
 
 const noop = () => {}
 
@@ -24,7 +25,7 @@ const noop = () => {}
    encoded anything, and `teal` was a dark teal glyph on a SATURATED teal fill (~1.5:1).
    The base .mga-itile (lavender tint + indigo glyph, ~7:1) is now the only tile. */
 
-function Row({ item }) {
+function Row({ item, gated, guard }) {
   return (
     <div className="mga-prv__row">
       <span className="mga-itile">
@@ -48,8 +49,9 @@ function Row({ item }) {
         )}
         {item.status !== 'done' && (
           /* Dead until F-04 — see header comment. */
-          <button className="mga-obtn mga-obtn--sm" onClick={noop}>
+          <button className="mga-obtn mga-obtn--sm" onClick={guard(noop)}>
             <Icon name="calendar" size={11} /> {M.prev.book}
+            <GateLock gated={gated} />
           </button>
         )}
       </div>
@@ -58,6 +60,8 @@ function Row({ item }) {
 }
 
 export default function PreventionScreen() {
+  /* #14 — screenings and vaccination are insurance-funded. */
+  const { gated, guard, sheet } = usePurchaseGate()
   return (
     <>
       <div className="mga-hdr">
@@ -78,8 +82,9 @@ export default function PreventionScreen() {
             </div>
             <div className="mga-meta__lbl">{V2_PREVENTION.reminder.body}</div>
             {/* Dead until F-04 — see header comment. */}
-            <button className="mga-obtn mga-obtn--sm" style={{ marginTop: 8 }} onClick={noop}>
+            <button className="mga-obtn mga-obtn--sm" style={{ marginTop: 8 }} onClick={guard(noop)}>
               <Icon name="calendar" size={11} /> {M.prev.book}
+              <GateLock gated={gated} />
             </button>
           </div>
         </div>
@@ -89,7 +94,7 @@ export default function PreventionScreen() {
             <span className="mga-cardhdr__ttl">{M.prev.vaccines}</span>
           </div>
           {V2_PREVENTION.vaccines.map((v) => (
-            <Row key={v.id} item={v} />
+            <Row key={v.id} item={v} gated={gated} guard={guard} />
           ))}
         </section>
 
@@ -101,10 +106,11 @@ export default function PreventionScreen() {
           </div>
           <div className="mga-meta__lbl" style={{ marginBottom: 6 }}>{M.prev.screeningsHint}</div>
           {V2_PREVENTION.screenings.map((s) => (
-            <Row key={s.id} item={s} />
+            <Row key={s.id} item={s} gated={gated} guard={guard} />
           ))}
         </section>
       </div>
+      {sheet}
     </>
   )
 }

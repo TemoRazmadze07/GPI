@@ -28,6 +28,7 @@ import UploadSheet from './UploadSheet.jsx'
 import { FilterSheet, FilterPill } from './filters.jsx'
 import { go, sectionParam } from './nav.js'
 import { OtpSheet, isUnlocked } from './otp.jsx'
+import { usePurchaseGate, GateLock } from './purchase.jsx'
 
 const noop = () => {}
 
@@ -60,6 +61,8 @@ export default function History2Screen() {
      segmented control instead of a scroll. */
   const [grp, setGrp] = useState('meds')
   const [dismissed, setDismissed] = useState(getDismissedMeds)
+  /* #14 — records stay open without cover; the actions that spend insurance do not. */
+  const { gated, guard, sheet: buySheet } = usePurchaseGate()
 
   const header = (
     <div className="mga-hdr">
@@ -139,8 +142,9 @@ export default function History2Screen() {
                     </div>
                     {r.note && <div className="mga-hitem__note">{r.note}</div>}
                     {r.book && (
-                      <button className="mga-obtn mga-obtn--sm" onClick={noop}>
+                      <button className="mga-obtn mga-obtn--sm" onClick={guard(noop)}>
                         {M.hist2.book}
+                        <GateLock gated={gated} />
                       </button>
                     )}
                   </div>
@@ -228,9 +232,9 @@ export default function History2Screen() {
                       {renewable && !off && (
                         <>
                           <div className="mga-h2__renewnote">{M.hist2.renewNote}</div>
-                          <button className="mga-obtn" onClick={noop}>
+                          <button className="mga-obtn" onClick={guard(noop)}>
                             {M.hist2.renew}
-                            <Icon name="chevron-right" size={12} />
+                            {gated ? <GateLock gated /> : <Icon name="chevron-right" size={12} />}
                           </button>
                           <button className="mga-h2__textbtn" onClick={() => setOff(true)}>
                             {M.hist2.dismiss}
@@ -360,6 +364,7 @@ export default function History2Screen() {
           }}
         />
       )}
+      {buySheet}
     </>
   )
 }

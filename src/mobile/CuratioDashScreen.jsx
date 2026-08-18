@@ -21,6 +21,7 @@ import Icon from '../lib/Icon.jsx'
 import { M } from './strings.js'
 import { V2_PERSONS, V2_TODAY, V2_HISTORY_ALERT, DOCTOR, getPickedDoctor, ONLINE_STATUS_ENABLED } from './data.js'
 import { go, hasDoctor, isVisitDay } from './nav.js'
+import { usePurchaseGate, UninsuredBanner } from './purchase.jsx'
 import { isUnlocked } from './otp.jsx'
 import PersonSelect from './PersonSelect.jsx'
 import { TopBar, ProductSwitcher } from './HealthHomeScreen.jsx'
@@ -28,6 +29,9 @@ import { TopBar, ProductSwitcher } from './HealthHomeScreen.jsx'
 const noop = () => {}
 
 export default function CuratioDashScreen() {
+  /* #14 — the banner states the situation once at the top; the locks below are then
+     a consequence the user already understands. */
+  const { gated, guard, sheet } = usePurchaseGate()
   const [personId, setPersonId] = useState(V2_PERSONS[0].id)
   const visitDay = isVisitDay()
   const unlocked = isUnlocked()
@@ -48,6 +52,7 @@ export default function CuratioDashScreen() {
       <PersonSelect persons={V2_PERSONS} selectedId={personId} onSelect={setPersonId} alerts={alerts} />
 
       <div className="mga-body" style={{ paddingTop: 0 }}>
+        {gated && <UninsuredBanner onOpen={guard(() => {})} />}
         {today && (
           <section className="mga-hero" aria-label={M.dash2.hero}>
             <div className="mga-hero__kicker">{M.dash2.hero}</div>
@@ -122,11 +127,13 @@ export default function CuratioDashScreen() {
                 new and stays invisible if it only lives behind „სრული ინფო". Both
                 open the booking flow (doctor preselected); only ვიზიტის ტიპი differs. */}
             <div className="mga-doc__btns mga-doc__btns--stack">
-              <button className="mga-obtn mga-obtn--pink" onClick={noop}>
+              <button className="mga-obtn mga-obtn--pink" onClick={guard(noop)}>
                 {M.doc.bookClinic}
+                {gated && <Icon name="lock" size={12} />}
               </button>
-              <button className="mga-obtn" onClick={noop}>
+              <button className="mga-obtn" onClick={guard(noop)}>
                 {M.doc.bookPhone}
+                {gated && <Icon name="lock" size={12} />}
               </button>
             </div>
           </section>
@@ -186,6 +193,7 @@ export default function CuratioDashScreen() {
         </button>
 
       </div>
+      {sheet}
     </>
   )
 }
