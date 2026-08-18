@@ -4,8 +4,8 @@
    full-bleed on real mobile viewports.
 
    Sections: health (home) · curatio (hub) · ticket (F-01) · history (F-02).
-   Demo state: `?day=visit` flips visit-day mode; `?v=2` switches to the V2
-   three-tab nav comparison (curatio renders as a DASHBOARD TAB, not a hub page).
+   Demo state: `?day=visit` flips visit-day mode; the three-tab model is the DEFAULT
+   (curatio renders as a DASHBOARD TAB) and `?v=1` opens the archived two-tab one.
    nav.js#go() preserves both across pages. The chips above the frame switch
    them and are hidden from usability-study links (?study). */
 
@@ -137,17 +137,19 @@ export default function MobileApp({ section = 'health' }) {
             {M.demo.visit}
           </button>
           <span className="mga-demo__sep" aria-hidden="true" />
-          <button
-            className={'mga-demo__chip' + (!v2 ? ' mga-demo__chip--on' : '')}
-            onClick={() => setV2(false)}
-          >
-            {M.demo.v1}
-          </button>
+          {/* Canonical first, archive second — the chip order should read the way the
+              work does (user, 2026-08-18). */}
           <button
             className={'mga-demo__chip' + (v2 ? ' mga-demo__chip--on' : '')}
             onClick={() => setV2(true)}
           >
             {M.demo.v2}
+          </button>
+          <button
+            className={'mga-demo__chip' + (!v2 ? ' mga-demo__chip--on' : '')}
+            onClick={() => setV2(false)}
+          >
+            {M.demo.v1}
           </button>
           {v2 && (
             <>

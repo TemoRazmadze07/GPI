@@ -60,11 +60,27 @@ export const apps = [
         id: 'curatio',
         label: 'ჩემი კურაციო — Curatio',
         status: 'in-progress',
+        /* Rebuilt 2026-08-18 for the stakeholder review: these were the four V1 routes,
+           which a bare link no longer even renders. The list now mirrors the module as
+           built — every screen a reviewer should see, in the order they meet them —
+           and the two-tab version sits at the bottom, explicitly marked archive. */
         flows: [
-          { id: 'mHealth',  path: 'mobile/health',  label: 'home — health dashboard',  status: 'in-progress', hash: '/mobile/health' },
-          { id: 'mHub',     path: 'mobile/curatio', label: 'Curatio hub',              status: 'in-progress', hash: '/mobile/curatio' },
-          { id: 'mTicket',  path: 'mobile/ticket',  label: 'e-ticket / queue (F-01)',  status: 'in-progress', hash: '/mobile/ticket' },
-          { id: 'mHistory', path: 'mobile/history', label: 'medical history (F-02)',   status: 'in-progress', hash: '/mobile/history' },
+          { id: 'mHealth',   path: 'mobile/health',      label: 'home — health dashboard',              status: 'in-progress', hash: '/mobile/health' },
+          { id: 'mDash',     path: 'mobile/curatio',     label: 'ჩემი კურაციო — dashboard tab',         status: 'in-progress', hash: '/mobile/curatio' },
+          { id: 'mDashVis',  path: 'mobile/curatio',     label: '↳ visit day — live queue + check-in',  status: 'in-progress', hash: '/mobile/curatio?day=visit' },
+          { id: 'mDashUnins',path: 'mobile/curatio',     label: '↳ uninsured — purchase triggers (#14)', status: 'in-progress', hash: '/mobile/curatio?ins=0' },
+          { id: 'mDoctor',   path: 'mobile/doctor',      label: 'personal doctor — 2 booking CTAs (#3)', status: 'in-progress', hash: '/mobile/doctor' },
+          { id: 'mDocSel',   path: 'mobile/docselect',   label: '↳ no doctor yet — selection flow (#1)', status: 'in-progress', hash: '/mobile/docselect?doc=0' },
+          { id: 'mTransfer', path: 'mobile/transfer',    label: 'medical-history transfer',             status: 'in-progress', hash: '/mobile/transfer' },
+          { id: 'mHistHub',  path: 'mobile/histhub',     label: 'medical history — hub (F-02)',         status: 'in-progress', hash: '/mobile/histhub' },
+          { id: 'mAnalyses', path: 'mobile/history',     label: '↳ ანალიზები და კვლევები + upload (#7)', status: 'in-progress', hash: '/mobile/history?sec=analyses' },
+          { id: 'mRx',       path: 'mobile/history',     label: '↳ დანიშნულებები — 3 groups (#9/#11)',   status: 'in-progress', hash: '/mobile/history?sec=prescriptions' },
+          { id: 'mCard',     path: 'mobile/history',     label: '↳ ვიზიტები და კონსულტაციები (#8/#10)',  status: 'in-progress', hash: '/mobile/history?sec=visits' },
+          { id: 'mTicket',   path: 'mobile/ticket',      label: 'e-ticket / queue (F-01)',              status: 'in-progress', hash: '/mobile/ticket?day=visit' },
+          { id: 'mQueue',    path: 'mobile/queuepicker', label: '↳ activate a ticket from bookings',    status: 'in-progress', hash: '/mobile/queuepicker' },
+          { id: 'mPrev',     path: 'mobile/prevention',  label: 'prevention — vaccines + screenings',   status: 'in-progress', hash: '/mobile/prevention' },
+          { id: 'mMore',     path: 'mobile/more',        label: 'more menu (#12)',                      status: 'in-progress', hash: '/mobile/more' },
+          { id: 'mV1',       path: 'mobile/curatio?v=1', label: 'ARCHIVE — two-tab version (frozen)',   status: 'planned',     hash: '/mobile/curatio?v=1' },
         ],
       },
       {

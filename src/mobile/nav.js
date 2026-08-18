@@ -2,8 +2,9 @@
    query and must survive page-to-page navigation, so all screens navigate
    through go():
      ?day=visit — visit-day mode (F-01 live queue)
-     ?v=2       — NAV VERSION 2: three-tab switcher (Auto | Health | კურაციო),
-                  Curatio as its own dashboard with an OTP-locked zone.
+     ?v=1       — ARCHIVED VERSION 1: the two-tab nav (Auto | Health) with Curatio as
+                  a block inside the health dashboard. Kept reachable for reference
+                  only — see below.
      ?doc=0     — NO personal doctor assigned (stakeholder comment #1,
                   2026-08-18): the V2 dash doctor card renders its empty
                   variant with the docselect CTA.
@@ -15,7 +16,11 @@
                   კურაციო tab's history hub, so back must return to Health and
                   not dump the user in another tab. Sticky like the rest, and
                   it evaporates once you navigate back to that origin.
-   V1 (no ?v) stays the canonical two-tab + Curatio-block model. */
+   VERSION DEFAULT INVERTED 2026-08-18 (user, for stakeholder sharing): **V2 — the
+   three-tab model — is what a bare link now renders**, because it is the concept
+   under review. V1 is frozen archive behind an explicit `?v=1`. Every existing
+   `?v=2` link keeps working (anything that is not `1` is V2), so nothing shared
+   earlier breaks. */
 
 export function hashQuery() {
   const h = window.location.hash
@@ -28,7 +33,9 @@ export function isVisitDay() {
 }
 
 export function isV2() {
-  return hashQuery().get('v') === '2'
+  /* Not `=== '2'`: the bare link must render the canonical concept, and the old
+     `?v=2` links already in circulation must keep landing on it. */
+  return hashQuery().get('v') !== '1'
 }
 
 export function hasDoctor() {
@@ -57,7 +64,7 @@ export function go(
 ) {
   const q = []
   if (day) q.push('day=visit')
-  if (v2) q.push('v=2')
+  if (!v2) q.push('v=1') /* only the archive needs marking now */
   if (!doc) q.push('doc=0')
   if (!ins) q.push('ins=0')
   if (from && from !== section) q.push('from=' + from) /* dropped on arrival at the origin */
