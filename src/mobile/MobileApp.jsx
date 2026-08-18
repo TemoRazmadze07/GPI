@@ -111,7 +111,6 @@ export default function MobileApp({ section = 'health' }) {
     clearArrived()
     go(sect, { day: visit })
   }
-  const setV2 = (on) => go(sect, { v2: on })
   /* #1 demo state — both chips reset any doctor picked via docselect. */
   const setDoc = (on) => {
     clearPickedDoctor()
@@ -136,21 +135,10 @@ export default function MobileApp({ section = 'health' }) {
           >
             {M.demo.visit}
           </button>
-          <span className="mga-demo__sep" aria-hidden="true" />
-          {/* Canonical first, archive second — the chip order should read the way the
-              work does (user, 2026-08-18). */}
-          <button
-            className={'mga-demo__chip' + (v2 ? ' mga-demo__chip--on' : '')}
-            onClick={() => setV2(true)}
-          >
-            {M.demo.v2}
-          </button>
-          <button
-            className={'mga-demo__chip' + (!v2 ? ' mga-demo__chip--on' : '')}
-            onClick={() => setV2(false)}
-          >
-            {M.demo.v1}
-          </button>
+          {/* The version pair is GONE from the bar (user, 2026-08-18): there is only one
+              live concept now, and offering stakeholders a chip labelled „archive" just
+              invites them to review the wrong thing. The two-tab build stays reachable
+              by typing `?v=1`, and the Flow Map (internal) still lists it. */}
           {v2 && (
             <>
               <span className="mga-demo__sep" aria-hidden="true" />
