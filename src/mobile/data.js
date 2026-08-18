@@ -32,14 +32,28 @@ export const CHRONIC = { med: 'ლიზინოპრილი 10 მგ', day
 
 export const COUNTS = { bookings: 8, referrals: 5, reminders: 1 }
 
+/* #4 (stakeholder comments 2026-08-18) — REAL-TIME AVAILABILITY IS MVP2.
+   The „Online" dot and „ხელმისაწვდომია ახლა" were designed FOR the online-
+   consultation feature, which ships in MVP2. Showing them in MVP1 promises a
+   channel the app cannot deliver. A working-hours-derived indicator was
+   considered and REJECTED (user + me, 2026-08-18): it still reads as presence,
+   so it misleads more than it informs — the A4 info grid's სამუშაო დღეები /
+   სამუშაო საათები carry that information honestly instead.
+   Kept as a FLAG, not deleted: MVP2 flips this one boolean to restore every
+   badge. Applies to V2 (canonical); V1 is frozen and untouched. */
+export const ONLINE_STATUS_ENABLED = false
+
 export const DOCTOR = {
   initial: 'ნ',
   name: 'ნინო გიგაური',
+  photo: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=96&h=96&fit=crop&crop=faces&auto=format&q=60',
   role: 'ოჯახის ექიმი · კურაციო',
-  online: true,
+  online: true /* rendered only when ONLINE_STATUS_ENABLED (MVP2) */,
   nextVisit: '29 სექ · 11:00',
-  /* A4 doctor-detail additions (F-03 card fields). */
-  clinic: 'კლ. კურაციო',
+  /* A4 doctor-detail additions (F-03 card fields). Clinic naming follows the
+     BOOKING FLOW ("კურაციო საბურთალოზე"), not the stakeholder file's
+     address style — the tested flow is the naming source of truth. */
+  clinic: 'კურაციო საბურთალოზე',
   cabinet: 'კაბ. 208 · IV სართ.',
   workDays: 'ორ — პარ',
   workHours: '09:00 — 18:00',
@@ -63,7 +77,9 @@ export const V2_PERSONS = [
 
 /* Today's visit per person — exists only in the visit-day demo mode. */
 export const V2_TODAY = {
-  tp: { proc: 'ექოსკოპია', place: 'ლორთქიფანიძის 31 · კაბ. XXX · IV სართ.', time: '10:30', queue: 'A042' },
+  /* #5: the cabinet is now surfaced in the arrival confirmation, so the
+     stakeholder file's „კაბ. XXX" placeholder became visible — real number. */
+  tp: { proc: 'ექოსკოპია', place: 'ლორთქიფანიძის 31 · კაბ. 312 · IV სართ.', time: '10:30', queue: 'A042' },
   np: { proc: 'პედიატრი', place: 'ლორთქიფანიძის 31 · კაბ. 115 · II სართ.', time: '12:30', queue: 'B017' },
 }
 
@@ -116,47 +132,117 @@ export const V2_PREVENTION = {
 
 /* ── A6 — V2 history dataset (stakeholder parity minus charts; F-02/F-03).
    V1 keeps HISTORY below untouched. ── */
+/* #7 (2026-08-18) — results uploaded during a demo run. Same lifetime + mechanism
+   as the picked doctor (sessionStorage, cleared with the tab): the uploaded row has
+   to survive navigating away from the section, or the flow reads as broken. */
+/* #11 follow-up (user, 2026-08-18) — meds the patient marked „აღარ მჭირდება".
+   Same session-scoped store as the uploads; reversible from the row. */
+const DISMISSED_KEY = 'mgaMedsDismissed'
+
+export function getDismissedMeds() {
+  try {
+    return JSON.parse(sessionStorage.getItem(DISMISSED_KEY) || '[]')
+  } catch {
+    return []
+  }
+}
+
+export function setMedDismissed(name, on) {
+  const next = getDismissedMeds().filter((n) => n !== name)
+  if (on) next.push(name)
+  try {
+    sessionStorage.setItem(DISMISSED_KEY, JSON.stringify(next))
+  } catch {
+    /* private mode — the state just won't survive navigation */
+  }
+}
+
+const UPLOADS_KEY = 'mgaUploads'
+
+export function getUploads() {
+  try {
+    return JSON.parse(sessionStorage.getItem(UPLOADS_KEY) || '[]')
+  } catch {
+    return []
+  }
+}
+
+export function addUpload(rec) {
+  try {
+    sessionStorage.setItem(UPLOADS_KEY, JSON.stringify([rec, ...getUploads()]))
+  } catch {
+    /* private mode — the row just won't survive navigation */
+  }
+}
+
+export function clearUploads() {
+  try {
+    sessionStorage.removeItem(UPLOADS_KEY)
+  } catch {
+    /* ignore */
+  }
+}
+
 export const V2_ANALYSIS_CATS = [
   { id: 'all', label: 'ყველა' },
   { id: 'blood', label: 'სისხლი' },
   { id: 'bio', label: 'ბიოქიმია' },
   { id: 'thyroid', label: 'ფარისებრი' },
   { id: 'lipid', label: 'ლიპიდები' },
+  /* #13 (2026-08-18) — every upload must map to a category in one of the two
+     remaining sections; imaging/instrumental studies had none, and the section is
+     „ანალიზები და კვლევები" precisely so they belong here. */
+  { id: 'imaging', label: 'ინსტრუმენტული' },
 ]
 
 export const V2_HISTORY = {
+  /* #7 (2026-08-18): `src` is now the ORIGIN ENUM behind SourceTag (curatio |
+     external | referral), not a display string — origin and clinical status are
+     different axes and used to be conflated. The externally-uploaded row lost its
+     `status: 'uploaded'` badge for the same reason: GPI cannot read an external
+     result (OCR is MVP2), so it has NO clinical status to show. `shared` = the
+     per-upload consent from the upload sheet. */
   analyses: [
-    { title: 'სისხლის საერთო', cat: 'blood', date: '22 აპრ', src: 'კურაციო', person: 'თამარ', status: 'norm' },
-    { title: 'ბიოქიმია', cat: 'bio', date: '14 აპრ', src: 'კურაციო', person: 'თამარ', status: 'warn', note: 'ALT/AST ამაღლებულია — საჭიროა ექიმის კონსულტაცია', book: true },
-    { title: 'ფარისებრი (TSH)', cat: 'thyroid', date: '3 აპრ', src: 'კურაციო', person: 'თამარ', status: 'norm' },
-    { title: 'ლიპიდური სპექტრი', cat: 'lipid', date: '15 თებ', src: 'BMSC კლინიკა', person: 'თამარ', status: 'uploaded' },
-    { title: 'სისხლის საერთო', cat: 'blood', date: '2 მარ', src: 'კურაციო', person: 'ნიკა', status: 'norm' },
+    { title: 'სისხლის საერთო', cat: 'blood', date: '22 აპრ', src: 'curatio', person: 'თამარ', status: 'norm' },
+    { title: 'ბიოქიმია', cat: 'bio', date: '14 აპრ', src: 'curatio', person: 'თამარ', status: 'warn', note: 'ALT/AST ამაღლებულია — საჭიროა ექიმის კონსულტაცია', book: true },
+    { title: 'ფარისებრი (TSH)', cat: 'thyroid', date: '3 აპრ', src: 'curatio', person: 'თამარ', status: 'norm' },
+    { title: 'ლიპიდური სპექტრი', cat: 'lipid', date: '15 თებ', src: 'external', clinic: 'BMSC კლინიკა', person: 'თამარ', shared: true },
+    { title: 'სისხლის საერთო', cat: 'blood', date: '2 მარ', src: 'curatio', person: 'ნიკა', status: 'norm' },
+    /* Re-homed from the deleted დოკუმენტები tab (#13) — they were always analyses
+       and studies, filed in a drawer only because uploads had nowhere else to go. */
+    { title: 'ბიოქიმია', cat: 'bio', date: '14 აპრ', src: 'external', clinic: 'BMSC კლინიკა', person: 'თამარ', shared: true },
+    { title: 'MRI — თავის ტვინი', cat: 'imaging', date: '2 მარ', src: 'external', clinic: 'EMC', person: 'თამარ', shared: false },
   ],
   meds: [
-    { name: 'ვიტამინი D3 2000 IU', how: 'დღეში 1 კაფსულა · 15 ივნისამდე', by: 'ნ. გიგაური', state: 'active' },
-    { name: 'Metformin 500mg', how: 'დღეში 2 ტაბლეტი', by: 'ნ. გიგაური', expiry: 'ვადა: 30 აპრ · 6 დღეში', state: 'expiring' },
-    { name: 'Atorvastatin 20mg', how: 'საღამოს 1 ტაბლეტი · 1 სექტემბრამდე', by: 'გ. მამულაძე', state: 'chronic' },
+    { name: 'ვიტამინი D3 2000 IU', how: 'დღეში 1 კაფსულა · 15 ივნისამდე', by: 'ნ. გიგაური', src: 'curatio', state: 'active' },
+    { name: 'Metformin 500mg', how: 'დღეში 2 აბი', by: 'ნ. გიგაური', src: 'curatio', expiry: 'ვადა: 30 აპრ · 6 დღეში', state: 'expiring' },
+    { name: 'Atorvastatin 20mg', how: 'საღამოს 1 აბი · 1 სექტემბრამდე', by: 'გ. მამულაძე', src: 'external', clinic: 'EMC', state: 'chronic' },
   ],
   studies: [
     {
+      src: 'referral',
       title: 'ექოსკოპია — მუცლის ღრუ',
       meta: 'დანიშნა ნ. გიგაურმა · 14 მარ',
       prep: 'მომზადება: 4–6 სთ მარხვა, ბუშტი სავსე',
       repeat: 'გამეორება 3 თვეში · ივნ 2026',
     },
   ],
+  /* #9 — referrals come FROM the family doctor: that is their origin, and SourceTag
+     renders it with the same enum the analyses and the card use. */
   referrals: [
-    { title: 'ლაბორატორიული — ბიოქიმია', number: 'EED 336 135 / 23', expiry: 'ვადა: 14 ივლ 2026', prep: 'მომზადება: 8–12 სთ მარხვა, მხოლოდ წყალი', status: 'booked' },
-    { title: 'კარდიოლოგის კონსულტაცია', number: 'EED 336 218 / 23', expiry: 'ვადა: 8 ივლ 2026', status: 'waiting' },
+    { title: 'ლაბორატორიული — ბიოქიმია', number: 'EED 336 135 / 23', expiry: 'ვადა: 14 ივლ 2026', prep: 'მომზადება: 8–12 სთ მარხვა, მხოლოდ წყალი', src: 'referral', status: 'booked' },
+    { title: 'კარდიოლოგის კონსულტაცია', number: 'EED 336 218 / 23', expiry: 'ვადა: 8 ივლ 2026', src: 'referral', status: 'waiting' },
   ],
+  /* #10 (2026-08-18) — the card holds every ENCOUNTER, not only in-clinic visits:
+     phone and online consultations produce records too, and a patient scanning the
+     list needs to know which kind each was. `type` drives an icon + LABEL (never the
+     icon alone). `src` is #9's origin, same enum as everywhere else. */
   visits: [
-    { title: 'ოჯახის ექიმი', person: 'თამარ', date: '18 აპრ 2026', by: 'ნ. გიგაური', clinic: 'კურაციო', summary: 'ბიოქიმია — ყურადღება · Metformin-ის მიმართვა განახლდა', year: '2026' },
-    { title: 'პედიატრი', person: 'ნიკა', date: '2 მარ 2026', by: 'თ. ბერიძე', clinic: 'კურაციო', summary: 'გეგმიური შემოწმება — ნორმა', year: '2026' },
-    { title: 'კარდიოლოგი', person: 'თამარ', date: '14 დეკ 2025', by: 'გ. მამულაძე', clinic: 'კურაციო', summary: 'ეკგ ნორმა · Atorvastatin გაგრძელდა', year: '2025' },
-  ],
-  docs: [
-    { title: 'ბიოქიმია — BMSC კლინიკა', date: '14 აპრ 2026', type: 'PDF', shared: true },
-    { title: 'MRI — EMC', date: '2 მარ 2026', type: 'ფოტო', shared: false },
+    { title: 'ოჯახის ექიმი', type: 'visit', person: 'თამარ', date: '18 აპრ 2026', by: 'ნ. გიგაური', clinic: 'კურაციო საბურთალოზე', src: 'curatio', summary: 'ბიოქიმია — ყურადღება · Metformin-ის მიმართვა განახლდა', year: '2026' },
+    { title: 'ოჯახის ექიმი', type: 'phone', person: 'თამარ', date: '2 აპრ 2026', by: 'ნ. გიგაური', clinic: 'კურაციო', src: 'curatio', summary: 'ანალიზების შედეგების განხილვა · დოზა უცვლელი', year: '2026' },
+    { title: 'პედიატრი', type: 'visit', person: 'ნიკა', date: '2 მარ 2026', by: 'თ. ბერიძე', clinic: 'კურაციო ვაკეში', src: 'curatio', summary: 'გეგმიური შემოწმება — ნორმა', year: '2026' },
+    { title: 'დერმატოლოგი', type: 'online', person: 'თამარ', date: '20 იან 2026', by: 'ლ. ჩიქოვანი', clinic: 'კურაციო', src: 'curatio', summary: 'კანის გამონაყარი — ადგილობრივი მკურნალობა', year: '2026' },
+    { title: 'კარდიოლოგი', type: 'visit', person: 'თამარ', date: '14 დეკ 2025', by: 'გ. მამულაძე', clinic: 'EMC', src: 'external', summary: 'ეკგ ნორმა · Atorvastatin გაგრძელდა', year: '2025' },
   ],
 }
 
@@ -181,4 +267,82 @@ export const HISTORY = {
     { title: 'ფორმა 100', date: '22 აპრ', src: 'კურაციო', person: 'გიორგი', status: 'norm' },
     { title: 'ლიპიდური სპექტრი (PDF)', date: '15 თებ', src: 'სხვა კლინიკა', person: 'გიორგი', status: 'uploaded' },
   ],
+}
+
+/* ── #1 (stakeholder comments 2026-08-18) — personal-doctor selection. ──
+   The docselect screen REUSES the booking flow's page-1 doctor list (that flow
+   is usability-tested and already in development) opened in "select personal
+   doctor" mode — FAMILY DOCTORS only. ნინო გიგაური IS listed here (unlike
+   TRANSFER_DOCTORS): with no doctor assigned there is no "current" to exclude.
+   Filters MIRROR the booking flow's selection controls (city · clinic; its
+   calendar/slots stay out — availability is booking info, not selection info,
+   user call 2026-08-18). langs = the flow's Geo/Eng/Rus doctor-card chips.
+   Photos: Unsplash portraits (prototype stand-ins only — production uses real
+   Curatio doctor photos). */
+export const DOCSEL_CITIES = [
+  { id: 'tbilisi', label: 'თბილისი' },
+  { id: 'batumi', label: 'ბათუმი' },
+]
+export const DOCSEL_CLINICS = [
+  { id: 'all', label: 'ყველა კლინიკა' },
+  { id: 'sab', label: 'კურაციო საბურთალოზე' },
+  { id: 'vake', label: 'კურაციო ვაკეში' },
+  { id: 'bat', label: 'კურაციო ბათუმში' },
+]
+export const SELECT_DOCTORS = [
+  { id: 's1', initial: 'ნ', name: 'ნინო გიგაური', spec: 'ოჯახის ექიმი', city: 'tbilisi', clinicId: 'sab', clinic: 'კურაციო საბურთალოზე', exp: 12, hours: 'ორ — პარ · 09:00—18:00', langs: ['Geo', 'Eng'], photo: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=96&h=96&fit=crop&crop=faces&auto=format&q=60' },
+  { id: 's2', initial: 'გ', name: 'გიორგი კაპანაძე', spec: 'ოჯახის ექიმი', city: 'tbilisi', clinicId: 'vake', clinic: 'კურაციო ვაკეში', exp: 8, hours: 'ორ — შაბ · 10:00—17:00', langs: ['Geo', 'Rus'], photo: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=96&h=96&fit=crop&crop=faces&auto=format&q=60' },
+  { id: 's3', initial: 'თ', name: 'თამარ ბერიძე', spec: 'ოჯახის ექიმი', city: 'tbilisi', clinicId: 'sab', clinic: 'კურაციო საბურთალოზე', exp: 21, hours: 'ორ — პარ · 14:00—20:00', langs: ['Geo', 'Eng', 'Rus'], photo: 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=96&h=96&fit=crop&crop=faces&auto=format&q=60' },
+  { id: 's4', initial: 'ლ', name: 'ლევან წიკლაური', spec: 'ოჯახის ექიმი', city: 'batumi', clinicId: 'bat', clinic: 'კურაციო ბათუმში', exp: 5, hours: 'ორ — პარ · 09:00—15:00', langs: ['Geo'], photo: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=96&h=96&fit=crop&crop=faces&auto=format&q=60' },
+]
+
+/* Demo state: the doctor chosen via docselect. sessionStorage — survives route
+   changes, resets with the tab (same lifetime as the OTP unlock). null = the
+   default DOCTOR. A newly chosen doctor has NO next visit yet (nextVisit:null),
+   which the dash + A4 detail must render honestly. */
+const PICK_KEY = 'mgaPickedDoctor'
+export function getPickedDoctor() {
+  try {
+    return JSON.parse(sessionStorage.getItem(PICK_KEY))
+  } catch {
+    return null
+  }
+}
+export function setPickedDoctor(d) {
+  sessionStorage.setItem(
+    PICK_KEY,
+    JSON.stringify({ initial: d.initial, name: d.name, photo: d.photo, role: d.spec + ' · კურაციო', clinic: d.clinic, nextVisit: null })
+  )
+}
+export function clearPickedDoctor() {
+  sessionStorage.removeItem(PICK_KEY)
+}
+
+/* ── #5 (stakeholder comments 2026-08-18) — arrival check-in („მე მოვედი"). ──
+   Qmatic separates ACTIVATING a ticket remotely from physically ARRIVING; the
+   clinic needs the second signal to call the patient. Stored per person (the
+   e-ticket is person-scoped via ?p=) in sessionStorage — same lifetime as the
+   OTP unlock — so navigating away and back keeps the confirmed state, while a
+   fresh tab (or the visit-day demo chip) resets the scenario.
+   In production the geolocation push near the clinic lands on this same
+   action, which is why the pre-arrival card advertises it. */
+const ARRIVED_KEY = 'mgaArrived'
+
+function arrivedMap() {
+  try {
+    return JSON.parse(sessionStorage.getItem(ARRIVED_KEY)) || {}
+  } catch {
+    return {}
+  }
+}
+/* Returns the check-in time ('HH:MM') or null — the stamp is the patient's
+   evidence, so it persists with the flag rather than being re-derived. */
+export function arrivedAtFor(personId = 'default') {
+  return arrivedMap()[personId] || null
+}
+export function setArrived(personId = 'default', at) {
+  sessionStorage.setItem(ARRIVED_KEY, JSON.stringify({ ...arrivedMap(), [personId]: at }))
+}
+export function clearArrived() {
+  sessionStorage.removeItem(ARRIVED_KEY)
 }

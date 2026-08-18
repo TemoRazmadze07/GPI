@@ -15,66 +15,51 @@
 import { useState } from 'react'
 import Icon from '../lib/Icon.jsx'
 import { M } from './strings.js'
-import { V2_HISTORY, V2_ANALYSIS_CATS } from './data.js'
+import {
+  V2_HISTORY,
+  V2_ANALYSIS_CATS,
+  getUploads,
+  addUpload,
+  getDismissedMeds,
+  setMedDismissed,
+} from './data.js'
+import SourceTag from './SourceTag.jsx'
+import UploadSheet from './UploadSheet.jsx'
+import { FilterSheet, FilterPill } from './filters.jsx'
 import { go, sectionParam } from './nav.js'
 import { OtpSheet, isUnlocked } from './otp.jsx'
 
 const noop = () => {}
 
+/* #7: `uploaded` is gone — origin moved to SourceTag, so this map holds only
+   CLINICAL status again, and a record without one simply shows no badge. */
+/* #10 — one glyph per encounter kind; the label beside it does the real work. */
+const VISIT_ICON = { visit: 'building-2', phone: 'phone', online: 'video' }
+
 const BADGE = {
-  norm: 'mga-badge--green',
+  norm: 'mga-badge--quiet' /* the expected reading doesn't need a colour — see mga.css */,
   warn: 'mga-badge--amber',
   crit: 'mga-badge--red',
-  uploaded: 'mga-badge--lav',
-}
-
-/* Bottom-sheet single-choice picker for a filter pill (mga-sheet grammar). */
-function FilterSheet({ title, options, value, onPick, onClose }) {
-  return (
-    <div className="mga-sheetwrap" role="dialog" aria-modal="true" aria-label={title}>
-      <button className="mga-sheetwrap__scrim" aria-label={M.otp.close} onClick={onClose} />
-      <div className="mga-sheet">
-        <div className="mga-sheet__grab" aria-hidden="true" />
-        <div className="mga-sheet__head">
-          <h2 className="mga-sheet__title">{title}</h2>
-        </div>
-        <div className="mga-fsheet">
-          {options.map((o) => (
-            <button
-              key={o.id}
-              className={'mga-fopt' + (value === o.id ? ' mga-fopt--on' : '')}
-              aria-pressed={value === o.id}
-              onClick={() => {
-                onPick(o.id)
-                onClose()
-              }}
-            >
-              <span>{o.label}</span>
-              {value === o.id && <Icon name="check" size={15} />}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function FilterPill({ label, value, onOpen }) {
-  return (
-    <button className="mga-chip mga-fpill" onClick={onOpen}>
-      {label ? label + ': ' + value : value}
-      <Icon name="chevron-down" size={12} />
-    </button>
-  )
 }
 
 export default function History2Screen() {
-  const sec = sectionParam() || 'analyses'
+  /* #13 — `sec=docs` links (old hub rows, bookmarks, the flow map) must not land on a
+     blank screen now that the section is gone: anything unknown falls back to analyses,
+     which is where those records were re-homed. */
+  const sec = M.histhub.rows[sectionParam()] ? sectionParam() : 'analyses'
   const [period, setPeriod] = useState('m3')
   const [cat, setCat] = useState('all')
   const [year, setYear] = useState('2026')
   const [sheet, setSheet] = useState(null) /* 'period' | 'cat' | 'year' | null */
   const [unlocked, setUnlocked] = useState(isUnlocked())
+  /* #7 — results added during this session sit in front of the seeded ones. */
+  const [uploads, setUploads] = useState(getUploads)
+  const [uploading, setUploading] = useState(false)
+  /* User, 2026-08-18: with everything stacked, a long medication list buried კვლევები
+     and მიმართვები. The three groups are peers, so they get the main page's own
+     segmented control instead of a scroll. */
+  const [grp, setGrp] = useState('meds')
+  const [dismissed, setDismissed] = useState(getDismissedMeds)
 
   const header = (
     <div className="mga-hdr">
@@ -101,7 +86,7 @@ export default function History2Screen() {
     )
   }
 
-  const analyses = V2_HISTORY.analyses.filter((r) => cat === 'all' || r.cat === cat)
+  const analyses = [...uploads, ...V2_HISTORY.analyses].filter((r) => cat === 'all' || r.cat === cat)
   const visits = V2_HISTORY.visits.filter((v) => v.year === year)
   const periodOpts = Object.entries(M.history.periods).map(([id, label]) => ({ id, label }))
   const yearOpts = [...M.hist2.years.map((y) => ({ id: y, label: y })), { id: 'range', label: M.hist2.yearRange }]
@@ -118,24 +103,47 @@ export default function History2Screen() {
             <FilterPill label={M.hist2.filterCat} value={catLabel} onOpen={() => setSheet('cat')} />
           </div>
           <div className="mga-body" style={{ paddingTop: 0 }}>
+            {/* #7 — upload lives IN the section, above the list: the results you are
+                looking at are the reason you reach for it, and it must not require
+                scrolling past every record to find. */}
+            <button className="mga-h2__ubtn" onClick={() => setUploading(true)}>
+              <Icon name="upload" size={15} />
+              {M.upl.entry}
+            </button>
             <div className="mga-card" style={{ padding: '4px 16px' }}>
               {analyses.map((r) => (
-                <div key={r.title + r.date} className="mga-hitem">
+                <div key={r.title + r.date} className="mga-hitem mga-hitem--top">
                   <div className="mga-hitem__body">
-                    <div className="mga-meta__val" style={{ fontSize: 12.5 }}>
-                      {r.title} · {r.person}
+                    {/* #7 polish (user, 2026-08-18): the status used to be a column of
+                        its own, vertically centred — on a row with a note + CTA it
+                        floated mid-height and squeezed the note into three lines. It
+                        now sits on the TITLE line, where the reading belongs, and the
+                        note gets the full width. Badges still form one column, since
+                        every body ends at the same x. */}
+                    <div className="mga-hitem__head">
+                      <div className="mga-meta__val" style={{ fontSize: 12.5 }}>
+                        {r.title} · {r.person}
+                      </div>
+                      {r.status && (
+                        <span className={'mga-badge ' + BADGE[r.status]}>{M.history.statuses[r.status]}</span>
+                      )}
                     </div>
-                    <div className="mga-meta__lbl">
-                      {r.date} · {r.src}
+                    <div className="mga-hitem__meta">
+                      <span className="mga-meta__lbl">{r.date}</span>
+                      <SourceTag src={r.src} clinic={r.clinic} />
+                      {r.shared && (
+                        <span className="mga-mark">
+                          <Icon name="check" size={10} /> {M.upl.shared}
+                        </span>
+                      )}
                     </div>
                     {r.note && <div className="mga-hitem__note">{r.note}</div>}
                     {r.book && (
-                      <button className="mga-h2__minicta" onClick={noop}>
+                      <button className="mga-obtn mga-obtn--sm" onClick={noop}>
                         {M.hist2.book}
                       </button>
                     )}
                   </div>
-                  <span className={'mga-badge ' + BADGE[r.status]}>{M.history.statuses[r.status]}</span>
                   <button className="mga-dlbtn" aria-label={M.history.download + ' — ' + r.title}>
                     <Icon name="download" size={15} />
                   </button>
@@ -165,59 +173,126 @@ export default function History2Screen() {
       )}
 
       {sec === 'prescriptions' && (
-        <div className="mga-body" style={{ paddingTop: 0 }}>
-          <div className="mga-card">
-            <div className="mga-h2__sec">{M.hist2.sections.meds}</div>
-            {V2_HISTORY.meds.map((m) => (
-              <div key={m.name} className={'mga-h2__med' + (m.state === 'expiring' ? ' mga-h2__med--exp' : '')}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="mga-meta__val" style={{ fontSize: 12.5 }}>{m.name}</div>
-                  <div className="mga-meta__lbl">
-                    {m.how} · {m.by}
-                  </div>
-                  {m.expiry && <div className="mga-h2__exp">{m.expiry}</div>}
-                </div>
-                {m.state === 'expiring' ? (
-                  <button className="mga-h2__minicta mga-h2__minicta--red" onClick={noop}>
-                    {M.hist2.renew}
-                  </button>
-                ) : (
-                  <span className={'mga-badge ' + (m.state === 'chronic' ? 'mga-badge--lav' : 'mga-badge--green')}>
-                    {M.hist2.medStates[m.state]}
-                  </span>
-                )}
-              </div>
-            ))}
-
-            <div className="mga-h2__sec" style={{ marginTop: 12 }}>{M.hist2.sections.studies}</div>
-            {V2_HISTORY.studies.map((s) => (
-              <div key={s.title} style={{ padding: '8px 0' }}>
-                <div className="mga-meta__val" style={{ fontSize: 12.5 }}>{s.title}</div>
-                <div className="mga-meta__lbl">{s.meta}</div>
-                <div className="mga-h2__callout">📋 {s.prep}</div>
-                <div className="mga-h2__callout mga-h2__callout--amber">⏰ {s.repeat}</div>
-              </div>
+        <>
+          <div className="mga-seg" role="tablist" aria-label={M.hist2.groups}>
+            {['meds', 'studies', 'referrals'].map((id) => (
+              <button
+                key={id}
+                className={'mga-seg__item' + (grp === id ? ' mga-seg__item--on' : '')}
+                role="tab"
+                aria-selected={grp === id}
+                onClick={() => setGrp(id)}
+              >
+                {M.hist2.sections[id]}
+              </button>
             ))}
           </div>
 
-          <div className="mga-card">
-            <div className="mga-h2__sec">{M.hist2.sections.referrals}</div>
-            {V2_HISTORY.referrals.map((r) => (
-              <div key={r.number} className="mga-h2__med">
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="mga-meta__val" style={{ fontSize: 12.5 }}>{r.title}</div>
-                  <div className="mga-meta__lbl">
-                    № {r.number} · {r.expiry}
+          <div className="mga-body" style={{ paddingTop: 0 }}>
+            <div className="mga-card">
+              {grp === 'meds' &&
+                V2_HISTORY.meds.map((m) => {
+                  const off = dismissed.includes(m.name)
+                  const renewable = m.state === 'expiring' || m.state === 'chronic'
+                  const setOff = (on) => {
+                    setMedDismissed(m.name, on)
+                    setDismissed(getDismissedMeds())
+                  }
+                  return (
+                    <div
+                      key={m.name}
+                      className={'mga-h2__rx' + (m.state === 'expiring' && !off ? ' mga-h2__rx--warn' : '')}
+                    >
+                      <div className="mga-hitem__head">
+                        <div className="mga-meta__val" style={{ fontSize: 12.5 }}>{m.name}</div>
+                        <span
+                          className={
+                            'mga-badge ' +
+                            (off ? 'mga-badge--quiet' : m.state === 'expiring' ? 'mga-badge--amber' : 'mga-badge--quiet')
+                          }
+                        >
+                          {off ? M.hist2.dismissed : M.hist2.medStates[m.state]}
+                        </span>
+                      </div>
+                      <div className="mga-hitem__meta">
+                        <span className="mga-meta__lbl">
+                          {m.how} · {m.by}
+                        </span>
+                        <SourceTag src={m.src} clinic={m.clinic} />
+                      </div>
+                      {m.expiry && !off && <div className="mga-h2__exp">{m.expiry}</div>}
+                      {/* User, 2026-08-18: „what if patient do not need the medicament
+                          anymore?" — renewal was the row's only answer. The way out sits
+                          next to it, and it silences the prompt rather than claiming
+                          anything clinical. Reversible. */}
+                      {renewable && !off && (
+                        <>
+                          <div className="mga-h2__renewnote">{M.hist2.renewNote}</div>
+                          <button className="mga-obtn" onClick={noop}>
+                            {M.hist2.renew}
+                            <Icon name="chevron-right" size={12} />
+                          </button>
+                          <button className="mga-h2__textbtn" onClick={() => setOff(true)}>
+                            {M.hist2.dismiss}
+                          </button>
+                        </>
+                      )}
+                      {off && (
+                        <>
+                          <div className="mga-h2__renewnote">{M.hist2.dismissedNote}</div>
+                          <button className="mga-h2__textbtn" onClick={() => setOff(false)}>
+                            {M.hist2.undo}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )
+                })}
+
+              {grp === 'studies' &&
+                V2_HISTORY.studies.map((st) => (
+                  <div key={st.title} className="mga-h2__rx">
+                    <div className="mga-meta__val" style={{ fontSize: 12.5 }}>{st.title}</div>
+                    <div className="mga-hitem__meta">
+                      <span className="mga-meta__lbl">{st.meta}</span>
+                      <SourceTag src={st.src} />
+                    </div>
+                    <div className="mga-h2__callout">
+                      <Icon name="info" size={11} /> {st.prep}
+                    </div>
+                    <div className="mga-h2__callout mga-h2__callout--amber">
+                      <Icon name="clock" size={11} /> {st.repeat}
+                    </div>
                   </div>
-                  {r.prep && <div className="mga-h2__callout">📋 {r.prep}</div>}
-                </div>
-                <span className={'mga-badge ' + (r.status === 'booked' ? 'mga-badge--green' : 'mga-badge--amber')}>
-                  {M.hist2.refStatuses[r.status]}
-                </span>
-              </div>
-            ))}
+                ))}
+
+              {grp === 'referrals' &&
+                V2_HISTORY.referrals.map((r) => (
+                  <div key={r.number} className="mga-h2__rx">
+                    <div className="mga-hitem__head">
+                      <div className="mga-meta__val" style={{ fontSize: 12.5 }}>{r.title}</div>
+                      <span
+                        className={'mga-badge ' + (r.status === 'booked' ? 'mga-badge--quiet' : 'mga-badge--amber')}
+                      >
+                        {M.hist2.refStatuses[r.status]}
+                      </span>
+                    </div>
+                    <div className="mga-hitem__meta">
+                      <span className="mga-meta__lbl">
+                        № {r.number} · {r.expiry}
+                      </span>
+                      <SourceTag src={r.src} />
+                    </div>
+                    {r.prep && (
+                      <div className="mga-h2__callout">
+                        <Icon name="info" size={11} /> {r.prep}
+                      </div>
+                    )}
+                  </div>
+                ))}
+            </div>
           </div>
-        </div>
+        </>
       )}
 
       {sec === 'visits' && (
@@ -226,23 +301,31 @@ export default function History2Screen() {
             <FilterPill label={M.hist2.filterYear} value={year === 'range' ? M.hist2.yearRange : year} onOpen={() => setSheet('year')} />
           </div>
           <div className="mga-body" style={{ paddingTop: 0 }}>
+            {/* #10 — the encounter KIND leads the row: three kinds (in-clinic, phone,
+                online) are not guessable from a glyph, so icon AND label. #9 — origin
+                sits in the same meta line as everywhere else. */}
             {visits.map((v) => (
               <div key={v.title + v.date} className="mga-card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                  <div className="mga-meta__val" style={{ fontSize: 12.5 }}>
-                    {v.title} · {v.person}
-                  </div>
-                  <span className="mga-badge mga-badge--green">{M.hist2.visitStatuses.done}</span>
+                <div className="mga-meta__val" style={{ fontSize: 12.5 }}>
+                  {v.title} · {v.person}
                 </div>
-                <div className="mga-meta__lbl">
-                  {v.date} · {v.by} · {v.clinic}
+                <div className="mga-hitem__meta">
+                  <span className="mga-mark">
+                    <Icon name={VISIT_ICON[v.type] || 'stethoscope'} size={11} /> {M.hist2.visitTypes[v.type]}
+                  </span>
+                  <span className="mga-meta__lbl">
+                    {v.date} · {v.by}
+                  </span>
+                  <SourceTag src={v.src} clinic={v.clinic} />
                 </div>
                 <div className="mga-h2__summary">{v.summary}</div>
                 <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-                  <button className="mga-h2__minicta" onClick={noop}>
+                  <button className="mga-obtn mga-obtn--sm" onClick={noop}>
                     <Icon name="download" size={11} /> {M.hist2.downloadPdf}
                   </button>
-                  <button className="mga-h2__minicta" onClick={() => go('history', { sec: 'docs' })}>
+                  {/* #13 — was a jump to the დოკუმენტები drawer; that drawer is gone, so
+                      the result is filed where results live, from right here. */}
+                  <button className="mga-obtn mga-obtn--sm" onClick={() => setUploading(true)}>
                     <Icon name="upload" size={11} /> {M.hist2.uploadResult}
                   </button>
                 </div>
@@ -261,43 +344,21 @@ export default function History2Screen() {
         </>
       )}
 
-      {sec === 'docs' && (
-        <div className="mga-body" style={{ paddingTop: 0 }}>
-          <div className="mga-h2__uzone">
-            <span className="mga-h2__uico">
-              <Icon name="upload" size={19} />
-            </span>
-            <div className="mga-meta__val" style={{ marginTop: 8 }}>{M.hist2.uploadTitle}</div>
-            <div className="mga-meta__lbl" style={{ marginTop: 2 }}>{M.hist2.uploadHint}</div>
-            {/* A6b: the 2-step upload sheet opens from here once built. */}
-            <button className="mga-obtn" style={{ marginTop: 10 }} onClick={noop}>
-              {M.hist2.uploadCta}
-            </button>
-          </div>
 
-          <div className="mga-card" style={{ padding: '4px 16px' }}>
-            <div className="mga-h2__sec" style={{ paddingTop: 8 }}>{M.hist2.uploadedDocs}</div>
-            {V2_HISTORY.docs.map((d) => (
-              <div key={d.title} className="mga-hitem">
-                <div className="mga-hitem__body">
-                  <div className="mga-meta__val" style={{ fontSize: 12.5 }}>{d.title}</div>
-                  <div className="mga-meta__lbl">
-                    {d.date} · {d.type}
-                    {d.shared && <> · {M.hist2.sharedNote}</>}
-                  </div>
-                </div>
-                <span className="mga-prow__chv">
-                  <Icon name="chevron-right" size={15} />
-                </span>
-              </div>
-            ))}
-          </div>
-
-          <div className="mga-h2__confid">
-            <Icon name="shield-check" size={14} />
-            <span>{M.hist2.confid}</span>
-          </div>
-        </div>
+      {/* #13 — one upload sheet for the whole screen: both ანალიზები და კვლევები and
+          the medical card file into it, so it cannot live inside one section. */}
+      {uploading && (
+        <UploadSheet
+          cat={cat}
+          onClose={() => setUploading(false)}
+          onDone={(rec) => {
+            addUpload(rec)
+            setUploads(getUploads())
+            setUploading(false)
+            /* Land the user on the record they just added, not on a filter that hides it. */
+            if (sec === 'analyses' && cat !== 'all' && cat !== rec.cat) setCat(rec.cat)
+          }}
+        />
       )}
     </>
   )

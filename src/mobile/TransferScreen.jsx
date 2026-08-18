@@ -9,7 +9,7 @@
 import { useState } from 'react'
 import Icon from '../lib/Icon.jsx'
 import { M } from './strings.js'
-import { TRANSFER_DOCTORS } from './data.js'
+import { TRANSFER_DOCTORS, ONLINE_STATUS_ENABLED } from './data.js'
 import { go } from './nav.js'
 import { OtpSheet, isUnlocked } from './otp.jsx'
 
@@ -60,9 +60,15 @@ export default function TransferScreen() {
                   {d.spec} · {d.clinic}
                 </span>
               </span>
-              <span className={'mga-badge ' + (d.avail === 'online' ? 'mga-badge--green' : 'mga-badge--lav')}>
-                {d.avail === 'online' ? M.transfer.online : M.transfer.tomorrow}
-              </span>
+              {/* #4: these badges make the SAME real-time-availability claim as the
+                  doctor card's „Online", so they follow the same flag. Availability
+                  is not a transfer-decision input anyway — you are choosing who
+                  holds your record, not booking a slot. */}
+              {ONLINE_STATUS_ENABLED && (
+                <span className={'mga-badge ' + (d.avail === 'online' ? 'mga-badge--green' : 'mga-badge--lav')}>
+                  {d.avail === 'online' ? M.transfer.online : M.transfer.tomorrow}
+                </span>
+              )}
             </button>
           ))}
         </div>

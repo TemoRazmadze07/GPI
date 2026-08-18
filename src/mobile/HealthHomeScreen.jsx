@@ -7,7 +7,8 @@
    V2 (?v=2, stakeholder comparison — V1 stays canonical): the switcher grows a
    third კურაციო pill (short labels), the Curatio block leaves this screen, and
    on visit day the booking card keeps its normal layout with a slim strip that
-   deep-links to the e-ticket — the live queue moves to the კურაციო tab. */
+   deep-links to the e-ticket — the live queue moves to the კურაციო tab, and a
+   history POINTER row (stakeholder comment #2) closes the dashboard. */
 
 import Icon from '../lib/Icon.jsx'
 import { PRODUCT_IMG } from '../lib/assets.js'
@@ -135,6 +136,35 @@ function CuratioBlock() {
         ))}
       </div>
     </section>
+  )
+}
+
+function HistoryRow() {
+  /* #2 (2026-08-18): the medical-history entry point ALSO on the Health
+     dashboard — a POINTER, never a second home for the data. It carries NO
+     records, counts or alert badge, because history sits behind the OTP gate
+     and this screen is public (user: "only button, not actual information").
+     `from` makes the hub's back return here instead of to the კურაციო tab.
+     V2 only — in V1 the Curatio block already carries an ისტორია tile.
+     Leading visual = the CURATIO MARK (mga-cur__mark, same solid teal glyph as
+     the კურაციო switcher pill), not a pastel tile + document icon — the row is
+     a cross-tab pointer, so the mark names the destination and visually rhymes
+     with the pill (user, 2026-08-18: the generic icon tile had to go).
+     No lock chip — a plain chevron is enough (user); the OTP sheet on the hub
+     explains the gate itself. Placed LAST on the dashboard for now (user). */
+  return (
+    <button className="mga-card mga-prow" onClick={() => go('histhub', { from: 'health' })}>
+      <span className="mga-cur__mark" aria-hidden="true">
+        <Icon name="activity" size={15} />
+      </span>
+      <span style={{ flex: 1, minWidth: 0, lineHeight: 1.3 }}>
+        <span className="mga-meta__val" style={{ display: 'block' }}>{M.dash2.historyTitle}</span>
+        <span className="mga-meta__lbl">{M.dash2.historyHint}</span>
+      </span>
+      <span className="mga-prow__chv">
+        <Icon name="chevron-right" size={16} />
+      </span>
+    </button>
   )
 }
 
@@ -346,6 +376,7 @@ export default function HealthHomeScreen({ visitDay, v2 = false }) {
         <BookingsWidget visitDay={visitDay} v2={v2} />
         {visitDay && !v2 && <NextBookingCard />}
         <ReferralsWidget />
+        {v2 && <HistoryRow />}
         <div className="mga-fabrow">
           <button className="mga-fab" aria-label="Call support" onClick={noop}>
             <Icon name="phone" size={18} />

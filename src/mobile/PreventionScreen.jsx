@@ -19,34 +19,40 @@ import { go } from './nav.js'
 
 const noop = () => {}
 
-const TILE = {
-  lav: { background: 'var(--mga-lav)', color: 'var(--mga-lav-fg)' },
-  green: { background: 'var(--mga-green-bg)', color: 'var(--mga-green-fg)' },
-  pink: { background: 'var(--mga-pink-soft)', color: 'var(--mga-pink-fg)' },
-  teal: { background: 'var(--mga-teal)', color: 'var(--mga-teal-fg)' },
-  amber: { background: 'var(--mga-amber-bg)', color: 'var(--mga-amber-fg)' },
-}
+/* Icon tiles carry ONE style module-wide (user, 2026-08-18: „they are very colorful,
+   with low contrast so it seems very busy"). The per-item palette is gone — it never
+   encoded anything, and `teal` was a dark teal glyph on a SATURATED teal fill (~1.5:1).
+   The base .mga-itile (lavender tint + indigo glyph, ~7:1) is now the only tile. */
 
 function Row({ item }) {
   return (
-    <div className="mga-h2__med">
-      <span className="mga-itile" style={TILE[item.tile]}>
+    <div className="mga-prv__row">
+      <span className="mga-itile">
         <Icon name={item.icon} size={17} />
       </span>
-      <div style={{ flex: 1, minWidth: 0 }}>
+      {/* Status rides the TITLE line and the action sits below at full width — as a
+          right rail they squeezed the body until titles broke over three lines. */}
+      <div className="mga-prv__body">
         <div className="mga-meta__val" style={{ fontSize: 12.5 }}>{item.name}</div>
         <div className="mga-meta__lbl">{item.meta}</div>
         {item.extra && <div className="mga-meta__lbl">{item.extra}</div>}
         {item.note && <div className={'mga-prv__note mga-prv__note--' + item.tone}>{item.note}</div>}
+        {/* „შესრულებულია" gets its OWN line (user, 2026-08-18) — with an icon rail
+            eating 44px, the title line cannot hold a badge without breaking long
+            screening names over three lines. Green: it is the one fill on the row,
+            and a completed screening is worth reading as good news. */}
+        {item.status === 'done' && (
+          <div className="mga-prv__state">
+            <span className="mga-badge mga-badge--green">{M.prev.done}</span>
+          </div>
+        )}
+        {item.status !== 'done' && (
+          /* Dead until F-04 — see header comment. */
+          <button className="mga-obtn mga-obtn--sm" onClick={noop}>
+            <Icon name="calendar" size={11} /> {M.prev.book}
+          </button>
+        )}
       </div>
-      {item.status === 'done' ? (
-        <span className="mga-badge mga-badge--green">{M.prev.done}</span>
-      ) : (
-        /* Dead until F-04 — see header comment. */
-        <button className="mga-h2__minicta" onClick={noop}>
-          <Icon name="calendar" size={11} /> {M.prev.book}
-        </button>
-      )}
     </div>
   )
 }
@@ -63,7 +69,7 @@ export default function PreventionScreen() {
 
       <div className="mga-body">
         <div className="mga-prv__banner">
-          <span className="mga-itile" style={TILE.amber}>
+          <span className="mga-itile">
             <Icon name="clock" size={17} />
           </span>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -72,7 +78,7 @@ export default function PreventionScreen() {
             </div>
             <div className="mga-meta__lbl">{V2_PREVENTION.reminder.body}</div>
             {/* Dead until F-04 — see header comment. */}
-            <button className="mga-h2__minicta" style={{ marginTop: 8 }} onClick={noop}>
+            <button className="mga-obtn mga-obtn--sm" style={{ marginTop: 8 }} onClick={noop}>
               <Icon name="calendar" size={11} /> {M.prev.book}
             </button>
           </div>

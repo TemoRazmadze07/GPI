@@ -6,18 +6,49 @@
    original BOOKING/QUEUE data.
    Remote payment and the "remind me 1 patient earlier" opt-in are BOTH absent
    BY THE USER'S CALL (2026-08-04, A2 review) — the stakeholder file shows them,
-   but they were removed from this screen. Do not reintroduce without the user. */
+   but they were removed from this screen. Do not reintroduce without the user.
+   #5 (2026-08-18): ARRIVAL CHECK-IN („მე მოვედი"). Activating a ticket remotely
+   is not the same event as reaching the clinic — Qmatic needs the arrival
+   signal before the patient can be called. Placed ABOVE the clinic/map card:
+   the map answers „how do I get there", check-in answers „I'm here", so the
+   screen reads in the order the visit actually happens. Confirmed state stays
+   on screen (rather than collapsing) so the patient keeps proof + next step. */
 
+import { useState } from 'react'
 import Icon from '../lib/Icon.jsx'
 import { M } from './strings.js'
-import { BOOKING, QUEUE, CLINIC, V2_PERSONS, V2_TODAY } from './data.js'
+import { BOOKING, QUEUE, CLINIC, V2_PERSONS, V2_TODAY, arrivedAtFor, setArrived } from './data.js'
 import { go, isV2, personParam } from './nav.js'
+
+/* Local time of the check-in tap — the confirmation is evidence, so it carries
+   a real timestamp rather than a canned one. */
+function nowHHMM() {
+  const d = new Date()
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
 
 export default function TicketScreen() {
   const v2 = isV2()
   /* V2: person-scoped visit; fall back to the policyholder's ticket. */
   const today = v2 ? V2_TODAY[personParam()] || V2_TODAY[V2_PERSONS[0].id] : null
 
+  /* Arrival is per person — each family member checks in for their own visit.
+     The screen stays MOUNTED when ?p= changes, so the state must be re-derived
+     on key change (React's "adjust state during render" pattern) — a useState
+     initializer alone would leak one person's check-in onto the next. */
+  const arrivalKey = v2 ? personParam() || V2_PERSONS[0].id : 'v1'
+  const [arrival, setArrival] = useState({ key: arrivalKey, at: arrivedAtFor(arrivalKey) })
+  if (arrival.key !== arrivalKey) setArrival({ key: arrivalKey, at: arrivedAtFor(arrivalKey) })
+  const arrivedAt = arrival.key === arrivalKey ? arrival.at : arrivedAtFor(arrivalKey)
+  const checkIn = () => {
+    const at = nowHHMM()
+    setArrived(arrivalKey, at)
+    setArrival({ key: arrivalKey, at })
+  }
+
+  /* Cabinet only — the hero above already carries the address, so repeating it
+     here would just be noise. */
+  const cabinet = today ? today.place.split(' · ').slice(1).join(' · ') : CLINIC.cabinet
   const num = today ? today.queue : QUEUE.number
   const line1 = today ? today.proc : `${BOOKING.specialty} · ${BOOKING.doctor}`
   const line2 = today ? `${today.place} · ${today.time}` : `${CLINIC.cabinet} · ${BOOKING.timeShort}`
@@ -59,6 +90,42 @@ export default function TicketScreen() {
             </div>
           </div>
         </div>
+
+        {/* #5 — arrival check-in: action before wayfinding, see header note. */}
+        {arrivedAt === null ? (
+          <section className="mga-card" aria-label={M.ticket.arriveTitle}>
+            <div className="mga-irow" style={{ padding: 0 }}>
+              <span className="mga-itile" style={{ background: 'var(--mga-pink-soft)', color: 'var(--mga-pink-fg)' }}>
+                <Icon name="map-pin" size={17} />
+              </span>
+              <div className="mga-meta" style={{ flex: 1 }}>
+                <div className="mga-meta__val">{M.ticket.arriveTitle}</div>
+                <div className="mga-meta__lbl">{M.ticket.arriveHint}</div>
+              </div>
+            </div>
+            <button className="mga-cta mga-arr__cta" onClick={checkIn}>
+              {M.ticket.arriveCta}
+            </button>
+            <div className="mga-arr__note">
+              <Icon name="bell" size={12} />
+              {M.ticket.arriveGeo}
+            </div>
+          </section>
+        ) : (
+          <section className="mga-card mga-arr--done" aria-label={M.ticket.arrivedTitle}>
+            <div className="mga-irow" style={{ padding: 0 }}>
+              <span className="mga-itile mga-arr__ico--ok">
+                <Icon name="check" size={17} />
+              </span>
+              <div className="mga-meta" style={{ flex: 1 }}>
+                <div className="mga-meta__val">{M.ticket.arrivedTitle}</div>
+                <div className="mga-meta__lbl">{M.ticket.arrivedAt(arrivedAt)}</div>
+              </div>
+              <span className="mga-badge mga-badge--green">{M.ticket.arrivedBadge}</span>
+            </div>
+            <div className="mga-arr__next">{M.ticket.arrivedNext(cabinet)}</div>
+          </section>
+        )}
 
         <div className="mga-card">
           <div className="mga-irow" style={{ padding: 0 }}>

@@ -19,8 +19,8 @@
 import { useState } from 'react'
 import Icon from '../lib/Icon.jsx'
 import { M } from './strings.js'
-import { V2_PERSONS, V2_TODAY, V2_HISTORY_ALERT, DOCTOR } from './data.js'
-import { go, isVisitDay } from './nav.js'
+import { V2_PERSONS, V2_TODAY, V2_HISTORY_ALERT, DOCTOR, getPickedDoctor, ONLINE_STATUS_ENABLED } from './data.js'
+import { go, hasDoctor, isVisitDay } from './nav.js'
 import { isUnlocked } from './otp.jsx'
 import PersonSelect from './PersonSelect.jsx'
 import { TopBar, ProductSwitcher } from './HealthHomeScreen.jsx'
@@ -31,6 +31,10 @@ export default function CuratioDashScreen() {
   const [personId, setPersonId] = useState(V2_PERSONS[0].id)
   const visitDay = isVisitDay()
   const unlocked = isUnlocked()
+  /* #1 (2026-08-18): ?doc=0 = no personal doctor → empty card + docselect CTA.
+     A doctor picked via docselect overrides the default (nextVisit: null). */
+  const hasDoc = hasDoctor()
+  const doc = { ...DOCTOR, ...(getPickedDoctor() || {}) }
   const today = visitDay ? V2_TODAY[personId] : null
   const historyAlert = V2_HISTORY_ALERT[personId]
   const alerts = visitDay
@@ -79,35 +83,78 @@ export default function CuratioDashScreen() {
           </span>
         </button>
 
-        <section className="mga-card" aria-label={M.hub.doctorLabel}>
-          <div className="mga-cardhdr">
-            <span className="mga-meta__lbl">{M.hub.doctorLabel}</span>
-            <button className="mga-seeall" onClick={() => go('doctor')}>
-              {M.dash2.docInfo} ›
-            </button>
-          </div>
-          <div className="mga-irow" style={{ padding: 0 }}>
-            <span className="mga-doc__ava" aria-hidden="true">{DOCTOR.initial}</span>
-            <div className="mga-meta" style={{ flex: 1 }}>
-              <div className="mga-meta__val">{DOCTOR.name}</div>
-              <div className="mga-meta__lbl">
-                {DOCTOR.role} ·{' '}
-                <span style={{ color: 'var(--mga-green-fg)', fontWeight: 600 }}>● {M.hub.online}</span>
+        {hasDoc ? (
+          <section className="mga-card" aria-label={M.hub.doctorLabel}>
+            <div className="mga-cardhdr">
+              <span className="mga-meta__lbl">{M.hub.doctorLabel}</span>
+              <button className="mga-seeall" onClick={() => go('doctor')}>
+                {M.dash2.docInfo} ›
+              </button>
+            </div>
+            <div className="mga-irow" style={{ padding: 0 }}>
+              <span className="mga-doc__ava" aria-hidden="true">
+                {doc.photo ? <img src={doc.photo} alt="" /> : doc.initial}
+              </span>
+              <div className="mga-meta" style={{ flex: 1 }}>
+                <div className="mga-meta__val">{doc.name}</div>
+                {/* #4: real-time availability is MVP2 — see ONLINE_STATUS_ENABLED. */}
+                <div className="mga-meta__lbl">
+                  {doc.role}
+                  {ONLINE_STATUS_ENABLED && (
+                    <>
+                      {' · '}
+                      <span style={{ color: 'var(--mga-green-fg)', fontWeight: 600 }}>● {M.hub.online}</span>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-          <div className="mga-doc__next">
-            {M.hub.nextVisit} <b>{DOCTOR.nextVisit}</b>
-          </div>
-          <div className="mga-doc__btns">
-            <button className="mga-obtn mga-obtn--pink" style={{ flex: 1 }} onClick={noop}>
-              {M.hub.book}
-            </button>
-          </div>
-        </section>
+            <div className="mga-doc__next">
+              {doc.nextVisit ? (
+                <>
+                  {M.hub.nextVisit} <b>{doc.nextVisit}</b>
+                </>
+              ) : (
+                M.dash2.noNextVisit
+              )}
+            </div>
+            {/* #3 (2026-08-18) — two booking entries, stacked: the phone consult is
+                new and stays invisible if it only lives behind „სრული ინფო". Both
+                open the booking flow (doctor preselected); only ვიზიტის ტიპი differs. */}
+            <div className="mga-doc__btns mga-doc__btns--stack">
+              <button className="mga-obtn mga-obtn--pink" onClick={noop}>
+                {M.doc.bookClinic}
+              </button>
+              <button className="mga-obtn" onClick={noop}>
+                {M.doc.bookPhone}
+              </button>
+            </div>
+          </section>
+        ) : (
+          /* #1 — empty variant: same card slot, one CTA into docselect. */
+          <section className="mga-card" aria-label={M.hub.doctorLabel}>
+            <div className="mga-cardhdr">
+              <span className="mga-meta__lbl">{M.hub.doctorLabel}</span>
+            </div>
+            <div className="mga-irow" style={{ padding: 0 }}>
+              <span className="mga-doc__ava mga-doc__ava--empty" aria-hidden="true">
+                <Icon name="user" size={18} />
+              </span>
+              <div className="mga-meta" style={{ flex: 1 }}>
+                <div className="mga-meta__val">{M.dash2.docEmptyTitle}</div>
+                <div className="mga-meta__lbl">{M.dash2.docEmptyHint}</div>
+              </div>
+            </div>
+            <div className="mga-doc__btns mga-doc__btns--sep">
+              <button className="mga-obtn mga-obtn--pink" style={{ flex: 1 }} onClick={() => go('docselect')}>
+                {M.dash2.docEmptyCta}
+              </button>
+            </div>
+          </section>
+        )}
 
         <button className="mga-card mga-prow" onClick={() => go('histhub')}>
-          <span className="mga-itile" style={{ background: 'var(--mga-lav)', color: 'var(--mga-lav-fg)' }}>
+          <span className="mga-itile">
             <Icon name="file-text" size={17} />
           </span>
           <span style={{ flex: 1, minWidth: 0, lineHeight: 1.3 }}>
@@ -128,7 +175,7 @@ export default function CuratioDashScreen() {
         </button>
 
         <button className="mga-card mga-prow" onClick={() => go('prevention')}>
-          <span className="mga-itile" style={{ background: 'var(--mga-green-bg)', color: 'var(--mga-green-fg)' }}>
+          <span className="mga-itile">
             <Icon name="shield-check" size={17} />
           </span>
           <span style={{ flex: 1, minWidth: 0, lineHeight: 1.3 }}>

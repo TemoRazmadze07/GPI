@@ -11,7 +11,8 @@
 
 import Icon from '../lib/Icon.jsx'
 import { M } from './strings.js'
-import { isVisitDay, isV2, go } from './nav.js'
+import { isVisitDay, isV2, hasDoctor, go } from './nav.js'
+import { clearPickedDoctor, clearArrived } from './data.js'
 import HealthHomeScreen from './HealthHomeScreen.jsx'
 import CuratioHubScreen from './CuratioHubScreen.jsx'
 import CuratioDashScreen from './CuratioDashScreen.jsx'
@@ -19,10 +20,12 @@ import TicketScreen from './TicketScreen.jsx'
 import HistoryScreen from './HistoryScreen.jsx'
 import QueuePickerScreen from './QueuePickerScreen.jsx'
 import DoctorScreen from './DoctorScreen.jsx'
+import DoctorSelectScreen from './DoctorSelectScreen.jsx'
 import TransferScreen from './TransferScreen.jsx'
 import History2Screen from './History2Screen.jsx'
 import HistoryHubScreen from './HistoryHubScreen.jsx'
 import PreventionScreen from './PreventionScreen.jsx'
+import MoreScreen from './MoreScreen.jsx'
 
 const IS_STUDY = new URLSearchParams(window.location.search).has('study')
 
@@ -43,26 +46,34 @@ function StatusBar() {
   )
 }
 
-function BottomNav() {
+/* #12 — the „more" tab became a real destination, so the bar now navigates instead
+   of hard-coding the first tab as active. The other three stay dead: they belong to
+   the existing app, not to this module. */
+function BottomNav({ section }) {
   const items = [
-    { label: M.nav[0], icon: 'home', on: true },
+    { label: M.nav[0], icon: 'home', to: 'health' },
     { label: M.nav[1], icon: 'shield-check' },
     { label: M.nav[2], icon: 'shopping-cart' },
     { label: M.nav[3], icon: 'file-text' },
-    { label: M.nav[4], icon: 'layout-grid' },
+    { label: M.nav[4], icon: 'layout-grid', to: 'more' },
   ]
   return (
     <nav className="mga-nav" aria-label="Main">
-      {items.map((it) => (
-        <button
-          key={it.label}
-          className={'mga-nav__item' + (it.on ? ' mga-nav__item--on' : '')}
-          aria-current={it.on ? 'page' : undefined}
-        >
-          <Icon name={it.icon} size={18} />
-          {it.label}
-        </button>
-      ))}
+      {items.map((it) => {
+        /* Everything that is not the More menu lives under the main tab. */
+        const on = it.to === 'more' ? section === 'more' : it.to === 'health' && section !== 'more'
+        return (
+          <button
+            key={it.label}
+            className={'mga-nav__item' + (on ? ' mga-nav__item--on' : '')}
+            aria-current={on ? 'page' : undefined}
+            onClick={it.to ? () => go(it.to) : undefined}
+          >
+            <Icon name={it.icon} size={18} />
+            {it.label}
+          </button>
+        )
+      })}
     </nav>
   )
 }
@@ -73,10 +84,12 @@ const SCREENS = {
   ticket: TicketScreen,
   history: HistoryScreen,
   queuepicker: QueuePickerScreen /* V2 only — reached from the dash (A3) */,
+  docselect: DoctorSelectScreen /* V2 only — #1: empty doctor card CTA (booking-flow page-1 reuse) */,
   doctor: DoctorScreen /* V2 only — dash doctor card „სრული ინფო" (A4) */,
   transfer: TransferScreen /* V2 only — doctor screen's gated CTA (A5) */,
   histhub: HistoryHubScreen /* V2 only — dash history row → section menu (A6c) */,
   prevention: PreventionScreen /* V2 only — dash prevention row (A7) */,
+  more: MoreScreen /* #12 — „მეტი" menu, the second way into კურაციო */,
 }
 
 export default function MobileApp({ section = 'health' }) {
@@ -91,8 +104,18 @@ export default function MobileApp({ section = 'health' }) {
         : SCREENS[section] || HealthHomeScreen
 
   const sect = SCREENS[section] ? section : 'health'
-  const setDay = (visit) => go(sect, { day: visit })
+  const noDoc = !hasDoctor()
+  /* #5 — flipping the visit-day scenario resets the arrival check-in. */
+  const setDay = (visit) => {
+    clearArrived()
+    go(sect, { day: visit })
+  }
   const setV2 = (on) => go(sect, { v2: on })
+  /* #1 demo state — both chips reset any doctor picked via docselect. */
+  const setDoc = (on) => {
+    clearPickedDoctor()
+    go(sect, { doc: on })
+  }
 
   return (
     <div className="mga-stage">
@@ -123,13 +146,30 @@ export default function MobileApp({ section = 'health' }) {
           >
             {M.demo.v2}
           </button>
+          {v2 && (
+            <>
+              <span className="mga-demo__sep" aria-hidden="true" />
+              <button
+                className={'mga-demo__chip' + (!noDoc ? ' mga-demo__chip--on' : '')}
+                onClick={() => setDoc(true)}
+              >
+                {M.demo.docOn}
+              </button>
+              <button
+                className={'mga-demo__chip' + (noDoc ? ' mga-demo__chip--on' : '')}
+                onClick={() => setDoc(false)}
+              >
+                {M.demo.docOff}
+              </button>
+            </>
+          )}
         </div>
       )}
       <div className="mga-frame">
         <div className="mga-screen">
           <StatusBar />
           <Screen visitDay={visitDay} v2={v2} />
-          <BottomNav />
+          <BottomNav section={sect} />
           <div className="mga-homebar" aria-hidden="true">
             <span />
           </div>

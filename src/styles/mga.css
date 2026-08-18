@@ -27,6 +27,10 @@
   --mga-green-fg: #1f9d55;
   --mga-amber-bg: #fef3d8;
   --mga-amber-fg: #b45309;
+  /* warning SURFACE (card tint + its hairline) — lighter than the badge fill, which
+     is too saturated to sit behind a whole row */
+  --mga-warn-bg: #fff9ef;
+  --mga-warn-brd: #f3dfb6;
   --mga-queue-bg: #f6f7fd;
   --mga-shadow: 0 2px 12px rgba(41, 37, 98, 0.07);
   --mga-r-card: 16px;
@@ -523,6 +527,16 @@
   background: var(--mga-lav);
   color: var(--mga-lav-fg);
 }
+/* #7 polish (2026-08-18, user: „a lot of visual noise") — „ნორმა" is the EXPECTED
+   result. Filling it green put a coloured pill on nearly every row and drowned out
+   the two that actually need attention, so the default state goes quiet and the
+   fills are spent only on ყურადღება / კრიტიკული. */
+.mga-badge--quiet {
+  background: transparent;
+  /* Deliberately NOT --mga-muted: this is the result reading, not a date, so it
+     holds AA on white (4.9:1) while staying colourless. */
+  color: #6b7089;
+}
 .mga-actions {
   display: flex;
   justify-content: flex-end;
@@ -791,6 +805,14 @@
 .mga-stage .mga-obtn:active {
   transform: scale(0.98);
 }
+/* Row-level actions use the SAME button, one size down (user, 2026-08-18: „consistent
+   buttons that we use in the system not chips buttons"). This replaced .mga-h2__minicta,
+   which was a chip shape that existed nowhere else in the system. */
+.mga-stage .mga-obtn--sm {
+  width: auto;
+  padding: 6px 12px;
+  font-size: 11px;
+}
 .mga-stage .mga-obtn--pink {
   color: var(--mga-pink-fg);
   border-color: #f8bbda;
@@ -867,6 +889,11 @@
   display: flex;
   gap: 8px;
 }
+/* #3 — dash doctor card holds two bookings; „სატელეფონო კონსულტაცია" cannot fit a
+   half-width pill at 390px, so the pair stacks full-width (cf. .mga-trf__btns--stack). */
+.mga-doc__btns--stack {
+  flex-direction: column;
+}
 .mga-hub__soon {
   font-size: 10.5px;
   color: var(--mga-muted);
@@ -878,8 +905,8 @@
 .mga-hitem {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 11px 0;
+  gap: var(--mga-sp-sm);
+  padding: var(--mga-sp-md) 0;
   border-bottom: 0.5px solid var(--mga-border);
 }
 .mga-hitem:last-child {
@@ -889,6 +916,30 @@
   flex: 1;
   line-height: 1.3;
   min-width: 0;
+}
+/* One rhythm inside the row (#7 polish): xs4 between the stacked text lines, sm8
+   before an action. Was 2 / 0 / 5 — the note in particular sat glued to the meta. */
+.mga-hitem__body > * + * {
+  margin-top: var(--mga-sp-xs);
+}
+/* A row action gets sm8 of air above it, not the xs4 that separates text lines. */
+.mga-stage .mga-hitem__body > .mga-obtn {
+  margin-top: var(--mga-sp-sm);
+}
+
+/* Rows whose status rides on the title line (#7 polish) — the download rail aligns
+   to the top so it sits with the title, not halfway down a tall row. */
+.mga-hitem--top {
+  align-items: flex-start;
+}
+.mga-hitem--top .mga-dlbtn {
+  margin-top: -2px;
+}
+.mga-hitem__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--mga-sp-sm);
 }
 .mga-hitem__note {
   font-size: 10.5px;
@@ -1547,58 +1598,171 @@
   font-weight: 700;
   color: var(--mga-text);
 }
-.mga-stage .mga-docd__act {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  text-align: left;
-  background: var(--mga-queue-bg);
-  border: 0.5px solid var(--mga-border);
-  border-radius: var(--mga-r-tile);
-  padding: 10px 12px;
-}
-.mga-stage .mga-docd__act + .mga-docd__act {
-  margin-top: 8px;
-}
-.mga-stage .mga-docd__act--wa {
-  background: var(--mga-green-bg);
-  border-color: transparent;
-}
-.mga-docd__act--wa .mga-docd__actico {
-  background: var(--mga-green-fg);
-  color: #fff;
-}
-.mga-docd__actico {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: var(--mga-lav);
-  color: var(--mga-lav-fg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.mga-docd__actmeta {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.3;
-}
-.mga-docd__acttitle {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--mga-text);
-}
-.mga-docd__acthint {
-  font-size: 10px;
-  color: var(--mga-muted);
-}
+/* #3 (2026-08-18) — the icon+title+hint ACTION ROWS that lived here (WhatsApp +
+   booking) are gone: WhatsApp was dropped by the stakeholder and the two bookings
+   became buttons inside the profile card (.mga-doc__btns--stack). */
 .mga-docd__body {
   font-size: 11px;
   color: var(--mga-muted);
   line-height: 1.5;
   margin: 0 0 10px;
+}
+
+/* ═══ #7 (2026-08-18) — SourceTag + in-context upload ═══ */
+
+/* Origin tag. Label always present (WCAG 1.4.1) — the tint only reinforces it.
+   Text stops are the dark end of each tint's own family, so all three pass AA on
+   their fill. */
+/* Colour marks the EXCEPTION, not the rule (user, 2026-08-18). Nearly every record
+   is Curatio, so an in-network tag is the default and reads as plain meta text;
+   records from outside — the ones a doctor needs to notice were not produced here —
+   keep a quiet chip. Labels still carry the meaning on their own (WCAG 1.4.1). */
+.mga-srctag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+  gap: var(--mga-sp-xs);
+  color: var(--mga-muted);
+}
+/* The plain variants sit in a meta line of their own — carry the app's separator. */
+.mga-srctag--curatio::before,
+.mga-srctag--referral::before {
+  content: '·';
+}
+/* `referral` reads as PLAIN text like `curatio`, not as a chip: a referral from your
+   own family doctor is in-network, and in the referrals section every row is one —
+   chipping them all would tint the rule instead of the exception (the noise fix the
+   user asked for). Only records produced OUTSIDE Curatio keep the chip. */
+.mga-srctag--external {
+  background: var(--mga-lav);
+  color: var(--mga-lav-fg);
+  border-radius: 5px;
+  padding: 1px 6px;
+}
+
+/* Row meta line: date + origin (+ the share marker on records the patient added). */
+.mga-hitem__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--mga-sp-xs);
+}
+/* Inline settled-state marker: check + label, muted. Used where a state is quiet
+   enough that a badge in the title line would only steal width from the title —
+   analyses „ექიმს გაზიარებულია", prevention „შესრულებულია". */
+.mga-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mga-sp-xs);
+  font-size: 10px;
+  color: var(--mga-muted);
+}
+
+/* Upload entry — dashed so it reads as „add something", not as another record. */
+.mga-stage .mga-h2__ubtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  background: var(--mga-card);
+  border: 1px dashed #dcdff0;
+  border-radius: var(--mga-r-tile);
+  padding: 10px;
+  margin-bottom: var(--mga-sp-md);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mga-pink-fg);
+}
+.mga-stage .mga-h2__ubtn:active {
+  transform: scale(0.99);
+}
+
+/* Upload sheet */
+.mga-upl__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--mga-sp-sm);
+}
+.mga-upl__step {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--mga-muted);
+}
+.mga-upl__hint {
+  margin: -4px 0 var(--mga-sp-sm);
+}
+.mga-upl__optlbl {
+  display: flex;
+  align-items: center;
+  gap: var(--mga-sp-sm);
+}
+.mga-upl__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--mga-sp-sm);
+}
+.mga-upl__field {
+  margin-bottom: var(--mga-sp-md);
+  min-width: 0;
+}
+.mga-stage .mga-upl__inp {
+  display: block;
+  width: 100%;
+  margin-top: var(--mga-sp-xs);
+  background: var(--mga-card);
+  border: 1px solid var(--mga-border);
+  border-radius: 10px;
+  padding: 9px 11px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mga-text);
+}
+.mga-stage .mga-upl__inp::placeholder {
+  font-weight: 500;
+  color: var(--mga-muted);
+}
+.mga-stage .mga-upl__inp--err {
+  border-color: #e05252;
+}
+.mga-stage .mga-upl__sel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mga-sp-xs);
+  text-align: left;
+}
+.mga-upl__sel span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mga-upl__err {
+  margin-top: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #c53030;
+}
+.mga-upl__consent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mga-sp-md);
+  background: var(--mga-queue-bg);
+  border-radius: var(--mga-r-tile);
+  padding: 10px 12px;
+  margin-bottom: var(--mga-sp-lg);
+}
+.mga-upl__consenttxt {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.35;
+  min-width: 0;
 }
 
 /* ═══ A5 — history transfer (F-03) ═══ */
@@ -1682,51 +1846,85 @@
   color: var(--mga-muted);
   padding: 4px 0 6px;
 }
-.mga-h2__med {
+/* Prevention row (was the misnamed shared `.mga-h2__med`, whose last consumer this
+   is). Icon rail is TOP-aligned to the title (user, 2026-08-18) — centred against a
+   three-line body, the glyph floated beside the middle of the text. */
+.mga-prv__row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
-  padding: 9px 0;
+  padding: var(--mga-sp-md) 0;
 }
-.mga-h2__med + .mga-h2__med {
+.mga-prv__body {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.3;
+}
+.mga-prv__body > * + * {
+  margin-top: var(--mga-sp-xs);
+}
+.mga-stage .mga-prv__body > .mga-obtn,
+.mga-prv__body > .mga-prv__state {
+  margin-top: var(--mga-sp-sm);
+}
+/* #11 — prescription row: name+status line, dosage, expiry, note, then a
+   full-width booking CTA. Stacked, so the CTA is not squeezed into a rail. */
+.mga-h2__rx {
+  padding: var(--mga-sp-md) 0;
+  line-height: 1.3;
+}
+.mga-h2__rx > * + * {
+  margin-top: var(--mga-sp-xs);
+}
+.mga-stage .mga-h2__rx > .mga-obtn {
+  margin-top: var(--mga-sp-sm);
+}
+.mga-h2__rx + .mga-h2__rx {
   border-top: 0.5px solid var(--mga-border);
 }
-.mga-h2__med--exp {
-  background: #fff5f5;
-  border: 0.5px solid #f5c2c2;
-  border-radius: var(--mga-r-tile);
-  padding: 9px 10px;
-  margin: 4px 0;
+.mga-h2__renewnote {
+  font-size: 10.5px;
+  color: var(--mga-muted);
 }
-.mga-h2__med--exp + .mga-h2__med {
+.mga-prv__row + .mga-prv__row {
+  border-top: 0.5px solid var(--mga-border);
+}
+/* WARNING, not danger (user, 2026-08-18): „red is too aggressive" — an expiring
+   prescription is a heads-up with days left on it, not a critical result. Red stays
+   reserved for actual alarms. */
+/* Doubled class on purpose: `.mga-h2__rx + .mga-h2__rx` (0,2,0) outranks a single
+   modifier, so the separator's grey was overriding this card's own hairline. */
+.mga-h2__rx.mga-h2__rx--warn {
+  background: var(--mga-warn-bg);
+  border: 0.5px solid var(--mga-warn-brd);
+  border-radius: var(--mga-r-tile);
+  padding: var(--mga-sp-md);
+  margin: var(--mga-sp-xs) 0;
+}
+.mga-h2__rx--warn + .mga-h2__rx {
   border-top: none;
 }
 .mga-h2__exp {
   font-size: 10px;
   font-weight: 700;
-  color: #c2410c;
+  color: var(--mga-amber-fg);
   margin-top: 2px;
 }
-.mga-stage .mga-h2__minicta {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: var(--mga-lav);
-  color: var(--mga-lav-fg);
-  border-radius: 20px;
-  padding: 5px 10px;
-  font-size: 10px;
-  font-weight: 700;
-  margin-top: 5px;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.mga-stage .mga-h2__minicta--red {
-  background: #fdecec;
-  color: #c2410c;
-  margin-top: 0;
+/* .mga-h2__minicta (chip button) REMOVED 2026-08-18 — every row action now uses
+   .mga-obtn / .mga-obtn--sm, the module's actual button. */
+.mga-h2__textbtn {
+  display: block;
+  width: 100%;
+  padding: var(--mga-sp-sm) 0 2px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--mga-muted);
+  text-align: center;
 }
 .mga-h2__callout {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--mga-sp-xs);
   background: #e9f5f3;
   color: var(--mga-teal-fg);
   border-radius: 8px;
@@ -1830,9 +2028,227 @@
   font-weight: 600;
   margin-top: 2px;
 }
+/* A missed screening is a WARNING, not an alarm (same call as the expiring med) —
+   red stays reserved for genuinely critical states. */
 .mga-prv__note--red {
-  color: #c2410c; /* matches .mga-h2__exp / badge--red fg */
+  color: var(--mga-amber-fg);
 }
 .mga-prv__note--amber {
   color: var(--mga-amber-fg);
+}
+
+/* ── #1 (stakeholder comments 2026-08-18) — no-doctor empty card ── */
+.mga-doc__ava--empty {
+  background: var(--mga-lav);
+  border: 1.5px dashed var(--mga-lav-fg);
+  color: var(--mga-lav-fg);
+}
+/* The populated card separates its info row from the CTA with .mga-doc__next
+   (8 + line + 8 = 38px). The empty variant has no such line, so the CTA would
+   sit flush against the text — restore the in-card row rhythm (md12). */
+.mga-doc__btns--sep {
+  margin-top: var(--mga-sp-md);
+}
+
+/* #1 polish (2026-08-18) — doctor photo avatars (Unsplash stand-ins) fill the
+   existing initial-circles; search field mirrors the booking flow's controls. */
+.mga-doc__ava img,
+.mga-trf__ava img,
+.mga-docd__ava img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+.mga-stage .mga-dsearch {
+  display: flex;
+  align-items: center;
+  gap: var(--mga-sp-sm);
+  margin: 0 var(--mga-sp-xl) var(--mga-sp-sm);
+  background: var(--mga-card);
+  border: 1px solid var(--mga-border);
+  border-radius: var(--mga-r-tile);
+  padding: 9px 12px;
+  color: var(--mga-muted);
+}
+.mga-stage .mga-dsearch input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--mga-text);
+}
+.mga-stage .mga-dsearch input::placeholder {
+  color: var(--mga-muted);
+}
+
+/* #1 polish (2026-08-18) — docselect filter pills SHARE the row evenly so a long
+   clinic name (e.g. „კურაციო ბათუმში") has the same room as a short one instead
+   of the row growing past the frame. Scoped to the modifier: the history
+   screen's pills stay content-sized. */
+.mga-chiprow--fill {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.mga-stage .mga-chiprow--fill .mga-fpill {
+  width: 100%;
+  min-width: 0;
+  justify-content: space-between;
+}
+.mga-stage .mga-chiprow--fill .mga-fpill span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Doctor-details block inside the selection confirm sheet (reuses the A4
+   detail grid tokens — same information, one level earlier). */
+.mga-dsheet__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 0 0 var(--mga-sp-md);
+}
+/* Selection-sheet rhythm (user, 2026-08-18): title →lg16→ hero →md12→ grid
+   →md12→ consent →lg16→ actions. NO icon in this header — the photo hero
+   directly below already identifies the subject, so the glyph was decoration;
+   icons stay where they carry meaning (e.g. the OTP sheet's lock). */
+.mga-dsheet__head {
+  margin-bottom: var(--mga-sp-lg);
+}
+.mga-dsheet__consent {
+  margin-bottom: var(--mga-sp-lg);
+}
+/* Stacked actions: primary on top, secondary below (user, 2026-08-18).
+   .mga-cta and .mga-obtn ship different padding (12 vs 8/14) and font sizes
+   (13 vs 12), so side-by-side they only match because .mga-trf__btns stretches
+   them — `align-items: stretch` equalises HEIGHT in a row but only WIDTH in a
+   column. Stacked, they measured 42 vs 35px, so pin both: one min-height, one
+   font size. 44px also clears WCAG 2.2 target-size with room (Rule 7). */
+.mga-trf__btns--stack {
+  flex-direction: column;
+  gap: var(--mga-sp-sm);
+}
+.mga-stage .mga-trf__btns--stack > button {
+  width: 100%;
+  flex: none;
+  min-height: 44px;
+  padding: 10px 14px;
+  font-size: 13px;
+  /* .mga-cta ships `margin: 4px 0 20px` for standalone use — inside the stack
+     the wrapper's gap owns the spacing, so neutralise it. */
+  margin: 0;
+}
+/* Success state uses the same stacked pair — one grammar for sheet actions. */
+.mga-trf__success .mga-trf__btns--stack {
+  margin-top: var(--mga-sp-lg);
+}
+.mga-dsheet__cell {
+  background: var(--mga-queue-bg);
+  border-radius: 10px;
+  padding: 9px 10px;
+  min-width: 0;
+}
+.mga-dsheet__cell--wide {
+  grid-column: 1 / -1;
+}
+.mga-dsheet__lbl {
+  font-size: 9.5px;
+  color: var(--mga-muted);
+}
+.mga-dsheet__val {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--mga-text);
+  margin-top: 2px;
+}
+.mga-dsheet__hero {
+  display: flex;
+  align-items: center;
+  gap: var(--mga-sp-md);
+  margin-bottom: var(--mga-sp-md);
+}
+.mga-dsheet__hero .mga-trf__ava {
+  width: 52px;
+  height: 52px;
+  font-size: 16px;
+}
+
+/* #1 polish (2026-08-18) — docselect doctor rows now MIRROR THE BOOKING FLOW's
+   mobile doctor row (gpi-drow): a grid whose second row holds the language
+   tags, indented past the avatar (their `padding-left: 52px` = 38px avatar +
+   10px gap here). Frees the full row width for name + role, so the role stays
+   on ONE line, and matches the flow's own „Geo / Eng / Rus" chips instead of
+   a joined text string (their .gpi-langtag = pill, sunken surface). */
+.mga-stage .mga-dsel__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 6px;
+  align-items: center;
+}
+.mga-dsel__main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.mga-dsel__meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.35;
+}
+.mga-dsel__role {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mga-dsel__tags {
+  display: flex;
+  gap: 4px;
+  padding-left: 48px;
+}
+.mga-langtag {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--mga-text);
+  background: var(--mga-queue-bg);
+  border-radius: 999px;
+  padding: 3px 8px;
+  line-height: 1.4;
+}
+
+/* ── #5 (2026-08-18) — e-ticket arrival check-in. Built from existing card /
+   itile / cta / badge patterns; only the tint + spacing are new. ── */
+.mga-stage .mga-arr__cta {
+  margin: var(--mga-sp-md) 0 0;
+  padding: 13px;
+}
+.mga-arr__note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--mga-sp-sm);
+  font-size: 10.5px;
+  line-height: 1.4;
+  color: var(--mga-muted);
+}
+.mga-arr--done {
+  background: var(--mga-green-bg);
+}
+.mga-arr__ico--ok {
+  background: #fff;
+  color: var(--mga-green-fg);
+}
+.mga-arr__next {
+  margin-top: var(--mga-sp-md);
+  background: #fff;
+  border-radius: var(--mga-r-tile);
+  padding: 10px 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--mga-text);
 }

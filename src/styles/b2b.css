@@ -593,7 +593,11 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  padding: 0 var(--space-16) var(--space-16) var(--space-4);
+  /* A clipping container must leave room for what its children cast: the canvas
+     carries a stroke + --elevation-card, and with 0 padding on the top/left the
+     scroll box shaved both. Standing rule (user, 2026-08-18): never clip a child's
+     stroke or shadow. */
+  padding: var(--space-8) var(--space-16) var(--space-16) var(--space-8);
   overflow-y: auto; /* the ONE scroll container of the shell */
 }
 .b2b-canvas {

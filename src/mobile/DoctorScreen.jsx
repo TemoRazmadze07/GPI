@@ -1,18 +1,22 @@
-/* A4 — personal doctor detail (F-03: photo, name, spec, Online badge, next
-   visit + history-transfer CTA). V2 only, reached from the dash doctor card's
+/* A4 — personal doctor detail (F-03: photo, name, spec, next visit +
+   history-transfer CTA). The Online badge is MVP2 — see ONLINE_STATUS_ENABLED
+   (#4, 2026-08-18); სამუშაო დღეები/საათები below carry availability honestly. V2 only, reached from the dash doctor card's
    „სრული ინფო". Scope filter applied (Curatio_MVP1_Feature_Spec_v1):
-     KEPT — profile header, basic-info grid, next visit, WhatsApp direct
-       contact (named in the F-03 solution narrative), booking CTA (dead end
-       until F-04), history-transfer entry.
-     CUT (do not re-add without the user) — in-app ჩატი, „დატოვე შეტყობინება"
-       (both = messaging, MVP2), „სატელ. კონსულტაცია" (absent from the spec).
+     KEPT — profile header, basic-info grid, next visit, TWO booking entries
+       (#3, 2026-08-18 — clinic visit + phone consultation), history transfer.
+     CUT (do not re-add without the user) — WhatsApp direct contact (dropped by
+       the stakeholder in #3), in-app ჩატი, „დატოვე შეტყობინება" (messaging, MVP2).
+   #3 reverses the earlier spec-driven cut of „სატელ. კონსულტაცია": phone consult
+   is IN scope. Both CTAs are the SAME booking flow with the doctor preselected —
+   only its „ვიზიტის ტიპი" radio differs (inclinic | remote), so nothing new gets
+   built here. Dead ends until that flow exists in the prototype.
    The transfer action moves medical history → history-class data, so it sits
    behind the OTP gate: locked = lock glyph + sheet on tap; unlocked = dead
    end until A5 (transfer screen) exists. */
 
 import Icon from '../lib/Icon.jsx'
 import { M } from './strings.js'
-import { DOCTOR } from './data.js'
+import { DOCTOR, getPickedDoctor, ONLINE_STATUS_ENABLED } from './data.js'
 import { go } from './nav.js'
 import { useOtpGate } from './otp.jsx'
 
@@ -20,6 +24,9 @@ const noop = () => {}
 
 export default function DoctorScreen() {
   const { unlocked, request, gate } = useOtpGate()
+  /* #1 (2026-08-18): a doctor picked via docselect overrides the default;
+     cabinet/hours keep DOCTOR values, nextVisit is honestly empty. */
+  const doc = { ...DOCTOR, ...(getPickedDoctor() || {}) }
 
   return (
     <>
@@ -33,12 +40,25 @@ export default function DoctorScreen() {
       <div className="mga-body">
         <div className="mga-card">
           <div className="mga-irow" style={{ padding: 0 }}>
-            <span className="mga-doc__ava mga-docd__ava" aria-hidden="true">{DOCTOR.initial}</span>
+            <span className="mga-doc__ava mga-docd__ava" aria-hidden="true">
+              {doc.photo ? <img src={doc.photo} alt="" /> : doc.initial}
+            </span>
             <div className="mga-meta" style={{ flex: 1 }}>
-              <div className="mga-docd__name">{DOCTOR.name}</div>
-              <div className="mga-meta__lbl">{DOCTOR.role}</div>
-              <div className="mga-docd__online">● {M.doc.onlineNow}</div>
+              <div className="mga-docd__name">{doc.name}</div>
+              <div className="mga-meta__lbl">{doc.role}</div>
+              {ONLINE_STATUS_ENABLED && <div className="mga-docd__online">● {M.doc.onlineNow}</div>}
             </div>
+          </div>
+          {/* #3 — the two bookings sit in the doctor's OWN section (user, 2026-08-18),
+              not in a block of their own: they act on THIS doctor, so they belong
+              under the identity. Same pair, same order, same styling as the dash card. */}
+          <div className="mga-doc__btns mga-doc__btns--stack mga-doc__btns--sep">
+            <button className="mga-obtn mga-obtn--pink" onClick={noop}>
+              {M.doc.bookClinic}
+            </button>
+            <button className="mga-obtn" onClick={noop}>
+              {M.doc.bookPhone}
+            </button>
           </div>
         </div>
 
@@ -47,47 +67,25 @@ export default function DoctorScreen() {
           <div className="mga-docd__grid">
             <div className="mga-docd__cell">
               <div className="mga-docd__lbl">{M.doc.clinic}</div>
-              <div className="mga-docd__val">{DOCTOR.clinic}</div>
+              <div className="mga-docd__val">{doc.clinic}</div>
             </div>
             <div className="mga-docd__cell">
               <div className="mga-docd__lbl">{M.doc.cabinet}</div>
-              <div className="mga-docd__val">{DOCTOR.cabinet}</div>
+              <div className="mga-docd__val">{doc.cabinet}</div>
             </div>
             <div className="mga-docd__cell">
               <div className="mga-docd__lbl">{M.doc.workDays}</div>
-              <div className="mga-docd__val">{DOCTOR.workDays}</div>
+              <div className="mga-docd__val">{doc.workDays}</div>
             </div>
             <div className="mga-docd__cell">
               <div className="mga-docd__lbl">{M.doc.workHours}</div>
-              <div className="mga-docd__val">{DOCTOR.workHours}</div>
+              <div className="mga-docd__val">{doc.workHours}</div>
             </div>
           </div>
           <div className="mga-docd__cell mga-docd__cell--wide">
             <span className="mga-docd__lbl">{M.doc.nextVisit}</span>
-            <span className="mga-docd__val">{DOCTOR.nextVisit}</span>
+            <span className="mga-docd__val">{doc.nextVisit || '—'}</span>
           </div>
-        </div>
-
-        <div className="mga-card">
-          <div className="mga-meta__lbl" style={{ marginBottom: 10 }}>{M.doc.contact}</div>
-          <button className="mga-docd__act mga-docd__act--wa" onClick={noop}>
-            <span className="mga-docd__actico">
-              <Icon name="message-circle" size={17} />
-            </span>
-            <span className="mga-docd__actmeta">
-              <span className="mga-docd__acttitle">{M.doc.whatsapp}</span>
-              <span className="mga-docd__acthint">{M.doc.whatsappHint}</span>
-            </span>
-          </button>
-          <button className="mga-docd__act" onClick={noop}>
-            <span className="mga-docd__actico">
-              <Icon name="calendar" size={17} />
-            </span>
-            <span className="mga-docd__actmeta">
-              <span className="mga-docd__acttitle">{M.doc.bookVisit}</span>
-              <span className="mga-docd__acthint">{DOCTOR.nextVisit}</span>
-            </span>
-          </button>
         </div>
 
         <div className="mga-card">
