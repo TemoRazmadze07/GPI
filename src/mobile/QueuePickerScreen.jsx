@@ -46,7 +46,15 @@ export default function QueuePickerScreen() {
               <div className="mga-qpk__row">
                 <div>
                   <div className={'mga-qpk__kicker' + (active ? ' mga-qpk__kicker--on' : '')}>
-                    {b.when === 'today' ? M.qpick.today : M.qpick.tomorrow} · {b.date}
+                    {/* Three cases, not two: it is today (visit day) · it is the visit day
+                        but that day is not today · it is tomorrow. Collapsing the middle
+                        one into either neighbour contradicted the lock note below. */}
+                    {active
+                      ? M.qpick.today
+                      : b.when === 'today'
+                        ? M.qpick.onVisitDay
+                        : M.qpick.tomorrow}{' '}
+                    · {b.date}
                   </div>
                   <div className="mga-qpk__proc">{b.proc}</div>
                   <div className="mga-meta__lbl">{b.place}</div>
@@ -61,7 +69,7 @@ export default function QueuePickerScreen() {
                   {M.qpick.activate}
                 </button>
               ) : (
-                <div className="mga-qpk__locked">
+                <div className="mga-note">
                   <Icon name="clock" size={13} />
                   {b.when === 'today' ? M.qpick.lockedFuture : M.qpick.lockedTomorrow}
                 </div>

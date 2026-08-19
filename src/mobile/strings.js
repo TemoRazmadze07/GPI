@@ -22,6 +22,10 @@ export const M = {
     title: 'ჯავშნები',
     all: 'ყველა',
     today: 'დღეს',
+    /* Neither „დღეს" nor „ხვალ" is true for a visit-day booking seen on an ordinary
+       day — the first said the opposite of the lock note under it, the second named
+       the wrong date. This says exactly what it is (audit 2026-08-18). */
+    onVisitDay: 'ვიზიტის დღეს',
     clinic: 'კლინიკა',
     active: 'აქტიური',
     reschedule: 'გადაჯავშნა',
@@ -258,7 +262,8 @@ export const M = {
     sub: 'აირჩიე ექიმი კურაციოს ქსელიდან',
     online: 'Online',
     tomorrow: 'ხვალ',
-    includes: 'გადაიტანება: ვიზიტების ისტორია, ანალიზები, მიმართვები, მედიკამენტები',
+    /* #8 rename reached this sibling screen too (audit 2026-08-18). */
+    includes: 'გადაიტანება: ვიზიტები და კონსულტაციები, ანალიზები და კვლევები, დანიშნულებები',
     cancel: 'გაუქმება',
     confirm: 'დაადასტურე გადატანა',
     successTitle: 'გადატანა დადასტურდა',
@@ -269,6 +274,10 @@ export const M = {
   qpick: {
     title: 'ციფრული ბილეთის გააქტიურება',
     today: 'დღეს',
+    /* Neither „დღეს" nor „ხვალ" is true for a visit-day booking seen on an ordinary
+       day — the first said the opposite of the lock note under it, the second named
+       the wrong date. This says exactly what it is (audit 2026-08-18). */
+    onVisitDay: 'ვიზიტის დღეს',
     tomorrow: 'ხვალ',
     queueOpen: 'რიგი ღიაა',
     activate: 'გაიაქტიურე ბილეთი',

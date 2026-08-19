@@ -67,7 +67,10 @@ export function go(
   if (!v2) q.push('v=1') /* only the archive needs marking now */
   if (!doc) q.push('doc=0')
   if (!ins) q.push('ins=0')
-  if (from && from !== section) q.push('from=' + from) /* dropped on arrival at the origin */
+  /* Carried ONLY to its consumer. Previously it survived any navigation that was not
+     the origin itself, so a stale `from=health` rode through more → curatio → hub and
+     sent the hub's back button to the wrong tab (audit 2026-08-18). */
+  if (from && section === 'histhub' && from !== section) q.push('from=' + from)
   if (p) q.push('p=' + p) /* V2: person scope for the e-ticket (dash → ticket) */
   if (sec) q.push('sec=' + sec) /* V2: history section (hub → section page) */
   window.location.hash = '#/mobile/' + section + (q.length ? '?' + q.join('&') : '')

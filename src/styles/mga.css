@@ -1547,20 +1547,7 @@
   color: var(--mga-text);
   line-height: 1;
 }
-.mga-qpk__locked {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  background: var(--mga-queue-bg);
-  border: 0.5px solid var(--mga-border);
-  border-radius: 20px;
-  padding: 9px 10px;
-  margin-top: 10px;
-  font-size: 10.5px;
-  font-weight: 600;
-  color: var(--mga-muted);
-}
+/* .mga-qpk__locked REMOVED — it is `.mga-note` now (one note component). */
 .mga-qpk__empty {
   text-align: center;
   padding: 28px 16px;
@@ -1707,17 +1694,18 @@
   border-radius: 5px;
   padding: 1px 6px;
 }
-/* in-network: Curatio's own teal, 7.4:1 */
+/* in-network: Curatio's own teal — 5.50:1 (measured; an earlier comment claimed 7.4) */
 .mga-srctag--curatio {
   background: #e9f5f3;
   color: var(--mga-teal-fg);
 }
-/* produced outside Curatio: amber, 4.9:1 */
+/* produced outside Curatio: amber — 4.55:1 measured, so AA by 0.05. Do NOT lighten
+   this fill or darken the page behind it without re-measuring. */
 .mga-srctag--external {
   background: var(--mga-amber-bg);
   color: var(--mga-amber-fg);
 }
-/* ordered by the family doctor: lavender, 8.2:1 */
+/* ordered by the family doctor: lavender — 8.24:1 */
 .mga-srctag--referral {
   background: var(--mga-lav);
   color: var(--mga-lav-fg);
@@ -2001,20 +1989,33 @@
   color: var(--mga-muted);
   text-align: center;
 }
-.mga-h2__callout {
+/* THE note component (user, 2026-08-18: „this info box is something out of our design
+   system"). There were two: this one, and a bespoke `.mga-qpk__locked` pill in the queue
+   picker — centred, 20px radius, its own fill — for the same job. One component now,
+   three tones. Left-aligned always: a centred line of text mid-card reads as a banner,
+   not as a note attached to the thing above it. */
+.mga-note {
   display: flex;
   align-items: flex-start;
   gap: var(--mga-sp-xs);
-  background: #e9f5f3;
-  color: var(--mga-teal-fg);
+  background: var(--mga-queue-bg);
+  color: var(--mga-muted);
   border-radius: 8px;
-  padding: 5px 8px;
-  margin-top: 4px;
+  padding: 6px 9px;
+  margin-top: var(--mga-sp-xs);
   font-size: 10px;
   font-weight: 600;
   line-height: 1.4;
 }
-.mga-h2__callout--amber {
+.mga-note svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.mga-note--teal {
+  background: #e9f5f3;
+  color: var(--mga-teal-fg);
+}
+.mga-note--amber {
   background: var(--mga-amber-bg);
   color: var(--mga-amber-fg);
 }
@@ -2316,7 +2317,10 @@
   line-height: 1.4;
   color: var(--mga-muted);
 }
-.mga-arr--done {
+/* `.mga-stage` prefix is load-bearing: bare `.mga-arr--done` (0,1,0) loses to
+   `.mga-stage .mga-card` (0,2,0), so this card rendered WHITE — the confirmed-arrival
+   state looked identical to the pre-arrival one. Found by audit 2026-08-18. */
+.mga-stage .mga-arr--done {
   background: var(--mga-green-bg);
 }
 .mga-arr__ico--ok {

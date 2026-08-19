@@ -74,17 +74,19 @@ export default function DoctorScreen() {
               <div className="mga-docd__lbl">{M.doc.clinic}</div>
               <div className="mga-docd__val">{doc.clinic}</div>
             </div>
+            {/* „—" for anything unknown: a blank cell under a label reads as a broken
+                screen, and these are legitimately unknown for a just-picked doctor. */}
             <div className="mga-docd__cell">
               <div className="mga-docd__lbl">{M.doc.cabinet}</div>
-              <div className="mga-docd__val">{doc.cabinet}</div>
+              <div className="mga-docd__val">{doc.cabinet || '—'}</div>
             </div>
             <div className="mga-docd__cell">
               <div className="mga-docd__lbl">{M.doc.workDays}</div>
-              <div className="mga-docd__val">{doc.workDays}</div>
+              <div className="mga-docd__val">{doc.workDays || '—'}</div>
             </div>
             <div className="mga-docd__cell">
               <div className="mga-docd__lbl">{M.doc.workHours}</div>
-              <div className="mga-docd__val">{doc.workHours}</div>
+              <div className="mga-docd__val">{doc.workHours || '—'}</div>
             </div>
           </div>
           <div className="mga-docd__cell mga-docd__cell--wide">

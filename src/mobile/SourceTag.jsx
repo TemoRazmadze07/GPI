@@ -11,9 +11,12 @@
    A11y (Rule 7 + WCAG 1.4.1): every variant carries a LABEL, never colour alone —
    the tint is redundant reinforcement, not the signal.
 
-   Variants: curatio (in-network, lavender) · external (uploaded by the patient or
-   another clinic, amber — takes the clinic name) · referral (from the family
-   doctor, teal — placeholder for #9, unused until then). */
+   Variants (palette per the R3 review — the docblock previously described the
+   INVERSE of what the CSS paints, which would have mis-ported to Figma):
+     · curatio  — in-network, TEAL      (#0b6e63 on #e9f5f3, 5.5:1)
+     · external — produced elsewhere, AMBER (#b45309 on #fef3d8, 4.55:1)
+     · referral — ordered by the family doctor, LAVENDER (#3a3d8f on #eef0fb, 8.2:1)
+   All three are in use; measured with a contrast checker, not estimated. */
 
 import { M } from './strings.js'
 
@@ -29,5 +32,7 @@ export default function SourceTag({ src, clinic }) {
      the patient asking „from where?", and a separate text node would read as an
      unrelated field. */
   const label = src === 'external' && clinic ? `${M.src[src]} · ${clinic}` : M.src[src]
+  /* `clinic` is null when the uploader left the field blank — the guard above is what
+     keeps the chip from reading „გარე · გარე". */
   return <span className={'mga-srctag ' + TONE[src]}>{label}</span>
 }

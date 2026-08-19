@@ -91,7 +91,7 @@ export const V2_HISTORY_ALERT = { tp: '1 ვადა', np: null, ap: null }
    else stays locked until 09:00 of its own visit day. */
 export const V2_BOOKINGS = {
   tp: [
-    { when: 'today', date: '28 აპრ 2026', proc: 'ექოსკოპია', place: 'კლ. კურაციო · კაბ. XXX · IV სართ.', time: '10:30' },
+    { when: 'today', date: '28 აპრ 2026', proc: 'ექოსკოპია', place: 'კლ. კურაციო · კაბ. 214 · IV სართ.', time: '10:30' },
     { when: 'tomorrow', date: '29 აპრ 2026', proc: 'ოჯახის ექიმი', place: 'ნ. გიგაური · კაბ. 208 · IV სართ.', time: '11:00' },
   ],
   np: [{ when: 'today', date: '28 აპრ 2026', proc: 'პედიატრი', place: 'კლ. კურაციო · კაბ. 115 · II სართ.', time: '12:30' }],
@@ -181,6 +181,18 @@ export function clearUploads() {
   } catch {
     /* ignore */
   }
+}
+
+/* Georgian short month → index, so records from different sources sort together.
+   #13's re-homed rows were simply appended, which broke the newest-first reading
+   (22 აპრ → 14 აპრ → 3 აპრ → 15 თებ → 2 მარ → 14 აპრ → 2 მარ). */
+const GEO_MONTHS = ['იან', 'თებ', 'მარ', 'აპრ', 'მაი', 'ივნ', 'ივლ', 'აგვ', 'სექ', 'ოქტ', 'ნოე', 'დეკ']
+
+export function dateRank(d) {
+  const m = String(d || '').trim().match(/^(\d{1,2})\s+(\S+)/)
+  if (!m) return -1
+  const mi = GEO_MONTHS.indexOf(m[2])
+  return mi === -1 ? -1 : mi * 100 + Number(m[1])
 }
 
 export const V2_ANALYSIS_CATS = [
@@ -309,9 +321,29 @@ export function getPickedDoctor() {
   }
 }
 export function setPickedDoctor(d) {
+  /* Carry the fields the detail screen renders — and NULL the ones we do not know.
+     Storing a partial record let `{...DOCTOR, ...picked}` fill the gaps from the
+     hard-coded default doctor, so A4 showed ნინო გიგაური's cabinet and hours beside
+     the newly picked doctor's clinic, contradicting the confirmation sheet the user
+     had just accepted (audit 2026-08-18). */
   sessionStorage.setItem(
     PICK_KEY,
-    JSON.stringify({ initial: d.initial, name: d.name, photo: d.photo, role: d.spec + ' · კურაციო', clinic: d.clinic, nextVisit: null })
+    JSON.stringify({
+      initial: d.initial,
+      name: d.name,
+      photo: d.photo,
+      role: d.spec + ' · კურაციო',
+      clinic: d.clinic,
+      /* `hours` is one string carrying both („ორ — პარ · 09:00—15:00"), while the detail
+         screen has a cell for each — split it rather than dumping the whole thing into
+         one cell and leaving the other blank. */
+      workDays: (d.hours.split(' · ')[0] || '').trim() || null,
+      workHours: (d.hours.split(' · ')[1] || '').trim() || null,
+      /* Genuinely unknown until Curatio assigns one — rendered as „—", never inherited
+         from the default doctor. */
+      cabinet: null,
+      nextVisit: null,
+    })
   )
 }
 export function clearPickedDoctor() {

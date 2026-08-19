@@ -53,7 +53,9 @@ export default function UploadSheet({ cat = 'all', onClose, onDone }) {
       cat: catId,
       date,
       src: 'external',
-      clinic: clinic.trim() || M.src.external,
+      /* Blank stays blank: falling back to M.src.external made SourceTag compose
+         „გარე · გარე", since it already prefixes the origin label. */
+      clinic: clinic.trim() || null,
       person: person.name.split(' ')[0],
       shared,
     })

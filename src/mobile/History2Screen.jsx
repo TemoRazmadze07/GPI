@@ -18,6 +18,7 @@ import { M } from './strings.js'
 import {
   V2_HISTORY,
   V2_ANALYSIS_CATS,
+  dateRank,
   getUploads,
   addUpload,
   getDismissedMeds,
@@ -89,7 +90,9 @@ export default function History2Screen() {
     )
   }
 
-  const analyses = [...uploads, ...V2_HISTORY.analyses].filter((r) => cat === 'all' || r.cat === cat)
+  const analyses = [...uploads, ...V2_HISTORY.analyses]
+    .filter((r) => cat === 'all' || r.cat === cat)
+    .sort((a, b) => dateRank(b.date) - dateRank(a.date)) /* newest first, whatever the source */
   const visits = V2_HISTORY.visits.filter((v) => v.year === year)
   const periodOpts = Object.entries(M.history.periods).map(([id, label]) => ({ id, label }))
   const yearOpts = [...M.hist2.years.map((y) => ({ id: y, label: y })), { id: 'range', label: M.hist2.yearRange }]
@@ -264,10 +267,10 @@ export default function History2Screen() {
                       <span className="mga-meta__lbl">{st.meta}</span>
                       <SourceTag src={st.src} />
                     </div>
-                    <div className="mga-h2__callout">
+                    <div className="mga-note mga-note--teal">
                       <Icon name="info" size={11} /> {st.prep}
                     </div>
-                    <div className="mga-h2__callout mga-h2__callout--amber">
+                    <div className="mga-note mga-note--amber">
                       <Icon name="clock" size={11} /> {st.repeat}
                     </div>
                   </div>
@@ -289,7 +292,7 @@ export default function History2Screen() {
                       <SourceTag src={r.src} />
                     </div>
                     {r.prep && (
-                      <div className="mga-h2__callout">
+                      <div className="mga-note mga-note--teal">
                         <Icon name="info" size={11} /> {r.prep}
                       </div>
                     )}
