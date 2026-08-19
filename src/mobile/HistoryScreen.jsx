@@ -29,7 +29,7 @@ export default function HistoryScreen() {
     return (
       <>
         <div className="mga-hdr">
-          <button className="mga-back" aria-label="უკან" onClick={() => go('curatio')}>
+          <button className="mga-iconbtn" aria-label="უკან" onClick={() => go('curatio')}>
             <Icon name="chevron-left" size={16} />
           </button>
           <h1 className="mga-hdr__title">{M.history.title}</h1>
@@ -51,7 +51,7 @@ export default function HistoryScreen() {
   return (
     <>
       <div className="mga-hdr">
-        <button className="mga-back" aria-label="უკან" onClick={() => go('curatio')}>
+        <button className="mga-iconbtn" aria-label="უკან" onClick={() => go('curatio')}>
           <Icon name="chevron-left" size={16} />
         </button>
         <h1 className="mga-hdr__title">{M.history.title}</h1>
@@ -97,14 +97,14 @@ export default function HistoryScreen() {
                 {r.note && <div className="mga-hitem__note">{r.note}</div>}
               </div>
               <span className={'mga-badge ' + BADGE[r.status]}>{M.history.statuses[r.status]}</span>
-              <button className="mga-dlbtn" aria-label={M.history.download + ' — ' + r.title}>
+              <button className="mga-iconbtn mga-iconbtn--sm mga-iconbtn--plain" aria-label={M.history.download + ' — ' + r.title}>
                 <Icon name="download" size={15} />
               </button>
             </div>
           ))}
         </div>
 
-        <button className="mga-upload">
+        <button className="mga-btn mga-btn--dashed mga-btn--md mga-btn--block">
           <Icon name="upload" size={14} />
           {M.history.upload}
         </button>

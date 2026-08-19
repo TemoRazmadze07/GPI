@@ -34,7 +34,7 @@ export default function DoctorScreen() {
   return (
     <>
       <div className="mga-hdr">
-        <button className="mga-back" aria-label="უკან" onClick={() => go('curatio')}>
+        <button className="mga-iconbtn" aria-label="უკან" onClick={() => go('curatio')}>
           <Icon name="chevron-left" size={16} />
         </button>
         <h1 className="mga-hdr__title">{M.doc.title}</h1>
@@ -56,11 +56,11 @@ export default function DoctorScreen() {
               not in a block of their own: they act on THIS doctor, so they belong
               under the identity. Same pair, same order, same styling as the dash card. */}
           <div className="mga-doc__btns mga-doc__btns--stack mga-doc__btns--sep">
-            <button className={'mga-obtn mga-obtn--pink' + (gated ? ' mga-obtn--locked' : '')} onClick={guard(noop)}>
+            <button className={'mga-btn mga-btn--secondary-brand mga-btn--md mga-btn--block' + (gated ? ' mga-btn--locked' : '')} onClick={guard(noop)}>
               {M.doc.bookClinic}
               <GateLock gated={gated} />
             </button>
-            <button className={'mga-obtn' + (gated ? ' mga-obtn--locked' : '')} onClick={guard(noop)}>
+            <button className={'mga-btn mga-btn--secondary mga-btn--md mga-btn--block' + (gated ? ' mga-btn--locked' : '')} onClick={guard(noop)}>
               {M.doc.bookPhone}
               <GateLock gated={gated} />
             </button>
@@ -68,7 +68,7 @@ export default function DoctorScreen() {
         </div>
 
         <div className="mga-card">
-          <div className="mga-meta__lbl" style={{ marginBottom: 8 }}>{M.doc.basicInfo}</div>
+          <div className="mga-meta__lbl mga-cardlbl">{M.doc.basicInfo}</div>
           <div className="mga-docd__grid">
             <div className="mga-docd__cell">
               <div className="mga-docd__lbl">{M.doc.clinic}</div>
@@ -96,9 +96,9 @@ export default function DoctorScreen() {
         </div>
 
         <div className="mga-card">
-          <div className="mga-meta__lbl" style={{ marginBottom: 6 }}>{M.doc.transferTitle}</div>
+          <div className="mga-meta__lbl mga-cardlbl">{M.doc.transferTitle}</div>
           <p className="mga-docd__body">{M.doc.transferBody}</p>
-          <button className="mga-obtn" style={{ width: '100%' }} onClick={() => (unlocked ? go('transfer') : request())}>
+          <button className="mga-btn mga-btn--secondary mga-btn--md mga-btn--block" onClick={() => (unlocked ? go('transfer') : request())}>
             {M.doc.transferCta}
             {!unlocked && <Icon name="lock" size={12} />}
           </button>

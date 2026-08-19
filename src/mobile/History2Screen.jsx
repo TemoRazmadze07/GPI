@@ -67,7 +67,7 @@ export default function History2Screen() {
 
   const header = (
     <div className="mga-hdr">
-      <button className="mga-back" aria-label="უკან" onClick={() => go('histhub')}>
+      <button className="mga-iconbtn" aria-label="უკან" onClick={() => go('histhub')}>
         <Icon name="chevron-left" size={16} />
       </button>
       <h1 className="mga-hdr__title">{M.histhub.rows[sec]}</h1>
@@ -112,11 +112,11 @@ export default function History2Screen() {
             {/* #7 — upload lives IN the section, above the list: the results you are
                 looking at are the reason you reach for it, and it must not require
                 scrolling past every record to find. */}
-            <button className="mga-h2__ubtn" onClick={() => setUploading(true)}>
+            <button className="mga-btn mga-btn--dashed mga-btn--md mga-btn--block" style={{ marginBottom: 12 }} onClick={() => setUploading(true)}>
               <Icon name="upload" size={15} />
               {M.upl.entry}
             </button>
-            <div className="mga-card" style={{ padding: '4px 16px' }}>
+            <div className="mga-card mga-card--list">
               {/* Key needs the ORIGIN: the same test exists twice — once done at Curatio,
                   once uploaded from another clinic on the same date (#13's re-homing).
                   An earlier attempt at this fix silently no-opped, so React kept warning. */}
@@ -133,7 +133,7 @@ export default function History2Screen() {
                         badge. It owns the full width; the status drops into the meta line
                         below, which already wraps. A 29-char record name broke over three
                         lines under the old right-rail treatment. */}
-                    <div className="mga-meta__val" style={{ fontSize: 12.5 }}>
+                    <div className="mga-meta__val">
                       {r.title} · {r.person}
                     </div>
                     <div className="mga-hitem__meta">
@@ -150,13 +150,13 @@ export default function History2Screen() {
                     </div>
                     {r.note && <div className="mga-hitem__note">{r.note}</div>}
                     {r.book && (
-                      <button className={'mga-obtn mga-obtn--sm' + (gated ? ' mga-obtn--locked' : '')} onClick={guard(noop)}>
+                      <button className={'mga-btn mga-btn--secondary mga-btn--sm' + (gated ? ' mga-btn--locked' : '')} onClick={guard(noop)}>
                         {M.hist2.book}
                         <GateLock gated={gated} />
                       </button>
                     )}
                   </div>
-                  <button className="mga-dlbtn" aria-label={M.history.download + ' — ' + r.title}>
+                  <button className="mga-iconbtn mga-iconbtn--sm mga-iconbtn--plain" aria-label={M.history.download + ' — ' + r.title}>
                     <Icon name="download" size={15} />
                   </button>
                 </div>
@@ -201,7 +201,7 @@ export default function History2Screen() {
           </div>
 
           <div className="mga-body" style={{ paddingTop: 0 }}>
-            <div className="mga-card">
+            <div className="mga-card mga-card--list">
               {grp === 'meds' &&
                 V2_HISTORY.meds.map((m) => {
                   const off = dismissed.includes(m.name)
@@ -215,7 +215,7 @@ export default function History2Screen() {
                       key={m.name}
                       className={'mga-h2__rx' + (m.state === 'expiring' && !off ? ' mga-h2__rx--warn' : '')}
                     >
-                      <div className="mga-meta__val" style={{ fontSize: 12.5 }}>{m.name}</div>
+                      <div className="mga-meta__val">{m.name}</div>
                       <div className="mga-hitem__meta">
                         <span
                           className={
@@ -238,11 +238,11 @@ export default function History2Screen() {
                       {renewable && !off && (
                         <>
                           <div className="mga-h2__renewnote">{M.hist2.renewNote}</div>
-                          <button className={'mga-obtn' + (gated ? ' mga-obtn--locked' : '')} onClick={guard(noop)}>
+                          <button className={'mga-btn mga-btn--secondary mga-btn--md mga-btn--block' + (gated ? ' mga-btn--locked' : '')} onClick={guard(noop)}>
                             {M.hist2.renew}
                             {gated ? <GateLock gated /> : <Icon name="chevron-right" size={12} />}
                           </button>
-                          <button className="mga-h2__textbtn" onClick={() => setOff(true)}>
+                          <button className="mga-link mga-link--quiet mga-link--block" onClick={() => setOff(true)}>
                             {M.hist2.dismiss}
                           </button>
                         </>
@@ -250,7 +250,7 @@ export default function History2Screen() {
                       {off && (
                         <>
                           <div className="mga-h2__renewnote">{M.hist2.dismissedNote}</div>
-                          <button className="mga-h2__textbtn" onClick={() => setOff(false)}>
+                          <button className="mga-link mga-link--quiet mga-link--block" onClick={() => setOff(false)}>
                             {M.hist2.undo}
                           </button>
                         </>
@@ -262,7 +262,7 @@ export default function History2Screen() {
               {grp === 'studies' &&
                 V2_HISTORY.studies.map((st) => (
                   <div key={st.title} className="mga-h2__rx">
-                    <div className="mga-meta__val" style={{ fontSize: 12.5 }}>{st.title}</div>
+                    <div className="mga-meta__val">{st.title}</div>
                     <div className="mga-hitem__meta">
                       <span className="mga-meta__lbl">{st.meta}</span>
                       <SourceTag src={st.src} />
@@ -279,7 +279,7 @@ export default function History2Screen() {
               {grp === 'referrals' &&
                 V2_HISTORY.referrals.map((r) => (
                   <div key={r.number} className="mga-h2__rx">
-                    <div className="mga-meta__val" style={{ fontSize: 12.5 }}>{r.title}</div>
+                    <div className="mga-meta__val">{r.title}</div>
                     <div className="mga-hitem__meta">
                       <span
                         className={'mga-badge ' + (r.status === 'booked' ? 'mga-badge--quiet' : 'mga-badge--amber')}
@@ -314,7 +314,7 @@ export default function History2Screen() {
                 sits in the same meta line as everywhere else. */}
             {visits.map((v) => (
               <div key={v.title + v.date} className="mga-card">
-                <div className="mga-meta__val" style={{ fontSize: 12.5 }}>
+                <div className="mga-meta__val">
                   {v.title} · {v.person}
                 </div>
                 <div className="mga-hitem__meta">
@@ -328,12 +328,12 @@ export default function History2Screen() {
                 </div>
                 <div className="mga-h2__summary">{v.summary}</div>
                 <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-                  <button className="mga-obtn mga-obtn--sm" onClick={noop}>
+                  <button className="mga-btn mga-btn--secondary mga-btn--sm" onClick={noop}>
                     <Icon name="download" size={11} /> {M.hist2.downloadPdf}
                   </button>
                   {/* #13 — was a jump to the დოკუმენტები drawer; that drawer is gone, so
                       the result is filed where results live, from right here. */}
-                  <button className="mga-obtn mga-obtn--sm" onClick={() => setUploading(true)}>
+                  <button className="mga-btn mga-btn--secondary mga-btn--sm" onClick={() => setUploading(true)}>
                     <Icon name="upload" size={11} /> {M.hist2.uploadResult}
                   </button>
                 </div>

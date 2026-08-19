@@ -20,7 +20,7 @@ export default function TransferScreen() {
 
   const header = (
     <div className="mga-hdr">
-      <button className="mga-back" aria-label="უკან" onClick={() => go('doctor')}>
+      <button className="mga-iconbtn" aria-label="უკან" onClick={() => go('doctor')}>
         <Icon name="chevron-left" size={16} />
       </button>
       <div>
@@ -50,7 +50,7 @@ export default function TransferScreen() {
     <>
       {header}
       <div className="mga-body">
-        <div className="mga-card" style={{ padding: '4px 12px' }}>
+        <div className="mga-card mga-card--list">
           {TRANSFER_DOCTORS.map((d) => (
             <button key={d.id} className="mga-trf__row" onClick={() => setPicked(d)}>
               <span className="mga-trf__ava" aria-hidden="true">{d.initial}</span>
@@ -102,10 +102,10 @@ export default function TransferScreen() {
                 </div>
                 <div className="mga-trf__includes">{M.transfer.includes}</div>
                 <div className="mga-trf__btns">
-                  <button className="mga-obtn" style={{ flex: 1 }} onClick={() => setPicked(null)}>
+                  <button className="mga-btn mga-btn--secondary mga-btn--lg" style={{ flex: 1 }} onClick={() => setPicked(null)}>
                     {M.transfer.cancel}
                   </button>
-                  <button className="mga-cta" style={{ flex: 2, margin: 0, padding: 12 }} onClick={() => setDone(true)}>
+                  <button className="mga-btn mga-btn--primary mga-btn--lg" style={{ flex: 2 }} onClick={() => setDone(true)}>
                     {M.transfer.confirm}
                   </button>
                 </div>
@@ -120,8 +120,8 @@ export default function TransferScreen() {
                   {M.transfer.successBody} <b>{picked.name}</b>
                 </div>
                 <button
-                  className="mga-cta"
-                  style={{ margin: '14px 0 0', padding: 12 }}
+                  className="mga-btn mga-btn--primary mga-btn--lg mga-btn--block"
+                  style={{ marginTop: 16 }}
                   onClick={() => go('doctor')}
                 >
                   {M.transfer.close}

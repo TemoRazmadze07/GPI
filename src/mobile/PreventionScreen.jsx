@@ -34,7 +34,7 @@ function Row({ item, gated, guard }) {
       {/* Status rides the TITLE line and the action sits below at full width — as a
           right rail they squeezed the body until titles broke over three lines. */}
       <div className="mga-prv__body">
-        <div className="mga-meta__val" style={{ fontSize: 12.5 }}>{item.name}</div>
+        <div className="mga-meta__val">{item.name}</div>
         <div className="mga-meta__lbl">{item.meta}</div>
         {item.extra && <div className="mga-meta__lbl">{item.extra}</div>}
         {item.note && <div className={'mga-prv__note mga-prv__note--' + item.tone}>{item.note}</div>}
@@ -49,7 +49,7 @@ function Row({ item, gated, guard }) {
         )}{/* already on its own line — the standing rule's first instance */}
         {item.status !== 'done' && (
           /* Dead until F-04 — see header comment. */
-          <button className={'mga-obtn mga-obtn--sm' + (gated ? ' mga-obtn--locked' : '')} onClick={guard(noop)}>
+          <button className={'mga-btn mga-btn--secondary mga-btn--sm' + (gated ? ' mga-btn--locked' : '')} onClick={guard(noop)}>
             <Icon name="calendar" size={11} /> {M.prev.book}
             <GateLock gated={gated} />
           </button>
@@ -65,7 +65,7 @@ export default function PreventionScreen() {
   return (
     <>
       <div className="mga-hdr">
-        <button className="mga-back" aria-label="უკან" onClick={() => go('curatio')}>
+        <button className="mga-iconbtn" aria-label="უკან" onClick={() => go('curatio')}>
           <Icon name="chevron-left" size={16} />
         </button>
         <h1 className="mga-hdr__title">{M.prev.title}</h1>
@@ -77,12 +77,12 @@ export default function PreventionScreen() {
             <Icon name="clock" size={17} />
           </span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="mga-meta__val" style={{ fontSize: 12.5, color: 'var(--mga-amber-fg)' }}>
+            <div className="mga-meta__val" style={{ color: 'var(--mga-amber-fg)' }}>
               {V2_PREVENTION.reminder.title}
             </div>
             <div className="mga-meta__lbl">{V2_PREVENTION.reminder.body}</div>
             {/* Dead until F-04 — see header comment. */}
-            <button className={'mga-obtn mga-obtn--sm' + (gated ? ' mga-obtn--locked' : '')} style={{ marginTop: 8 }} onClick={guard(noop)}>
+            <button className={'mga-btn mga-btn--secondary mga-btn--sm' + (gated ? ' mga-btn--locked' : '')} style={{ marginTop: 8 }} onClick={guard(noop)}>
               <Icon name="calendar" size={11} /> {M.prev.book}
               <GateLock gated={gated} />
             </button>
@@ -91,7 +91,7 @@ export default function PreventionScreen() {
 
         <section className="mga-card">
           <div className="mga-cardhdr">
-            <span className="mga-cardhdr__ttl">{M.prev.vaccines}</span>
+            <span className="mga-meta__lbl">{M.prev.vaccines}</span>
           </div>
           {V2_PREVENTION.vaccines.map((v) => (
             <Row key={v.id} item={v} gated={gated} guard={guard} />
@@ -100,11 +100,11 @@ export default function PreventionScreen() {
 
         <section className="mga-card">
           <div className="mga-cardhdr">
-            <span className="mga-cardhdr__ttl">{M.prev.screenings}</span>
+            <span className="mga-meta__lbl">{M.prev.screenings}</span>
             {/* Dead end — no state-programs screen exists. */}
-            <button className="mga-seeall" onClick={noop}>{M.prev.screeningsLink}</button>
+            <button className="mga-link" onClick={noop}>{M.prev.screeningsLink}</button>
           </div>
-          <div className="mga-meta__lbl" style={{ marginBottom: 6 }}>{M.prev.screeningsHint}</div>
+          <div className="mga-meta__lbl mga-cardlbl">{M.prev.screeningsHint}</div>
           {V2_PREVENTION.screenings.map((s) => (
             <Row key={s.id} item={s} gated={gated} guard={guard} />
           ))}

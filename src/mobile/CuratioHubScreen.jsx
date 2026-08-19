@@ -27,7 +27,7 @@ export default function CuratioHubScreen() {
   return (
     <>
       <div className="mga-hdr">
-        <button className="mga-back" aria-label="უკან" onClick={() => go('health')}>
+        <button className="mga-iconbtn" aria-label="უკან" onClick={() => go('health')}>
           <Icon name="chevron-left" size={16} />
         </button>
         <span className="mga-hdr__mark" aria-hidden="true">
@@ -85,10 +85,9 @@ export default function CuratioHubScreen() {
             {M.hub.nextVisit} <b>{DOCTOR.nextVisit}</b>
           </div>
           <div className="mga-doc__btns">
-            <button className="mga-obtn" style={{ flex: 1 }}>{M.hub.book}</button>
+            <button className="mga-btn mga-btn--secondary mga-btn--md mga-btn--block">{M.hub.book}</button>
             <button
-              className="mga-obtn mga-obtn--pink"
-              style={{ flex: 1 }}
+              className="mga-btn mga-btn--secondary-brand mga-btn--md mga-btn--block"
               onClick={() => (unlocked ? noop() : request())}
             >
               {M.hub.details} ›{!unlocked && <Icon name="lock" size={11} />}

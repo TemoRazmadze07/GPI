@@ -42,7 +42,7 @@ export default function DoctorSelectScreen() {
   return (
     <>
       <div className="mga-hdr">
-        <button className="mga-back" aria-label="უკან" onClick={() => go('curatio')}>
+        <button className="mga-iconbtn" aria-label="უკან" onClick={() => go('curatio')}>
           <Icon name="chevron-left" size={16} />
         </button>
         <div>
@@ -71,7 +71,7 @@ export default function DoctorSelectScreen() {
 
       <div className="mga-body" style={{ paddingTop: 0 }}>
         {doctors.length > 0 ? (
-          <div className="mga-card" style={{ padding: '4px 12px' }}>
+          <div className="mga-card mga-card--list">
             {doctors.map((d) => (
               <button key={d.id} className="mga-trf__row mga-dsel__row" onClick={() => setPicked(d)}>
                 <span className="mga-dsel__main">
@@ -170,7 +170,7 @@ export default function DoctorSelectScreen() {
                 <div className="mga-trf__includes mga-dsheet__consent">{M.docsel.consent}</div>
                 <div className="mga-trf__btns mga-trf__btns--stack">
                   <button
-                    className="mga-cta"
+                    className="mga-btn mga-btn--primary mga-btn--lg mga-btn--block"
                     onClick={() => {
                       setPickedDoctor(picked)
                       setDone(true)
@@ -178,7 +178,7 @@ export default function DoctorSelectScreen() {
                   >
                     {M.docsel.pick}
                   </button>
-                  <button className="mga-obtn" onClick={() => setPicked(null)}>
+                  <button className="mga-btn mga-btn--secondary mga-btn--lg mga-btn--block" onClick={() => setPicked(null)}>
                     {M.docsel.cancel}
                   </button>
                 </div>
@@ -193,10 +193,10 @@ export default function DoctorSelectScreen() {
                   {M.docsel.successBody} <b>{picked.name}</b>
                 </div>
                 <div className="mga-trf__btns mga-trf__btns--stack">
-                  <button className="mga-cta" onClick={finish}>
+                  <button className="mga-btn mga-btn--primary mga-btn--lg mga-btn--block" onClick={finish}>
                     {M.docsel.bookFirst}
                   </button>
-                  <button className="mga-obtn" onClick={finish}>
+                  <button className="mga-btn mga-btn--secondary mga-btn--lg mga-btn--block" onClick={finish}>
                     {M.docsel.close}
                   </button>
                 </div>

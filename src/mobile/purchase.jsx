@@ -62,8 +62,8 @@ export function PurchaseSheet({ onClose }) {
         </ul>
         <div className="mga-trf__btns mga-trf__btns--stack">
           {/* Dead end: the purchase flow is another platform's (Rule 5). */}
-          <button className="mga-cta">{M.ins.cta}</button>
-          <button className="mga-obtn" onClick={onClose}>
+          <button className="mga-btn mga-btn--primary mga-btn--lg mga-btn--block">{M.ins.cta}</button>
+          <button className="mga-btn mga-btn--secondary mga-btn--lg mga-btn--block" onClick={onClose}>
             {M.ins.later}
           </button>
         </div>
@@ -81,7 +81,7 @@ export function UninsuredBanner({ onOpen }) {
         <Icon name="shield-check" size={17} />
       </span>
       <span className="mga-ins__bnrtxt">
-        <span className="mga-meta__val" style={{ fontSize: 12.5 }}>{M.ins.bannerTitle}</span>
+        <span className="mga-meta__val">{M.ins.bannerTitle}</span>
         <span className="mga-meta__lbl">{M.ins.bannerBody}</span>
       </span>
       <span className="mga-prow__chv">

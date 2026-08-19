@@ -59,7 +59,7 @@ export default function TicketScreen() {
     <>
       <div className="mga-hdr">
         {/* V2: the ticket "belongs" to the კურაციო tab, so back returns there. */}
-        <button className="mga-back" aria-label="უკან" onClick={() => go(v2 ? 'curatio' : 'health')}>
+        <button className="mga-iconbtn" aria-label="უკან" onClick={() => go(v2 ? 'curatio' : 'health')}>
           <Icon name="chevron-left" size={16} />
         </button>
         <h1 className="mga-hdr__title">{M.ticket.title}</h1>
@@ -105,7 +105,7 @@ export default function TicketScreen() {
                 <div className="mga-meta__lbl">{M.ticket.arriveHint}</div>
               </div>
             </div>
-            <button className="mga-cta mga-arr__cta" onClick={checkIn}>
+            <button className="mga-btn mga-btn--primary mga-btn--lg mga-btn--block mga-arr__cta" onClick={checkIn}>
               {M.ticket.arriveCta}
             </button>
             <div className="mga-arr__note">

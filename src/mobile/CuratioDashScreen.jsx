@@ -69,7 +69,7 @@ export default function CuratioDashScreen() {
                 <div className="mga-hero__time">{today.time}</div>
               </div>
             </div>
-            <button className="mga-cta" style={{ margin: '12px 0 0' }} onClick={() => go('ticket', { p: personId })}>
+            <button className="mga-btn mga-btn--primary mga-btn--lg mga-btn--block" style={{ marginTop: 12 }} onClick={() => go('ticket', { p: personId })}>
               {M.dash2.heroCta} →
             </button>
           </section>
@@ -83,7 +83,7 @@ export default function CuratioDashScreen() {
             <span className="mga-meta__val" style={{ display: 'block' }}>{M.dash2.queueTitle}</span>
             <span className="mga-meta__lbl">{M.dash2.queueHint}</span>
           </span>
-          <span className="mga-gobtn" aria-hidden="true">
+          <span className="mga-iconbtn mga-iconbtn--sm mga-iconbtn--fill" aria-hidden="true">
             <Icon name="arrow-right" size={14} />
           </span>
         </button>
@@ -92,7 +92,7 @@ export default function CuratioDashScreen() {
           <section className="mga-card" aria-label={M.hub.doctorLabel}>
             <div className="mga-cardhdr">
               <span className="mga-meta__lbl">{M.hub.doctorLabel}</span>
-              <button className="mga-seeall" onClick={() => go('doctor')}>
+              <button className="mga-link" onClick={() => go('doctor')}>
                 {M.dash2.docInfo} ›
               </button>
             </div>
@@ -127,11 +127,11 @@ export default function CuratioDashScreen() {
                 new and stays invisible if it only lives behind „სრული ინფო". Both
                 open the booking flow (doctor preselected); only ვიზიტის ტიპი differs. */}
             <div className="mga-doc__btns mga-doc__btns--stack">
-              <button className={'mga-obtn mga-obtn--pink' + (gated ? ' mga-obtn--locked' : '')} onClick={guard(noop)}>
+              <button className={'mga-btn mga-btn--secondary-brand mga-btn--md mga-btn--block' + (gated ? ' mga-btn--locked' : '')} onClick={guard(noop)}>
                 {M.doc.bookClinic}
                 {gated && <Icon name="lock" size={12} />}
               </button>
-              <button className={'mga-obtn' + (gated ? ' mga-obtn--locked' : '')} onClick={guard(noop)}>
+              <button className={'mga-btn mga-btn--secondary mga-btn--md mga-btn--block' + (gated ? ' mga-btn--locked' : '')} onClick={guard(noop)}>
                 {M.doc.bookPhone}
                 {gated && <Icon name="lock" size={12} />}
               </button>
@@ -153,7 +153,7 @@ export default function CuratioDashScreen() {
               </div>
             </div>
             <div className="mga-doc__btns mga-doc__btns--sep">
-              <button className="mga-obtn mga-obtn--pink" style={{ flex: 1 }} onClick={() => go('docselect')}>
+              <button className="mga-btn mga-btn--secondary-brand mga-btn--md mga-btn--block" onClick={() => go('docselect')}>
                 {M.dash2.docEmptyCta}
               </button>
             </div>
@@ -171,7 +171,7 @@ export default function CuratioDashScreen() {
           {unlocked && historyAlert ? (
             <span className="mga-badge mga-badge--red">{historyAlert}</span>
           ) : !unlocked ? (
-            <span className="mga-lockchip" aria-label={M.dash.protectedHint}>
+            <span className="mga-iconbtn mga-iconbtn--sm mga-iconbtn--tint" aria-label={M.dash.protectedHint}>
               <Icon name="lock" size={12} />
             </span>
           ) : (

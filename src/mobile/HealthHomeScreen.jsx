@@ -57,7 +57,7 @@ export function ProductSwitcher({ v2 = false, active = 'health' }) {
           <img className="mga-prodimg" src={PRODUCT_IMG['health.png']} alt="" />
           {M.tabs.health}
         </button>
-        <button className="mga-seg__more" aria-label="More products" onClick={noop}>
+        <button className="mga-iconbtn mga-iconbtn--sm mga-iconbtn--plain" aria-label="More products" onClick={noop}>
           <Icon name="more-vertical" size={16} />
         </button>
       </div>
@@ -116,7 +116,7 @@ function CuratioBlock() {
         <h2 className="mga-cur__title" style={{ margin: 0, fontSize: 14 }}>
           {M.curatio.title}
         </h2>
-        <button className="mga-cur__full" onClick={() => go('curatio')}>
+        <button className="mga-link" onClick={() => go('curatio')}>
           {M.curatio.full} ›
         </button>
       </div>
@@ -182,7 +182,7 @@ function BookingsWidget({ visitDay, v2 = false }) {
         {visitDay ? (
           <span className="mga-badge mga-badge--pink">{M.bookings.today}</span>
         ) : (
-          <button className="mga-all" onClick={noop}>
+          <button className="mga-link mga-link--quiet" onClick={noop}>
             {M.bookings.all} <span className="mga-badge mga-badge--pink">{COUNTS.bookings}</span> ›
           </button>
         )}
@@ -223,7 +223,7 @@ function BookingsWidget({ visitDay, v2 = false }) {
             </div>
             <div className="mga-queue__live">● {M.bookings.queueLive}</div>
           </div>
-          <button className="mga-cta" style={{ margin: 0, padding: 11, borderRadius: 20 }} onClick={() => go('ticket')}>
+          <button className="mga-btn mga-btn--primary mga-btn--md mga-btn--block" onClick={() => go('ticket')}>
             {M.bookings.ticket}
           </button>
         </>
@@ -264,10 +264,10 @@ function BookingsWidget({ visitDay, v2 = false }) {
             </button>
           ) : (
             <div className="mga-actions">
-              <button className="mga-actbtn" onClick={noop}>
+              <button className="mga-btn mga-btn--secondary mga-btn--sm" onClick={noop}>
                 {M.bookings.reschedule}
               </button>
-              <button className="mga-linkbtn" onClick={noop}>
+              <button className="mga-btn mga-btn--secondary mga-btn--sm" onClick={noop}>
                 <Icon name="trash" size={13} />
                 {M.bookings.cancel}
               </button>
@@ -307,7 +307,7 @@ function ReferralsWidget() {
         <h2 className="mga-whead__title" style={{ margin: 0, fontSize: 15 }}>
           {M.referrals.title}
         </h2>
-        <button className="mga-all" onClick={noop}>
+        <button className="mga-link mga-link--quiet" onClick={noop}>
           {M.referrals.all} <span className="mga-badge mga-badge--pink">{COUNTS.referrals}</span> ›
         </button>
       </div>
@@ -325,7 +325,7 @@ function ReferralsWidget() {
         <span className="mga-refnum__val">{REFERRAL.number}</span>
         <span className="mga-badge mga-badge--amber">● {M.referrals.inReview}</span>
       </div>
-      <button className="mga-cta mga-cta--navy" style={{ fontSize: 12.5, padding: 12, borderRadius: 22 }} onClick={noop}>
+      <button className="mga-btn mga-btn--navy mga-btn--md mga-btn--block" style={{ marginTop: 8 }} onClick={noop}>
         {M.referrals.request}
       </button>
     </section>
@@ -362,7 +362,7 @@ function ChronicRxWidget({ gated, guard }) {
           starting after the icon rail (user, 2026-08-18). Card with ONE action → full
           width; list rows with a per-row action keep the small auto-width button. */}
       <button
-        className={'mga-obtn mga-rxrow__cta' + (gated ? ' mga-obtn--locked' : '')}
+        className={'mga-btn mga-btn--secondary mga-btn--md mga-btn--block mga-rxrow__cta' + (gated ? ' mga-btn--locked' : '')}
         onClick={guard(noop)}
       >
         {M.chronicRx.cta}
@@ -397,7 +397,7 @@ export default function HealthHomeScreen({ visitDay, v2 = false }) {
             </span>
           </button>
         ))}
-        <button className="mga-cta" onClick={noop}>
+        <button className="mga-btn mga-btn--primary mga-btn--lg mga-btn--block mga-btn--page" onClick={noop}>
           {M.newAppointment}
         </button>
         {!v2 && <CuratioBlock />}
@@ -407,7 +407,7 @@ export default function HealthHomeScreen({ visitDay, v2 = false }) {
         <ChronicRxWidget gated={gated} guard={guard} />
         {v2 && <HistoryRow />}
         <div className="mga-fabrow">
-          <button className="mga-fab" aria-label="Call support" onClick={noop}>
+          <button className="mga-iconbtn mga-iconbtn--lg mga-iconbtn--raised" aria-label="Call support" onClick={noop}>
             <Icon name="phone" size={18} />
           </button>
         </div>

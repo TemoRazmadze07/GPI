@@ -5,7 +5,21 @@
    ⚠ TOKEN VALUES ARE SAMPLED from the Home screenshots the user shared (2026-07-23).
    The Figma MCP account (temo.razmadze@quidie.co.uk) has no seat on GPI — Master (Copy)
    node 8847:88971, so exact styles could not be pulled. True-up this block (and the
-   font choice) against Figma once access is restored — nothing else should need edits. */
+   font choice) against Figma once access is restored — nothing else should need edits.
+
+   ═══ MODULE SCALES (visual audit 2026-08-19, user approved; buttons consolidated
+   the same day in a parallel pass — see the BUTTON block) ═══
+   SPACING = mobile micro-scale {2, 4, 6, 8, 10, 12, 16, 20, 24} — 6 and 10 are
+   legitimate steps at 330px content width; anything else (3/5/9/11/13/14/15/18)
+   is drift and gets snapped. Device chrome (status bar, frame, homebar) exempt.
+   TYPE RAMP = 10 micro/badges/nav · 11 meta/hints · 12 body/buttons-sm/links ·
+   13 row titles/buttons-md · 14 buttons-lg · 15 screen/sheet titles · display
+   numerals 20/26/44. Weights 400/600/700; 800 only on display numerals. Avatar
+   initials exempt (0.4 × circle size). V1-only classes (.mga-qa__*, .mga-cur__*,
+   .mga-hub__*, .mga-locksect*, .mga-queue__*) stay frozen. Icon↔text row gap = 10.
+   META PILLS (badge / srctag / langtag / pselect-tag) = p 2/8 + lh14 → h18;
+   srctag keeps its rounded-rect (shape marks the origin-vs-status axis).
+   LIST CARDS = .mga-card--list (v4 / side16; rows carry p12/0). */
 
 .mga-stage {
   --mga-bg-top: #fdf1f6;
@@ -35,6 +49,24 @@
   --mga-shadow: 0 2px 12px rgba(41, 37, 98, 0.07);
   --mga-r-card: 16px;
   --mga-r-tile: 12px;
+  --mga-r-pill: 999px;
+
+  /* Control heights — THE SYSTEM'S scale, not a mobile-only one. Identical to the
+     Figma `Button` set (54:1262, Size sm/md/lg bound to size/control/*) and to the
+     web `--control-sm/md/lg` in tokens.css. This module was the only surface that
+     had drifted off it (it rendered ~27 / ~32 / ~46). */
+  --mga-control-sm: 32px;
+  --mga-control-md: 40px;
+  --mga-control-lg: 48px;
+
+  /* Control hairline — was the raw #d9dcec repeated at 6 sites. */
+  --mga-line: #d9dcec;
+
+  /* Quiet foreground for INTERACTIVE labels. --mga-muted (#8a8fa8) is 3.19:1 and is
+     fine for static secondary text but fails AA on a control, so controls take this
+     4.9:1 grey instead (user, 2026-08-19: two greys, don't darken the static one —
+     Rule 7 warns against over-correcting into a sterile look). */
+  --mga-muted-fg: #6b7089;
 
   /* Spacing hierarchy (4px base): xs4 in-row gaps · sm8 label-field ·
      md12 card-to-card + in-card rows · lg16 card padding · xl20 screen side
@@ -204,6 +236,11 @@
   font-weight: 700;
   text-decoration: underline;
 }
+/* ═══ ICON BUTTON — one round primitive, was SEVEN ═══
+   .mga-iconbtn(34) · .mga-back(32) · .mga-fab(44) · .mga-dlbtn(28) · .mga-gobtn(28) ·
+   .mga-lockchip(26) · .mga-lockcard__lock(26) — the last two were identical
+   property-for-property. Six diameters collapse to three; 26px disappears (it was
+   under the project's 28px target-size practice anyway). */
 .mga-stage .mga-iconbtn {
   width: 34px;
   height: 34px;
@@ -215,6 +252,37 @@
   justify-content: center;
   position: relative;
   flex-shrink: 0;
+}
+.mga-stage .mga-iconbtn:active {
+  transform: scale(0.98);
+}
+/* ── Size ── */
+.mga-stage .mga-iconbtn--sm {
+  width: 28px;
+  height: 28px;
+}
+.mga-stage .mga-iconbtn--lg {
+  width: 44px;
+  height: 44px;
+}
+/* ── Treatment ── */
+.mga-stage .mga-iconbtn--plain {
+  background: none;
+  border-color: transparent;
+  color: var(--mga-muted-fg);
+}
+.mga-stage .mga-iconbtn--fill {
+  background: var(--mga-navy);
+  border-color: transparent;
+  color: var(--mga-card);
+}
+.mga-stage .mga-iconbtn--tint {
+  background: var(--mga-lav);
+  border-color: transparent;
+  color: var(--mga-lav-fg);
+}
+.mga-stage .mga-iconbtn--raised {
+  box-shadow: var(--mga-shadow);
 }
 .mga-iconbtn__dot {
   position: absolute;
@@ -232,8 +300,8 @@
   border: 0.5px solid var(--mga-border);
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 0 11px;
+  gap: 4px;
+  padding: 0 12px;
   font-size: 11px;
   font-weight: 700;
   white-space: nowrap;
@@ -241,7 +309,7 @@
 
 /* Product switcher */
 .mga-seg {
-  margin: 0 var(--mga-sp-xl) var(--mga-sp-sm);
+  margin: 0 var(--mga-sp-xl) var(--mga-sp-md); /* 12 after any control zone (audit B4) */
   background: var(--mga-card);
   border: 0.5px solid var(--mga-border);
   border-radius: 22px;
@@ -255,8 +323,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  font-size: 11.5px;
+  gap: 4px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--mga-muted);
   border-radius: 18px;
@@ -267,11 +335,6 @@
   background: #e9ecfb;
   color: var(--mga-text);
   font-weight: 700;
-}
-.mga-stage .mga-seg__more {
-  color: var(--mga-muted);
-  display: flex;
-  padding: 0 4px;
 }
 
 /* Sections + cards */
@@ -309,11 +372,11 @@
   flex-shrink: 0;
 }
 .mga-prow__name {
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 700;
 }
 .mga-prow__sub {
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--mga-muted);
 }
 .mga-prow__chv {
@@ -322,27 +385,164 @@
   display: flex;
 }
 
-/* CTAs */
-.mga-stage .mga-cta {
-  display: block;
-  width: 100%;
-  background: var(--mga-pink);
-  border-radius: 24px;
-  color: #fff;
+/* ═══════════════════════════════════════════════════════════════════════════
+   BUTTON — the module's ONLY button. Mirrors the Figma `Button` component set
+   (54:1262) 1:1 — Emphasis × Size — so a screen ports to Figma as an instance
+   swap rather than a rebuild. Replaces 31 button-shaped classes (audit 2026-08-19).
+
+   HEIGHT-DRIVEN, exactly like `.gpi-btn` on web. The classes this supersedes set
+   their PADDING and let height fall out of font-size + line-height, which is why
+   primary and secondary drifted apart (46 vs 32) and why the primary alone ended
+   up rendering at SIX heights via inline `padding` overrides. Declaring the box
+   removes the entire failure mode.
+
+   NO MARGIN, EVER — layout owns spacing. The old `.mga-cta` baked in
+   `margin: 4px 0 20px` for standalone use, which is precisely what pushed every
+   other call site into the inline `style` attribute in the first place.
+
+   Two deliberate deviations from web, both sanctioned under Rule 6:
+     · radius is a FULL PILL (web uses radius/lg12) — 2026-06-30 rejected pill
+       buttons for web but kept them "an OK MOBILE-app-only option";
+     · labels run one step down (12/13/14 vs Figma's Button/Small·Medium·Large
+       13/14/16) because this is a 390px frame. md and lg therefore map onto the
+       existing Button/Small and Button/Medium text styles; sm needs a new 12px one.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.mga-stage .mga-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mga-sp-sm);
+  /* Label rule (user, 2026-07-06, all platforms): button text NEVER wraps. */
+  white-space: nowrap;
+  border: 1px solid transparent;
+  border-radius: var(--mga-r-pill);
+  font-family: inherit;
+  font-weight: 600;
+  text-align: center;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+/* One press-scale for every button. There were four (.98/.97/.99/.95). */
+.mga-stage .mga-btn:active {
+  transform: scale(0.98);
+}
+
+/* ── Size ── */
+.mga-stage .mga-btn--sm {
+  height: var(--mga-control-sm);
+  padding: 0 var(--mga-sp-md);
+  font-size: 12px;
+}
+.mga-stage .mga-btn--md {
+  height: var(--mga-control-md);
+  padding: 0 var(--mga-sp-lg);
   font-size: 13px;
+}
+.mga-stage .mga-btn--lg {
+  height: var(--mga-control-lg);
+  padding: 0 var(--mga-sp-xl);
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.04em;
-  text-align: center;
-  padding: 15px;
+}
+
+/* ── Emphasis ── */
+.mga-stage .mga-btn--primary {
+  background: var(--mga-pink);
+  color: var(--mga-card);
+}
+/* Retained from the production app's loyalty/referral CTAs. NB this is a solid
+   navy, whereas the WEB system's Secondary is deliberately OUTLINED indigo "to
+   keep pink Primary dominant" (2026-06-28). The deviation is intentional here:
+   the mobile module's mandate is to mirror the current production app. */
+.mga-stage .mga-btn--navy {
+  background: var(--mga-navy);
+  color: var(--mga-card);
+}
+.mga-stage .mga-btn--secondary {
+  background: var(--mga-card);
+  border-color: var(--mga-line);
+  color: var(--mga-text);
+}
+/* The PROMOTED action inside a card (e.g. „ჩაეწერე ექიმთან კლინიკაში"), where a
+   second solid pink would compete with the screen-level primary. */
+.mga-stage .mga-btn--secondary-brand {
+  background: var(--mga-card);
+  border-color: #f8bbda;
+  color: var(--mga-pink-fg);
+}
+.mga-stage .mga-btn--tertiary {
+  background: none;
+  color: var(--mga-muted-fg);
+}
+/* Upload / "add something" affordance — dashed so it reads as an invitation, not
+   as another record. Was two divergent classes (.mga-upload + .mga-h2__ubtn) whose
+   every single property disagreed. */
+.mga-stage .mga-btn--dashed {
+  background: var(--mga-card);
+  border-style: dashed;
+  border-color: var(--mga-line);
+  border-radius: var(--mga-r-tile);
+  color: var(--mga-pink-fg);
+}
+
+/* ── Width ── */
+.mga-stage .mga-btn--block {
+  display: flex;
+  width: 100%;
+}
+
+/* ── Spacing ──
+   The ONLY margin any button may carry, and it is opt-in: a standalone CTA closing
+   out a page or sheet body. Everything else gets its spacing from its parent. This
+   is the deliberate inverse of the old `.mga-cta`, which baked the margin in and so
+   forced every other call site to fight it with an inline `style` — which is how the
+   padding got "adjusted" at the same time and the six heights appeared. */
+.mga-stage .mga-btn--page {
   margin: var(--mga-sp-xs) 0 var(--mga-sp-xl);
 }
-.mga-stage .mga-cta--navy {
-  background: var(--mga-navy);
-  letter-spacing: 0;
-  margin: var(--mga-sp-sm) 0 0;
+
+/* ── Disabled / gated ──
+   Review 2026-08-18: gated actions READ as inactive instead of looking ordinary
+   with a small lock. Dimmed, NOT disabled — they still respond, and tapping opens
+   the sheet that explains what cover buys. --mga-muted-fg is 4.9:1 rather than a
+   true faded state: an unreadable button would be a worse answer than a plain one. */
+.mga-stage .mga-btn--locked {
+  background: var(--mga-queue-bg);
+  border-color: #e3e5f0;
+  color: var(--mga-muted-fg);
 }
-.mga-stage .mga-cta:active {
-  transform: scale(0.98);
+.mga-stage .mga-btn--off {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* ═══ TEXT LINK — one class, was EIGHT ═══
+   .mga-seeall · .mga-cur__full · .mga-all · .mga-linkbtn · .mga-h2__textbtn ·
+   .mga-locksect__relock · .mga-sheet__resend all did this job, in three font
+   sizes, three weights and three colours — and only ONE of the eight carried the
+   WCAG target-size fix from the 2026-08-04 audit. That audit fixed instances;
+   this fixes the primitive. */
+.mga-stage .mga-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mga-sp-xs);
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mga-pink-fg);
+  /* WCAG 2.2 target-size: a bare text link measures ~14px. */
+  min-height: 28px;
+}
+.mga-stage .mga-link--quiet {
+  color: var(--mga-muted-fg);
+}
+.mga-stage .mga-link--block {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+.mga-stage .mga-link--underline {
+  text-decoration: underline;
 }
 
 /* Curatio quick-access block */
@@ -367,11 +567,6 @@
   flex: 1;
   font-size: 14px;
   font-weight: 700;
-}
-.mga-stage .mga-cur__full {
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--mga-pink-fg);
 }
 .mga-cur__tiles {
   display: flex;
@@ -442,17 +637,10 @@
   font-size: 15px;
   font-weight: 700;
 }
-.mga-stage .mga-all {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  color: var(--mga-muted);
-}
 .mga-irow {
   display: flex;
   align-items: center;
-  gap: var(--mga-sp-md);
+  gap: 10px; /* icon↔text row gap standardised at 10 module-wide (audit B7) */
   padding: var(--mga-sp-sm) 0;
 }
 .mga-itile {
@@ -483,7 +671,7 @@
   min-width: 0;
 }
 .mga-meta__lbl {
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--mga-muted);
 }
 .mga-meta__val {
@@ -507,8 +695,9 @@
 .mga-badge {
   font-size: 10px;
   font-weight: 600;
+  line-height: 14px; /* one meta-pill spec: p 2/8 + lh14 → h18 (audit C3) */
   border-radius: 20px;
-  padding: 2.5px 9px;
+  padding: 2px 8px;
   white-space: nowrap;
 }
 .mga-badge--green {
@@ -541,26 +730,8 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 14px;
+  gap: var(--mga-sp-md);
   padding-top: var(--mga-sp-md);
-}
-.mga-stage .mga-actbtn {
-  border: 1px solid #d9dcec;
-  border-radius: 20px;
-  padding: 6px 14px;
-  font-size: 12px;
-  font-weight: 600;
-}
-.mga-stage .mga-actbtn:active {
-  transform: scale(0.97);
-}
-.mga-stage .mga-linkbtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--mga-pink-fg);
 }
 
 /* Referral rows */
@@ -568,11 +739,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 0;
+  padding: 8px 0;
   border-bottom: 0.5px solid var(--mga-border);
 }
 .mga-refnum__lbl {
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--mga-muted);
 }
 .mga-refnum__val {
@@ -606,7 +777,7 @@
   flex-wrap: wrap;
 }
 .mga-chronic__exp {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--mga-amber-fg);
 }
@@ -615,7 +786,7 @@
 .mga-queue {
   background: var(--mga-queue-bg);
   border-radius: var(--mga-r-tile);
-  padding: var(--mga-sp-md) 14px;
+  padding: var(--mga-sp-md) 12px;
   margin: 10px 0;
 }
 .mga-queue__row {
@@ -662,18 +833,7 @@
 .mga-fabrow {
   display: flex;
   justify-content: flex-end;
-  padding: var(--mga-sp-xs) 0 14px;
-}
-.mga-stage .mga-fab {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--mga-card);
-  border: 0.5px solid var(--mga-border);
-  box-shadow: var(--mga-shadow);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: var(--mga-sp-xs) 0 12px;
 }
 
 /* Bottom nav */
@@ -718,18 +878,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 14px var(--mga-sp-xl) var(--mga-sp-md);
-}
-.mga-stage .mga-back {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--mga-card);
-  border: 0.5px solid var(--mga-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  padding: var(--mga-sp-md) var(--mga-sp-xl);
 }
 .mga-hdr__title {
   flex: 1;
@@ -776,9 +925,10 @@
 }
 
 /* Ticket page */
+/* NB: no padding here — `.mga-stage .mga-card` (0,2,0) owns it; an 18/12 override
+   sat here dead for weeks (audit C5). */
 .mga-thero {
   text-align: center;
-  padding: 18px 12px;
 }
 .mga-thero__num {
   font-size: 44px;
@@ -799,52 +949,24 @@
   border-left: 0.5px solid var(--mga-border);
 }
 .mga-tstats__val {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
 }
 .mga-tstats__live {
-  font-size: 12px;
+  font-size: 13px; /* audit D2 — was 12 next to 16px siblings */
   font-weight: 700;
   color: var(--mga-green-fg);
-  padding-top: 3px;
-}
-.mga-stage .mga-obtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  width: 100%;
-  border: 1px solid #d9dcec;
-  border-radius: 20px;
-  padding: 8px 14px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--mga-text);
-}
-.mga-stage .mga-obtn:active {
-  transform: scale(0.98);
-}
-/* Row-level actions use the SAME button, one size down (user, 2026-08-18: „consistent
-   buttons that we use in the system not chips buttons"). This replaced .mga-h2__minicta,
-   which was a chip shape that existed nowhere else in the system. */
-.mga-stage .mga-obtn--sm {
-  width: auto;
-  padding: 6px 12px;
-  font-size: 11px;
-}
-.mga-stage .mga-obtn--pink {
-  color: var(--mga-pink-fg);
-  border-color: #f8bbda;
+  padding-top: 2px;
 }
 
-/* Toggle switch (button-based, role=switch). Currently UNUSED — its only call site
-   was the removed "remind 1 patient earlier" opt-in. Kept deliberately: the F-05
-   reminders panel (per-type on/off toggles) is the next screen and needs it. */
+/* Toggle switch (button-based, role=switch). Consumer: the upload sheet's per-upload
+   consent row (control on the LEFT per the 2026-08-17 global rule). The F-05
+   reminders panel (per-type on/off toggles) will reuse it. */
 .mga-stage .mga-swbtn {
   width: 38px;
   height: 22px;
   border-radius: 11px;
-  background: #d9dcec;
+  background: var(--mga-line);
   position: relative;
   flex-shrink: 0;
   transition: background 0.15s;
@@ -897,7 +1019,7 @@
   flex-shrink: 0;
 }
 .mga-doc__next {
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--mga-muted);
   margin: 8px 0;
 }
@@ -924,7 +1046,7 @@
 .mga-hitem {
   display: flex;
   align-items: center;
-  gap: var(--mga-sp-sm);
+  gap: 10px; /* audit B7 */
   padding: var(--mga-sp-md) 0;
   border-bottom: 0.5px solid var(--mga-border);
 }
@@ -942,7 +1064,7 @@
   margin-top: var(--mga-sp-xs);
 }
 /* A row action gets sm8 of air above it, not the xs4 that separates text lines. */
-.mga-stage .mga-hitem__body > .mga-obtn {
+.mga-stage .mga-hitem__body > .mga-btn {
   margin-top: var(--mga-sp-sm);
 }
 
@@ -951,7 +1073,7 @@
 .mga-hitem--top {
   align-items: flex-start;
 }
-.mga-hitem--top .mga-dlbtn {
+.mga-hitem--top .mga-iconbtn {
   margin-top: -2px;
 }
 /* `.mga-hitem__head` (title + badge on one line) REMOVED 2026-08-18 — standing rule:
@@ -959,33 +1081,9 @@
    three lines while the badge sits alone. Status moved into `.mga-hitem__meta`, which
    already wraps. */
 .mga-hitem__note {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--mga-amber-fg);
-}
-.mga-stage .mga-dlbtn {
-  color: var(--mga-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* WCAG 2.2 target-size: keep the tap area ≥24px (audit 2026-08-04) */
-  min-width: 28px;
-  min-height: 28px;
-  padding: 4px;
-}
-.mga-stage .mga-upload {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  width: 100%;
-  border: 1.5px dashed #d9dcec;
-  border-radius: var(--mga-r-card);
-  padding: 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--mga-lav-fg);
-  margin-bottom: 12px;
 }
 
 /* Product image marks (provided B2B iconography, reference/product-illustrations) */
@@ -1062,13 +1160,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.mga-stage .mga-locksect__relock {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--mga-lav-fg);
-  text-decoration: underline;
-  white-space: nowrap;
-}
 
 /* Locked cards: visible but inert-looking, lock badge instead of chevron */
 .mga-stage .mga-lockcard {
@@ -1076,17 +1167,6 @@
   border-style: dashed;
   border-color: #ccd0e8;
   box-shadow: none;
-}
-.mga-lockcard__lock {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: var(--mga-lav);
-  color: var(--mga-lav-fg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
 }
 
 /* OTP bottom sheet */
@@ -1116,7 +1196,7 @@
   width: 36px;
   height: 4px;
   border-radius: 2px;
-  background: #d9dcec;
+  background: var(--mga-line);
   margin: 0 auto var(--mga-sp-lg);
 }
 .mga-sheet__head {
@@ -1145,11 +1225,11 @@
 .mga-otp input {
   width: 52px;
   height: 56px;
-  border: 1.5px solid #d9dcec;
+  border: 1.5px solid var(--mga-line);
   border-radius: 14px;
   background: #fbfbfe;
   text-align: center;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   font-family: inherit;
   color: var(--mga-text);
@@ -1158,22 +1238,6 @@
   outline: none;
   border-color: var(--mga-pink);
   box-shadow: 0 0 0 3px var(--mga-pink-soft);
-}
-.mga-stage .mga-cta--off {
-  opacity: 0.45;
-  pointer-events: none;
-}
-.mga-stage .mga-sheet__resend {
-  display: block;
-  width: 100%;
-  text-align: center;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--mga-muted);
-  padding: var(--mga-sp-md) 0 0;
-}
-.mga-stage .mga-sheet__resend:not(:disabled) {
-  color: var(--mga-pink-fg);
 }
 .mga-sheet__demo {
   text-align: center;
@@ -1191,21 +1255,11 @@
   justify-content: space-between;
   margin-bottom: var(--mga-sp-sm);
 }
-.mga-stage .mga-seeall {
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--mga-pink-fg);
-  white-space: nowrap;
-  /* WCAG 2.2 target-size: text link alone measured 16px (audit 2026-08-04) */
-  display: inline-flex;
-  align-items: center;
-  min-height: 28px;
-}
 
 /* PersonSelect — insured-person dropdown under the product switcher */
 .mga-pselect {
   position: relative;
-  margin: 0 var(--mga-sp-xl) var(--mga-sp-sm);
+  margin: 0 var(--mga-sp-xl) var(--mga-sp-md); /* 12 after any control zone (audit B4) */
   z-index: 60;
 }
 .mga-stage .mga-pselect__btn {
@@ -1242,7 +1296,7 @@
   line-height: 1.3;
 }
 .mga-pselect__name {
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--mga-text);
   white-space: nowrap;
@@ -1250,7 +1304,7 @@
   text-overflow: ellipsis;
 }
 .mga-pselect__id {
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--mga-muted);
 }
 .mga-pselect__chev {
@@ -1312,7 +1366,8 @@
   color: var(--mga-pink-fg);
   background: var(--mga-pink-soft);
   border-radius: 20px;
-  padding: 3px 8px;
+  padding: 2px 8px;
+  line-height: 14px;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -1359,9 +1414,9 @@
   gap: 10px;
 }
 .mga-hero__proc {
-  font-size: 17px;
-  font-weight: 800;
-  margin-bottom: 3px;
+  font-size: 15px; /* title tier; 800 stays reserved for display numerals (audit C1) */
+  font-weight: 700;
+  margin-bottom: 4px;
 }
 .mga-hero__place {
   font-size: 11px;
@@ -1402,40 +1457,16 @@
   line-height: 1;
 }
 
-/* Round "go" affordance on entry cards */
-.mga-gobtn {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--mga-navy);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
 
 /* Doctor card — next-chat chip */
 .mga-doc__chatnext {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 3px;
+  gap: 4px;
   flex-shrink: 0;
 }
 
-/* Lock chip on protected rows */
-.mga-lockchip {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: var(--mga-lav);
-  color: var(--mga-lav-fg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
 
 /* Badge tones missing until now */
 .mga-badge--red {
@@ -1447,63 +1478,10 @@
   color: var(--mga-teal);
 }
 
-/* Promo banners — solid brand (NO gradients on interactive, per AA rule) */
-.mga-stage .mga-bnr {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  text-align: left;
-  border-radius: var(--mga-r-card);
-  padding: 14px var(--mga-sp-lg);
-  margin-bottom: var(--mga-sp-md);
-  color: #fff;
-}
-.mga-stage .mga-bnr--navy {
-  background: var(--mga-navy);
-}
-.mga-stage .mga-bnr--teal {
-  background: var(--mga-teal);
-}
-.mga-bnr__ico {
-  width: 38px;
-  height: 38px;
-  border-radius: var(--mga-r-tile);
-  background: rgba(255, 255, 255, 0.16);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.mga-bnr__meta {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  line-height: 1.35;
-}
-.mga-bnr__title {
-  font-size: 12.5px;
-  font-weight: 800;
-}
-.mga-bnr__hint {
-  font-size: 10.5px;
-  color: rgba(255, 255, 255, 0.75);
-}
-.mga-bnr__go {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
 
 /* ═══ A3 — queue-picker (digital ticket activation, F-01) ═══ */
 .mga-hdr__sub {
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--mga-muted);
   margin-top: 1px;
 }
@@ -1522,14 +1500,14 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--mga-muted);
-  margin-bottom: 3px;
+  margin-bottom: 4px;
 }
 .mga-qpk__kicker--on {
   color: var(--mga-pink-fg);
 }
 .mga-qpk__proc {
-  font-size: 14px;
-  font-weight: 800;
+  font-size: 13px; /* row-title tier — the TIME is this card's display element */
+  font-weight: 700;
   color: var(--mga-text);
   margin-bottom: 2px;
 }
@@ -1561,18 +1539,18 @@
 .mga-docd__ava {
   width: 52px;
   height: 52px;
-  font-size: 19px;
+  font-size: 20px; /* 0.4 × 52 (avatar-initial ratio) */
 }
 .mga-docd__name {
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--mga-text);
 }
 .mga-docd__online {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--mga-green-fg);
-  margin-top: 3px;
+  margin-top: 4px;
 }
 .mga-docd__grid {
   display: grid;
@@ -1582,7 +1560,7 @@
 .mga-docd__cell {
   background: var(--mga-queue-bg);
   border-radius: 10px;
-  padding: 9px 10px;
+  padding: 8px 10px;
 }
 .mga-docd__cell--wide {
   display: flex;
@@ -1591,14 +1569,14 @@
   margin-top: 6px;
 }
 .mga-docd__lbl {
-  font-size: 9.5px;
+  font-size: 10px; /* audit D3 — 9.5 was the module's smallest text */
   color: var(--mga-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   margin-bottom: 2px;
 }
 .mga-docd__val {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--mga-text);
 }
@@ -1612,17 +1590,6 @@
   margin: 0 0 10px;
 }
 
-/* Review 2026-08-18: „დაუზღვეველ ტიპს ჩამქრალი ფერით ხო არ ვაჩვენოთ ეს ფიჩერები" —
-   gated actions now READ as inactive instead of looking ordinary with a small lock.
-   Dimmed, not disabled: they still respond, and tapping opens the sheet that explains
-   what cover buys. Grey is #6b7089 (4.9:1 on white) rather than a true faded state —
-   an unreadable button would be a worse answer than a plain one. */
-.mga-stage .mga-obtn--locked,
-.mga-stage .mga-obtn--pink.mga-obtn--locked {
-  color: #6b7089;
-  border-color: #e3e5f0;
-  background: var(--mga-queue-bg);
-}
 
 /* ═══ #14 (2026-08-18) — uninsured mode ═══ */
 
@@ -1691,8 +1658,11 @@
   line-height: 1.6;
   white-space: nowrap;
   gap: var(--mga-sp-xs);
-  border-radius: 5px;
-  padding: 1px 6px;
+  /* rounded-rect ON PURPOSE while status badges are pills — shape marks the
+     origin-vs-status axis (corner-radius system: shape is a signal). */
+  border-radius: 6px;
+  padding: 2px 8px;
+  line-height: 14px;
 }
 /* in-network: Curatio's own teal — 5.50:1 (measured; an earlier comment claimed 7.4) */
 .mga-srctag--curatio {
@@ -1718,6 +1688,12 @@
   flex-wrap: wrap;
   gap: var(--mga-sp-xs);
 }
+/* Origin chip owns the line's RIGHT SLOT (audit D1): short metas kept it inline,
+   long ones wrapped it under — same list, two layouts. margin-left:auto gives it
+   one stable position whether or not the line wraps. */
+.mga-hitem__meta .mga-srctag {
+  margin-left: auto;
+}
 /* Inline settled-state marker: check + label, muted. Used where a state is quiet
    enough that a badge in the title line would only steal width from the title —
    analyses „ექიმს გაზიარებულია", prevention „შესრულებულია". */
@@ -1729,25 +1705,6 @@
   color: var(--mga-muted);
 }
 
-/* Upload entry — dashed so it reads as „add something", not as another record. */
-.mga-stage .mga-h2__ubtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  width: 100%;
-  background: var(--mga-card);
-  border: 1px dashed #dcdff0;
-  border-radius: var(--mga-r-tile);
-  padding: 10px;
-  margin-bottom: var(--mga-sp-md);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--mga-pink-fg);
-}
-.mga-stage .mga-h2__ubtn:active {
-  transform: scale(0.99);
-}
 
 /* Upload sheet */
 .mga-upl__head {
@@ -1757,7 +1714,7 @@
   gap: var(--mga-sp-sm);
 }
 .mga-upl__step {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--mga-muted);
 }
@@ -1784,8 +1741,8 @@
   margin-top: var(--mga-sp-xs);
   background: var(--mga-card);
   border: 1px solid var(--mga-border);
-  border-radius: 10px;
-  padding: 9px 11px;
+  border-radius: var(--mga-r-tile);
+  padding: 10px 12px;
   font-family: inherit;
   font-size: 12px;
   font-weight: 600;
@@ -1811,15 +1768,17 @@
   white-space: nowrap;
 }
 .mga-upl__err {
-  margin-top: 3px;
+  margin-top: 4px;
   font-size: 10px;
   font-weight: 600;
   color: #c53030;
 }
+/* Toggle on the LEFT, text to its right (global rule 2026-08-17; audit A2 — this
+   row predated the rule with the switch pinned right). Top-aligned so the control
+   sits with the title line, not mid-way down the two-line text. */
 .mga-upl__consent {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: flex-start;
   gap: var(--mga-sp-md);
   background: var(--mga-queue-bg);
   border-radius: var(--mga-r-tile);
@@ -1829,6 +1788,7 @@
 .mga-upl__consenttxt {
   display: flex;
   flex-direction: column;
+  flex: 1;
   line-height: 1.35;
   min-width: 0;
 }
@@ -1840,7 +1800,7 @@
   gap: 10px;
   width: 100%;
   text-align: left;
-  padding: 11px 0;
+  padding: var(--mga-sp-md) 0;
 }
 .mga-stage .mga-trf__row + .mga-trf__row {
   border-top: 0.5px solid var(--mga-border);
@@ -1866,7 +1826,7 @@
   line-height: 1.35;
 }
 .mga-trf__name {
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--mga-text);
 }
@@ -1931,7 +1891,7 @@
 .mga-prv__body > * + * {
   margin-top: var(--mga-sp-xs);
 }
-.mga-stage .mga-prv__body > .mga-obtn,
+.mga-stage .mga-prv__body > .mga-btn,
 .mga-prv__body > .mga-prv__state {
   margin-top: var(--mga-sp-sm);
 }
@@ -1944,14 +1904,14 @@
 .mga-h2__rx > * + * {
   margin-top: var(--mga-sp-xs);
 }
-.mga-stage .mga-h2__rx > .mga-obtn {
+.mga-stage .mga-h2__rx > .mga-btn {
   margin-top: var(--mga-sp-sm);
 }
 .mga-h2__rx + .mga-h2__rx {
   border-top: 0.5px solid var(--mga-border);
 }
 .mga-h2__renewnote {
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--mga-muted);
 }
 .mga-prv__row + .mga-prv__row {
@@ -1962,12 +1922,17 @@
    reserved for actual alarms. */
 /* Doubled class on purpose: `.mga-h2__rx + .mga-h2__rx` (0,2,0) outranks a single
    modifier, so the separator's grey was overriding this card's own hairline. */
+/* FULL-BLEED tint (audit B3): the inset-card version indented this row's title 12px
+   off its siblings' left edge — titles in one list must align. The band now runs to
+   the card's padding edges (full-bleed exemption), text stays at the shared 16. Side
+   borders dropped — hairlines flush on the card edge read as clipping. */
 .mga-h2__rx.mga-h2__rx--warn {
   background: var(--mga-warn-bg);
   border: 0.5px solid var(--mga-warn-brd);
-  border-radius: var(--mga-r-tile);
-  padding: var(--mga-sp-md);
-  margin: var(--mga-sp-xs) 0;
+  border-width: 0.5px 0;
+  border-radius: 0;
+  padding: var(--mga-sp-md) var(--mga-sp-lg);
+  margin: var(--mga-sp-xs) calc(-1 * var(--mga-sp-lg));
 }
 .mga-h2__rx--warn + .mga-h2__rx {
   border-top: none;
@@ -1977,17 +1942,6 @@
   font-weight: 700;
   color: var(--mga-amber-fg);
   margin-top: 2px;
-}
-/* .mga-h2__minicta (chip button) REMOVED 2026-08-18 — every row action now uses
-   .mga-obtn / .mga-obtn--sm, the module's actual button. */
-.mga-h2__textbtn {
-  display: block;
-  width: 100%;
-  padding: var(--mga-sp-sm) 0 2px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--mga-muted);
-  text-align: center;
 }
 /* THE note component (user, 2026-08-18: „this info box is something out of our design
    system"). There were two: this one, and a bespoke `.mga-qpk__locked` pill in the queue
@@ -2001,7 +1955,7 @@
   background: var(--mga-queue-bg);
   color: var(--mga-muted);
   border-radius: 8px;
-  padding: 6px 9px;
+  padding: 6px 8px;
   margin-top: var(--mga-sp-xs);
   font-size: 10px;
   font-weight: 600;
@@ -2025,24 +1979,8 @@
   line-height: 1.5;
   margin-top: 6px;
 }
-.mga-h2__uzone {
-  text-align: center;
-  padding: 18px 16px;
-  background: var(--mga-card);
-  border: 1.5px dashed #e3b7cd;
-  border-radius: var(--mga-r-card);
-  margin-bottom: var(--mga-sp-md);
-}
-.mga-h2__uico {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--mga-pink-soft);
-  color: var(--mga-pink-fg);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
+/* .mga-h2__uzone / .mga-h2__uico REMOVED 2026-08-19 (audit C5) — the docs-tab
+   upload zone died with #13; no JSX referenced either class. */
 .mga-h2__confid {
   display: flex;
   align-items: flex-start;
@@ -2105,7 +2043,7 @@
   margin-bottom: var(--mga-sp-md);
 }
 .mga-prv__note {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 600;
   margin-top: 2px;
 }
@@ -2116,6 +2054,20 @@
 }
 .mga-prv__note--amber {
   color: var(--mga-amber-fg);
+}
+
+/* List card (audit B2/B8): vertical 4 (rows carry their own 12) + side 16 — ONE
+   anatomy for every list section. Analyses did this inline; prescriptions sat at
+   p16 so its first row started 28px deep; transfer/docselect used 12px side insets
+   against the A6c 16px standard. */
+.mga-stage .mga-card--list {
+  padding: var(--mga-sp-xs) var(--mga-sp-lg);
+}
+/* Card-section label (audit B5/C5) — the muted header line above in-card content.
+   One style module-wide; the margin lives HERE, not on instances. */
+.mga-cardlbl {
+  display: block;
+  margin-bottom: var(--mga-sp-sm);
 }
 
 /* ── #1 (stakeholder comments 2026-08-18) — no-doctor empty card ── */
@@ -2150,7 +2102,7 @@
   background: var(--mga-card);
   border: 1px solid var(--mga-border);
   border-radius: var(--mga-r-tile);
-  padding: 9px 12px;
+  padding: 10px 12px;
   color: var(--mga-muted);
 }
 .mga-stage .mga-dsearch input {
@@ -2160,7 +2112,7 @@
   outline: none;
   background: transparent;
   font: inherit;
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--mga-text);
 }
 .mga-stage .mga-dsearch input::placeholder {
@@ -2203,25 +2155,13 @@
 .mga-dsheet__consent {
   margin-bottom: var(--mga-sp-lg);
 }
-/* Stacked actions: primary on top, secondary below (user, 2026-08-18).
-   .mga-cta and .mga-obtn ship different padding (12 vs 8/14) and font sizes
-   (13 vs 12), so side-by-side they only match because .mga-trf__btns stretches
-   them — `align-items: stretch` equalises HEIGHT in a row but only WIDTH in a
-   column. Stacked, they measured 42 vs 35px, so pin both: one min-height, one
-   font size. 44px also clears WCAG 2.2 target-size with room (Rule 7). */
+/* Stacked actions: primary on top, secondary below (user, 2026-08-18). The
+   per-button min-height/font pins that used to live here are GONE — since the
+   2026-08-19 button consolidation both buttons share the 48px lg tier, so the
+   stack needs only direction and gap. */
 .mga-trf__btns--stack {
   flex-direction: column;
   gap: var(--mga-sp-sm);
-}
-.mga-stage .mga-trf__btns--stack > button {
-  width: 100%;
-  flex: none;
-  min-height: 44px;
-  padding: 10px 14px;
-  font-size: 13px;
-  /* .mga-cta ships `margin: 4px 0 20px` for standalone use — inside the stack
-     the wrapper's gap owns the spacing, so neutralise it. */
-  margin: 0;
 }
 /* Success state uses the same stacked pair — one grammar for sheet actions. */
 .mga-trf__success .mga-trf__btns--stack {
@@ -2230,18 +2170,18 @@
 .mga-dsheet__cell {
   background: var(--mga-queue-bg);
   border-radius: 10px;
-  padding: 9px 10px;
+  padding: 8px 10px;
   min-width: 0;
 }
 .mga-dsheet__cell--wide {
   grid-column: 1 / -1;
 }
 .mga-dsheet__lbl {
-  font-size: 9.5px;
+  font-size: 10px;
   color: var(--mga-muted);
 }
 .mga-dsheet__val {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--mga-text);
   margin-top: 2px;
@@ -2255,7 +2195,7 @@
 .mga-dsheet__hero .mga-trf__ava {
   width: 52px;
   height: 52px;
-  font-size: 16px;
+  font-size: 20px; /* 0.4 × 52 (avatar-initial ratio) */
 }
 
 /* #1 polish (2026-08-18) — docselect doctor rows now MIRROR THE BOOKING FLOW's
@@ -2290,30 +2230,29 @@
 .mga-dsel__tags {
   display: flex;
   gap: 4px;
-  padding-left: 48px;
+  padding-left: 44px; /* 34 avatar + 10 row gap — aligns under the name column */
 }
 .mga-langtag {
   font-size: 10px;
   font-weight: 600;
   color: var(--mga-text);
   background: var(--mga-queue-bg);
-  border-radius: 999px;
-  padding: 3px 8px;
-  line-height: 1.4;
+  border-radius: var(--mga-r-pill);
+  padding: 2px 8px;
+  line-height: 14px; /* meta-pill spec → h18 (audit C3) */
 }
 
 /* ── #5 (2026-08-18) — e-ticket arrival check-in. Built from existing card /
    itile / cta / badge patterns; only the tint + spacing are new. ── */
 .mga-stage .mga-arr__cta {
   margin: var(--mga-sp-md) 0 0;
-  padding: 13px;
 }
 .mga-arr__note {
   display: flex;
   align-items: center;
   gap: 6px;
   margin-top: var(--mga-sp-sm);
-  font-size: 10.5px;
+  font-size: 11px;
   line-height: 1.4;
   color: var(--mga-muted);
 }
@@ -2332,7 +2271,7 @@
   background: #fff;
   border-radius: var(--mga-r-tile);
   padding: 10px 12px;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--mga-text);
 }

@@ -149,13 +149,10 @@ export default function UploadSheet({ cat = 'all', onClose, onDone }) {
 
             {/* Consent is a choice per upload, not a setting buried elsewhere — and the
                 hint changes with the state so „off" is as legible as „on". */}
+            {/* Control on the LEFT, label to its right — global toggle rule
+                (2026-08-17); this row predated it with the switch pinned right
+                (audit A2). */}
             <div className="mga-upl__consent">
-              <span className="mga-upl__consenttxt">
-                <span className="mga-meta__val" style={{ fontSize: 12 }}>{M.upl.consent}</span>
-                <span className="mga-meta__lbl">
-                  {shared ? M.upl.consentOn(doc.name) : M.upl.consentOff}
-                </span>
-              </span>
               <button
                 className={'mga-swbtn' + (shared ? ' mga-swbtn--on' : '')}
                 role="switch"
@@ -163,13 +160,19 @@ export default function UploadSheet({ cat = 'all', onClose, onDone }) {
                 aria-label={M.upl.consent}
                 onClick={() => setShared((v) => !v)}
               />
+              <span className="mga-upl__consenttxt">
+                <span className="mga-meta__val" style={{ fontSize: 12 }}>{M.upl.consent}</span>
+                <span className="mga-meta__lbl">
+                  {shared ? M.upl.consentOn(doc.name) : M.upl.consentOff}
+                </span>
+              </span>
             </div>
 
             <div className="mga-trf__btns mga-trf__btns--stack">
-              <button className="mga-cta" onClick={submit}>
+              <button className="mga-btn mga-btn--primary mga-btn--lg mga-btn--block" onClick={submit}>
                 {M.upl.submit}
               </button>
-              <button className="mga-obtn" onClick={onClose}>
+              <button className="mga-btn mga-btn--secondary mga-btn--lg mga-btn--block" onClick={onClose}>
                 {M.upl.cancel}
               </button>
             </div>

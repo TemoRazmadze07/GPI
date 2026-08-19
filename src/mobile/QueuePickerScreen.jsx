@@ -21,7 +21,7 @@ export default function QueuePickerScreen() {
   return (
     <>
       <div className="mga-hdr">
-        <button className="mga-back" aria-label="უკან" onClick={() => go('curatio')}>
+        <button className="mga-iconbtn" aria-label="უკან" onClick={() => go('curatio')}>
           <Icon name="chevron-left" size={16} />
         </button>
         <div>
@@ -65,7 +65,7 @@ export default function QueuePickerScreen() {
                 </div>
               </div>
               {active ? (
-                <button className="mga-cta" style={{ margin: '10px 0 0', padding: 11 }} onClick={() => go('ticket', { p: person.id })}>
+                <button className="mga-btn mga-btn--primary mga-btn--md mga-btn--block" style={{ marginTop: 12 }} onClick={() => go('ticket', { p: person.id })}>
                   {M.qpick.activate}
                 </button>
               ) : (

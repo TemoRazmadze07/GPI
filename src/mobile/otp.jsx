@@ -103,10 +103,10 @@ export function OtpSheet({ onSuccess, onClose }) {
             />
           ))}
         </div>
-        <button className={'mga-cta' + (full ? '' : ' mga-cta--off')} style={{ margin: 0 }} onClick={confirm}>
+        <button className={'mga-btn mga-btn--primary mga-btn--lg mga-btn--block' + (full ? '' : ' mga-btn--off')} onClick={confirm}>
           {M.otp.confirm}
         </button>
-        <button className="mga-sheet__resend" disabled={left > 0} onClick={() => setLeft(47)}>
+        <button className={'mga-link mga-link--block' + (left > 0 ? ' mga-link--quiet' : '')} style={{ marginTop: 12 }} disabled={left > 0} onClick={() => setLeft(47)}>
           {left > 0 ? M.otp.resendIn(left) : M.otp.resend}
         </button>
         <div className="mga-sheet__demo">{M.otp.demoNote}</div>

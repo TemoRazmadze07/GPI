@@ -19,7 +19,7 @@ function LockedCard({ icon, title, hint, onRequest }) {
         <span className="mga-meta__val" style={{ display: 'block' }}>{title}</span>
         <span className="mga-meta__lbl">{hint}</span>
       </span>
-      <span className="mga-lockcard__lock" aria-label={M.dash.protectedHint}>
+      <span className="mga-iconbtn mga-iconbtn--sm mga-iconbtn--tint" aria-label={M.dash.protectedHint}>
         <Icon name="lock" size={14} />
       </span>
     </button>
@@ -55,7 +55,7 @@ export default function ProtectedZone({ unlocked, request, relock, counts, onHis
           {unlocked ? M.dash.unlockedNote : M.dash.protectedHint}
         </span>
         {unlocked && (
-          <button className="mga-locksect__relock" onClick={relock}>
+          <button className="mga-link mga-link--quiet mga-link--underline" onClick={relock}>
             {M.dash.relock}
           </button>
         )}
