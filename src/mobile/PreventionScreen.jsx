@@ -49,7 +49,7 @@ function Row({ item, gated, guard }) {
         )}
         {item.status !== 'done' && (
           /* Dead until F-04 — see header comment. */
-          <button className="mga-obtn mga-obtn--sm" onClick={guard(noop)}>
+          <button className={'mga-obtn mga-obtn--sm' + (gated ? ' mga-obtn--locked' : '')} onClick={guard(noop)}>
             <Icon name="calendar" size={11} /> {M.prev.book}
             <GateLock gated={gated} />
           </button>
@@ -82,7 +82,7 @@ export default function PreventionScreen() {
             </div>
             <div className="mga-meta__lbl">{V2_PREVENTION.reminder.body}</div>
             {/* Dead until F-04 — see header comment. */}
-            <button className="mga-obtn mga-obtn--sm" style={{ marginTop: 8 }} onClick={guard(noop)}>
+            <button className={'mga-obtn mga-obtn--sm' + (gated ? ' mga-obtn--locked' : '')} style={{ marginTop: 8 }} onClick={guard(noop)}>
               <Icon name="calendar" size={11} /> {M.prev.book}
               <GateLock gated={gated} />
             </button>

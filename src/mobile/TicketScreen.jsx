@@ -1,6 +1,8 @@
 /* Electronic queue ticket (F-01) — opened from ბილეთის ნახვა on the health home
    / V2 კურაციო tab hero, or (in production) the visit-day SMS deep link. Live
-   Qmatic stats + clinic info with map entry.
+   Qmatic stats + clinic info. (Review 2026-08-18: „რუკაზე ნახვა" REMOVED — maps are
+   a known dev pain point, so it is deferred; the address stays, which is what a
+   patient actually needs to read out to a taxi.)
    V2 (stakeholder parity, 2026-08-04): the ticket is scoped to the person whose
    hero was tapped (?p= in the hash query, default = policyholder). V1 keeps the
    original BOOKING/QUEUE data.
@@ -9,8 +11,8 @@
    but they were removed from this screen. Do not reintroduce without the user.
    #5 (2026-08-18): ARRIVAL CHECK-IN („მე მოვედი"). Activating a ticket remotely
    is not the same event as reaching the clinic — Qmatic needs the arrival
-   signal before the patient can be called. Placed ABOVE the clinic/map card:
-   the map answers „how do I get there", check-in answers „I'm here", so the
+   signal before the patient can be called. Placed ABOVE the clinic card:
+   the address answers „how do I get there", check-in answers „I'm here", so the
    screen reads in the order the visit actually happens. Confirmed state stays
    on screen (rather than collapsing) so the patient keeps proof + next step. */
 
@@ -137,10 +139,6 @@ export default function TicketScreen() {
               <div className="mga-meta__val">{CLINIC.address}</div>
             </div>
           </div>
-          <button className="mga-obtn" style={{ marginTop: 10 }}>
-            <Icon name="map-pin" size={13} />
-            {M.ticket.map}
-          </button>
         </div>
 
       </div>

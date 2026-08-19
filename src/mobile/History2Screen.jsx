@@ -142,7 +142,7 @@ export default function History2Screen() {
                     </div>
                     {r.note && <div className="mga-hitem__note">{r.note}</div>}
                     {r.book && (
-                      <button className="mga-obtn mga-obtn--sm" onClick={guard(noop)}>
+                      <button className={'mga-obtn mga-obtn--sm' + (gated ? ' mga-obtn--locked' : '')} onClick={guard(noop)}>
                         {M.hist2.book}
                         <GateLock gated={gated} />
                       </button>
@@ -232,7 +232,7 @@ export default function History2Screen() {
                       {renewable && !off && (
                         <>
                           <div className="mga-h2__renewnote">{M.hist2.renewNote}</div>
-                          <button className="mga-obtn" onClick={guard(noop)}>
+                          <button className={'mga-obtn' + (gated ? ' mga-obtn--locked' : '')} onClick={guard(noop)}>
                             {M.hist2.renew}
                             {gated ? <GateLock gated /> : <Icon name="chevron-right" size={12} />}
                           </button>

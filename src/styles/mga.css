@@ -1608,6 +1608,18 @@
   margin: 0 0 10px;
 }
 
+/* Review 2026-08-18: „დაუზღვეველ ტიპს ჩამქრალი ფერით ხო არ ვაჩვენოთ ეს ფიჩერები" —
+   gated actions now READ as inactive instead of looking ordinary with a small lock.
+   Dimmed, not disabled: they still respond, and tapping opens the sheet that explains
+   what cover buys. Grey is #6b7089 (4.9:1 on white) rather than a true faded state —
+   an unreadable button would be a worse answer than a plain one. */
+.mga-stage .mga-obtn--locked,
+.mga-stage .mga-obtn--pink.mga-obtn--locked {
+  color: #6b7089;
+  border-color: #e3e5f0;
+  background: var(--mga-queue-bg);
+}
+
 /* ═══ #14 (2026-08-18) — uninsured mode ═══ */
 
 /* States the situation ONCE at the top of the Curatio tab. Deliberately not an alarm:
@@ -1658,10 +1670,15 @@
 /* Origin tag. Label always present (WCAG 1.4.1) — the tint only reinforces it.
    Text stops are the dark end of each tint's own family, so all three pass AA on
    their fill. */
-/* Colour marks the EXCEPTION, not the rule (user, 2026-08-18). Nearly every record
-   is Curatio, so an in-network tag is the default and reads as plain meta text;
-   records from outside — the ones a doctor needs to notice were not produced here —
-   keep a quiet chip. Labels still carry the meaning on their own (WCAG 1.4.1). */
+/* Origin is colour-coded again (stakeholder review, 2026-08-18: „იქნებ სხვადასხვა
+   ფერით გამოვყოთ კურაციოში მიღებული მომსახურება და გარე?" — asked about ანალიზები
+   და კვლევები, applied everywhere so one record does not change appearance between
+   screens). This walks back the earlier plain-text treatment ON PURPOSE: the noise
+   complaint that prompted it was really about FOUR colours per row, so the fix is
+   kept where it mattered — status badges stay quiet, so a row now shows at most one
+   status fill plus this small chip.
+   Tints are the low-saturation end of each family and every label is spelled out, so
+   colour stays reinforcement, never the signal (WCAG 1.4.1). */
 .mga-srctag {
   display: inline-flex;
   align-items: center;
@@ -1670,22 +1687,23 @@
   line-height: 1.6;
   white-space: nowrap;
   gap: var(--mga-sp-xs);
-  color: var(--mga-muted);
-}
-/* The plain variants sit in a meta line of their own — carry the app's separator. */
-.mga-srctag--curatio::before,
-.mga-srctag--referral::before {
-  content: '·';
-}
-/* `referral` reads as PLAIN text like `curatio`, not as a chip: a referral from your
-   own family doctor is in-network, and in the referrals section every row is one —
-   chipping them all would tint the rule instead of the exception (the noise fix the
-   user asked for). Only records produced OUTSIDE Curatio keep the chip. */
-.mga-srctag--external {
-  background: var(--mga-lav);
-  color: var(--mga-lav-fg);
   border-radius: 5px;
   padding: 1px 6px;
+}
+/* in-network: Curatio's own teal, 7.4:1 */
+.mga-srctag--curatio {
+  background: #e9f5f3;
+  color: var(--mga-teal-fg);
+}
+/* produced outside Curatio: amber, 4.9:1 */
+.mga-srctag--external {
+  background: var(--mga-amber-bg);
+  color: var(--mga-amber-fg);
+}
+/* ordered by the family doctor: lavender, 8.2:1 */
+.mga-srctag--referral {
+  background: var(--mga-lav);
+  color: var(--mga-lav-fg);
 }
 
 /* Row meta line: date + origin (+ the share marker on records the patient added). */

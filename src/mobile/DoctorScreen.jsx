@@ -56,11 +56,11 @@ export default function DoctorScreen() {
               not in a block of their own: they act on THIS doctor, so they belong
               under the identity. Same pair, same order, same styling as the dash card. */}
           <div className="mga-doc__btns mga-doc__btns--stack mga-doc__btns--sep">
-            <button className="mga-obtn mga-obtn--pink" onClick={guard(noop)}>
+            <button className={'mga-obtn mga-obtn--pink' + (gated ? ' mga-obtn--locked' : '')} onClick={guard(noop)}>
               {M.doc.bookClinic}
               <GateLock gated={gated} />
             </button>
-            <button className="mga-obtn" onClick={guard(noop)}>
+            <button className={'mga-obtn' + (gated ? ' mga-obtn--locked' : '')} onClick={guard(noop)}>
               {M.doc.bookPhone}
               <GateLock gated={gated} />
             </button>

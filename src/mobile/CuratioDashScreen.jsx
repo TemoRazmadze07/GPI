@@ -6,7 +6,7 @@
      today-visit hero (visit day, per selected person) → digital-queue ticket
      activation (F-01) → personal doctor card (F-03 — booking only) → history
      row (F-02/F-03; OTP gates in place on HistoryScreen, counts withheld
-     while locked) → prevention (F-05).
+     while locked). Prevention (F-05) was pulled from this page for MVP1.
    CUT BY THE SPEC (do not re-add without the user): in-app doctor chat +
    next-chat chip (F-02/F-05 out), My Wellness, teleconsult and AI-symptom
    banners (absent from MVP1 entirely). Charts are also out — history stays
@@ -127,11 +127,11 @@ export default function CuratioDashScreen() {
                 new and stays invisible if it only lives behind „სრული ინფო". Both
                 open the booking flow (doctor preselected); only ვიზიტის ტიპი differs. */}
             <div className="mga-doc__btns mga-doc__btns--stack">
-              <button className="mga-obtn mga-obtn--pink" onClick={guard(noop)}>
+              <button className={'mga-obtn mga-obtn--pink' + (gated ? ' mga-obtn--locked' : '')} onClick={guard(noop)}>
                 {M.doc.bookClinic}
                 {gated && <Icon name="lock" size={12} />}
               </button>
-              <button className="mga-obtn" onClick={guard(noop)}>
+              <button className={'mga-obtn' + (gated ? ' mga-obtn--locked' : '')} onClick={guard(noop)}>
                 {M.doc.bookPhone}
                 {gated && <Icon name="lock" size={12} />}
               </button>
@@ -181,16 +181,9 @@ export default function CuratioDashScreen() {
           )}
         </button>
 
-        <button className="mga-card mga-prow" onClick={() => go('prevention')}>
-          <span className="mga-itile">
-            <Icon name="shield-check" size={17} />
-          </span>
-          <span style={{ flex: 1, minWidth: 0, lineHeight: 1.3 }}>
-            <span className="mga-meta__val" style={{ display: 'block' }}>{M.hub.preventionTitle}</span>
-            <span className="mga-meta__lbl">{M.dash2.preventionHint}</span>
-          </span>
-          <span className="mga-badge mga-badge--amber">{M.dash2.preventionBadge}</span>
-        </button>
+        {/* Review 2026-08-18: the პრევენცია row is HIDDEN for MVP1 and returns in MVP2.
+            The screen itself is untouched and still reachable at `#/mobile/prevention`
+            (and from the Flow Map) — hidden from the dashboard, not deleted. */}
 
       </div>
       {sheet}
