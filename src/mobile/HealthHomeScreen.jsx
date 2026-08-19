@@ -356,15 +356,18 @@ function ChronicRxWidget({ gated, guard }) {
             <span className="mga-meta__lbl">{M.chronicRx.meta(CHRONIC.daysLeft)}</span>
           </div>
           <div className="mga-h2__renewnote">{M.chronicRx.note}</div>
-          <button
-            className={'mga-obtn' + (gated ? ' mga-obtn--locked' : '')}
-            onClick={guard(noop)}
-          >
-            {M.chronicRx.cta}
-            {gated ? <GateLock gated /> : <Icon name="chevron-right" size={12} />}
-          </button>
         </div>
       </div>
+      {/* The action is the CARD's, not the row's, so it spans the full width instead of
+          starting after the icon rail (user, 2026-08-18). Card with ONE action → full
+          width; list rows with a per-row action keep the small auto-width button. */}
+      <button
+        className={'mga-obtn mga-rxrow__cta' + (gated ? ' mga-obtn--locked' : '')}
+        onClick={guard(noop)}
+      >
+        {M.chronicRx.cta}
+        {gated ? <GateLock gated /> : <Icon name="chevron-right" size={12} />}
+      </button>
     </section>
   )
 }

@@ -596,8 +596,8 @@
 .mga-rxrow__body > * + * {
   margin-top: var(--mga-sp-xs);
 }
-.mga-stage .mga-rxrow__body > .mga-obtn {
-  margin-top: var(--mga-sp-sm);
+.mga-stage .mga-rxrow__cta {
+  margin-top: var(--mga-sp-md);
 }
 .mga-chronic__title {
   display: flex;
