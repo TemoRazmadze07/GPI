@@ -16,6 +16,7 @@ import { M } from './strings.js'
 import { PERSONS, BOOKING, NEXT_BOOKING, QUEUE, REFERRAL, CHRONIC, COUNTS } from './data.js'
 import { go } from './nav.js'
 import { isUnlocked } from './otp.jsx'
+import { usePurchaseGate, GateLock } from './purchase.jsx'
 
 const noop = () => {}
 
@@ -324,21 +325,6 @@ function ReferralsWidget() {
         <span className="mga-refnum__val">{REFERRAL.number}</span>
         <span className="mga-badge mga-badge--amber">● {M.referrals.inReview}</span>
       </div>
-      <div className="mga-irow" style={{ paddingBottom: 2 }}>
-        <span className="mga-itile mga-itile--red">
-          <Icon name="pill" size={17} />
-        </span>
-        <div className="mga-meta" style={{ flex: 1 }}>
-          <div className="mga-chronic__title">
-            <span className="mga-meta__val">{CHRONIC.med}</span>
-            <span className="mga-badge mga-badge--lav">{M.referrals.chronic}</span>
-          </div>
-          <div className="mga-chronic__exp">{M.referrals.expiresIn(CHRONIC.daysLeft)}</div>
-        </div>
-        <button className="mga-linkbtn" onClick={noop}>
-          {M.referrals.renew} ›
-        </button>
-      </div>
       <button className="mga-cta mga-cta--navy" style={{ fontSize: 12.5, padding: 12, borderRadius: 22 }} onClick={noop}>
         {M.referrals.request}
       </button>
@@ -346,7 +332,46 @@ function ReferralsWidget() {
   )
 }
 
+/* The chronic prescription moved OUT of the მიმართვები card (user, 2026-08-18): it is a
+   different object, and sharing a card with an active referral is what crowded it.
+   Layout follows the standing rule — the medication name owns its line, state and meta
+   sit below it, the action is full width. Wording follows #11: renewal is a booked
+   visit, so this row no longer contradicts დანიშნულებები. */
+function ChronicRxWidget({ gated, guard }) {
+  return (
+    <section className="mga-card" aria-label={M.chronicRx.title}>
+      <div className="mga-whead">
+        <h2 className="mga-whead__title" style={{ margin: 0, fontSize: 15 }}>
+          {M.chronicRx.title}
+        </h2>
+      </div>
+      <div className="mga-rxrow">
+        <span className="mga-itile">
+          <Icon name="pill" size={17} />
+        </span>
+        <div className="mga-rxrow__body">
+          <div className="mga-meta__val">{CHRONIC.med}</div>
+          <div className="mga-hitem__meta">
+            <span className="mga-badge mga-badge--amber">{M.chronicRx.state}</span>
+            <span className="mga-meta__lbl">{M.chronicRx.meta(CHRONIC.daysLeft)}</span>
+          </div>
+          <div className="mga-h2__renewnote">{M.chronicRx.note}</div>
+          <button
+            className={'mga-obtn' + (gated ? ' mga-obtn--locked' : '')}
+            onClick={guard(noop)}
+          >
+            {M.chronicRx.cta}
+            {gated ? <GateLock gated /> : <Icon name="chevron-right" size={12} />}
+          </button>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 export default function HealthHomeScreen({ visitDay, v2 = false }) {
+  /* #14 — the renewal CTA on this screen is an insurance-funded action like the rest. */
+  const { gated, guard, sheet } = usePurchaseGate()
   return (
     <>
       <TopBar />
@@ -376,6 +401,7 @@ export default function HealthHomeScreen({ visitDay, v2 = false }) {
         <BookingsWidget visitDay={visitDay} v2={v2} />
         {visitDay && !v2 && <NextBookingCard />}
         <ReferralsWidget />
+        <ChronicRxWidget gated={gated} guard={guard} />
         {v2 && <HistoryRow />}
         <div className="mga-fabrow">
           <button className="mga-fab" aria-label="Call support" onClick={noop}>
@@ -383,6 +409,7 @@ export default function HealthHomeScreen({ visitDay, v2 = false }) {
           </button>
         </div>
       </div>
+      {sheet}
     </>
   )
 }

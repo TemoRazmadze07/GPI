@@ -580,6 +580,25 @@
   font-size: 12px;
   font-weight: 700;
 }
+/* Chronic-prescription row: icon rail + stacked body. Title owns its width (standing
+   rule), state + meta wrap under it, the action runs full width. */
+.mga-rxrow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding-top: var(--mga-sp-sm);
+}
+.mga-rxrow__body {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.3;
+}
+.mga-rxrow__body > * + * {
+  margin-top: var(--mga-sp-xs);
+}
+.mga-stage .mga-rxrow__body > .mga-obtn {
+  margin-top: var(--mga-sp-sm);
+}
 .mga-chronic__title {
   display: flex;
   align-items: center;
@@ -935,12 +954,10 @@
 .mga-hitem--top .mga-dlbtn {
   margin-top: -2px;
 }
-.mga-hitem__head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--mga-sp-sm);
-}
+/* `.mga-hitem__head` (title + badge on one line) REMOVED 2026-08-18 — standing rule:
+   a title never shares its line with a badge, because a longer title then breaks over
+   three lines while the badge sits alone. Status moved into `.mga-hitem__meta`, which
+   already wraps. */
 .mga-hitem__note {
   font-size: 10.5px;
   font-weight: 600;

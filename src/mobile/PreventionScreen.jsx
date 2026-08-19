@@ -46,7 +46,7 @@ function Row({ item, gated, guard }) {
           <div className="mga-prv__state">
             <span className="mga-badge mga-badge--green">{M.prev.done}</span>
           </div>
-        )}
+        )}{/* already on its own line — the standing rule's first instance */}
         {item.status !== 'done' && (
           /* Dead until F-04 — see header comment. */
           <button className={'mga-obtn mga-obtn--sm' + (gated ? ' mga-obtn--locked' : '')} onClick={guard(noop)}>

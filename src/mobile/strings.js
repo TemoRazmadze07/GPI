@@ -43,8 +43,19 @@ export const M = {
     inReview: 'განხილვაში',
     chronic: 'ქრონიკული',
     expiresIn: (d) => `ვადა იწურება ${d} დღეში`,
-    renew: 'განახლება',
     request: 'მიმართვის მოთხოვნა +',
+  },
+  /* Split out of the მიმართვები card 2026-08-18 (user chose option B): a chronic
+     prescription is not a referral, and stacking the two objects in one card is what
+     made the row cramped. Wording follows #11 — renewal is a VISIT, not a one-tap
+     request — so the same medication no longer promises two different mechanics on
+     two screens. */
+  chronicRx: {
+    title: 'ქრონიკული რეცეპტი',
+    state: 'ვადა იწურება',
+    meta: (d) => `ქრონიკული · ${d} დღეში ამოიწურება`,
+    note: 'განახლებისთვის საჭიროა ვიზიტი პირად ექიმთან',
+    cta: 'ჩაეწერე განახლებისთვის',
   },
   nav: ['main', 'policies', 'purchase', 'Payments', 'more'],
   demo: {

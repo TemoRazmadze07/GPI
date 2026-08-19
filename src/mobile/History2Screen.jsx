@@ -114,8 +114,11 @@ export default function History2Screen() {
               {M.upl.entry}
             </button>
             <div className="mga-card" style={{ padding: '4px 16px' }}>
+              {/* Key needs the ORIGIN: the same test exists twice — once done at Curatio,
+                  once uploaded from another clinic on the same date (#13's re-homing).
+                  An earlier attempt at this fix silently no-opped, so React kept warning. */}
               {analyses.map((r) => (
-                <div key={r.title + r.date} className="mga-hitem mga-hitem--top">
+                <div key={r.title + r.date + (r.clinic || r.src)} className="mga-hitem mga-hitem--top">
                   <div className="mga-hitem__body">
                     {/* #7 polish (user, 2026-08-18): the status used to be a column of
                         its own, vertically centred — on a row with a note + CTA it
@@ -123,15 +126,17 @@ export default function History2Screen() {
                         now sits on the TITLE line, where the reading belongs, and the
                         note gets the full width. Badges still form one column, since
                         every body ends at the same x. */}
-                    <div className="mga-hitem__head">
-                      <div className="mga-meta__val" style={{ fontSize: 12.5 }}>
-                        {r.title} · {r.person}
-                      </div>
+                    {/* Standing rule (user, 2026-08-18): a TITLE never shares its line with a
+                        badge. It owns the full width; the status drops into the meta line
+                        below, which already wraps. A 29-char record name broke over three
+                        lines under the old right-rail treatment. */}
+                    <div className="mga-meta__val" style={{ fontSize: 12.5 }}>
+                      {r.title} · {r.person}
+                    </div>
+                    <div className="mga-hitem__meta">
                       {r.status && (
                         <span className={'mga-badge ' + BADGE[r.status]}>{M.history.statuses[r.status]}</span>
                       )}
-                    </div>
-                    <div className="mga-hitem__meta">
                       <span className="mga-meta__lbl">{r.date}</span>
                       <SourceTag src={r.src} clinic={r.clinic} />
                       {r.shared && (
@@ -207,8 +212,8 @@ export default function History2Screen() {
                       key={m.name}
                       className={'mga-h2__rx' + (m.state === 'expiring' && !off ? ' mga-h2__rx--warn' : '')}
                     >
-                      <div className="mga-hitem__head">
-                        <div className="mga-meta__val" style={{ fontSize: 12.5 }}>{m.name}</div>
+                      <div className="mga-meta__val" style={{ fontSize: 12.5 }}>{m.name}</div>
+                      <div className="mga-hitem__meta">
                         <span
                           className={
                             'mga-badge ' +
@@ -217,8 +222,6 @@ export default function History2Screen() {
                         >
                           {off ? M.hist2.dismissed : M.hist2.medStates[m.state]}
                         </span>
-                      </div>
-                      <div className="mga-hitem__meta">
                         <span className="mga-meta__lbl">
                           {m.how} · {m.by}
                         </span>
@@ -273,15 +276,13 @@ export default function History2Screen() {
               {grp === 'referrals' &&
                 V2_HISTORY.referrals.map((r) => (
                   <div key={r.number} className="mga-h2__rx">
-                    <div className="mga-hitem__head">
-                      <div className="mga-meta__val" style={{ fontSize: 12.5 }}>{r.title}</div>
+                    <div className="mga-meta__val" style={{ fontSize: 12.5 }}>{r.title}</div>
+                    <div className="mga-hitem__meta">
                       <span
                         className={'mga-badge ' + (r.status === 'booked' ? 'mga-badge--quiet' : 'mga-badge--amber')}
                       >
                         {M.hist2.refStatuses[r.status]}
                       </span>
-                    </div>
-                    <div className="mga-hitem__meta">
                       <span className="mga-meta__lbl">
                         № {r.number} · {r.expiry}
                       </span>
