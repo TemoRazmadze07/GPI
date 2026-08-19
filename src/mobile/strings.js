@@ -282,7 +282,7 @@ export const M = {
     ahead: 'წინ',
     status: 'სტატუსი',
     live: 'ცოცხალი',
-    map: 'რუკაზე ნახვა',
+    /* map CTA removed 2026-08-18 (review): maps are a dev pain point, deferred. */
     /* #5 (2026-08-18) — arrival check-in. */
     arriveTitle: 'კლინიკაში ხარ?',
     arriveHint: 'დააჭირე მისვლისთანავე — რიგი დაგიდასტურდება და ექიმი გაიგებს, რომ ადგილზე ხარ',
