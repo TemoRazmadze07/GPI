@@ -49,8 +49,8 @@ export default function MoreScreen() {
             <span className="mga-itile">
               <Icon name={r.icon} size={17} />
             </span>
-            <span style={{ flex: 1, minWidth: 0, lineHeight: 1.3 }}>
-              <span className="mga-meta__val" style={{ display: 'block' }}>{M.more.rows[r.id]}</span>
+            <span className="mga-meta" style={{ flex: 1 }}>
+              <span className="mga-meta__val">{M.more.rows[r.id]}</span>
               {M.more.hints[r.id] && <span className="mga-meta__lbl">{M.more.hints[r.id]}</span>}
             </span>
             <span className="mga-prow__chv">

@@ -69,10 +69,18 @@ export const HISTORY_COUNTS = {
 /* ── V2 stakeholder-parity data (source of truth: reference/mygpi_v3_stakeholder_
    prototype.html). V1 data above stays untouched. No relation labels by design —
    the system only knows policyholder (sorted first = default) vs members. ── */
+/* Photos are Unsplash stand-ins on the same URL grammar as the Curatio doctors
+   (w/h 96, crop=faces) — `initial` stays as the fallback when a photo is absent.
+   Every candidate was checked at the real 34px avatar size before being picked:
+   `crop=faces` does NOT rescue a full-body shot, it just crops it, so a figure
+   standing in a wide frame lands as an unreadable speck in the circle.
+   The cast follows the demo records: ნიკა has a პედიატრი visit (V2_HISTORY),
+   so he reads as a child; ანი has no records, and is cast as a second child so
+   the switcher tells a family-policy story. Swap freely — nothing keys on age. */
 export const V2_PERSONS = [
-  { id: 'tp', name: 'თამარ გიორგაძე', initial: 'თ', ocin: 'OCIN 00142897', holder: true },
-  { id: 'np', name: 'ნიკა გიორგაძე', initial: 'ნ', ocin: 'OCIN 00142911' },
-  { id: 'ap', name: 'ანი გიორგაძე', initial: 'ა', ocin: 'OCIN 00142912' },
+  { id: 'tp', name: 'თამარ გიორგაძე', initial: 'თ', ocin: 'OCIN 00142897', holder: true, photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=96&h=96&fit=crop&crop=faces&auto=format&q=60' },
+  { id: 'np', name: 'ნიკა გიორგაძე', initial: 'ნ', ocin: 'OCIN 00142911', photo: 'https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=96&h=96&fit=crop&crop=faces&auto=format&q=60' },
+  { id: 'ap', name: 'ანი გიორგაძე', initial: 'ა', ocin: 'OCIN 00142912', photo: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=96&h=96&fit=crop&crop=faces&auto=format&q=60' },
 ]
 
 /* Today's visit per person — exists only in the visit-day demo mode. */

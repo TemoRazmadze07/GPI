@@ -61,7 +61,7 @@ export default function HistoryHubScreen() {
           <div className="mga-qpk__empty">
             <Icon name="lock" size={22} />
             <div className="mga-meta__val" style={{ marginTop: 8 }}>{M.dash.protectedTitle}</div>
-            <div className="mga-meta__lbl" style={{ marginTop: 2 }}>{M.dash.protectedHint}</div>
+            <div className="mga-meta__lbl" style={{ marginTop: 4 }}>{M.dash.protectedHint}</div>
           </div>
         </div>
         <OtpSheet onSuccess={() => setUnlocked(true)} onClose={() => go(backTarget())} />
@@ -78,8 +78,8 @@ export default function HistoryHubScreen() {
             <span className="mga-itile">
               <Icon name={ICONS[id]} size={17} />
             </span>
-            <span style={{ flex: 1, minWidth: 0, lineHeight: 1.3 }}>
-              <span className="mga-meta__val" style={{ display: 'block' }}>{label}</span>
+            <span className="mga-meta" style={{ flex: 1 }}>
+              <span className="mga-meta__val">{label}</span>
               <span className="mga-meta__lbl">{metas[id]}</span>
             </span>
             {id === 'prescriptions' && expiring > 0 && (

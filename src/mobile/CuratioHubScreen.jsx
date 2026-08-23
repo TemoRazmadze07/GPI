@@ -77,7 +77,7 @@ export default function CuratioHubScreen() {
               <div className="mga-meta__val">{DOCTOR.name}</div>
               <div className="mga-meta__lbl">
                 {DOCTOR.role} ·{' '}
-                <span style={{ color: 'var(--mga-green-fg)', fontWeight: 600 }}>● {M.hub.online}</span>
+                <span style={{ color: 'var(--mga-green-fg)', fontWeight: 600 }}>{M.hub.online}</span>
               </div>
             </div>
           </div>
@@ -99,8 +99,8 @@ export default function CuratioHubScreen() {
           <span className="mga-itile" style={{ background: 'var(--mga-amber-bg)', color: 'var(--mga-amber-fg)' }}>
             <Icon name="bell" size={17} />
           </span>
-          <span style={{ flex: 1, minWidth: 0, lineHeight: 1.3 }}>
-            <span className="mga-meta__val" style={{ display: 'block' }}>{M.hub.remindersTitle}</span>
+          <span className="mga-meta" style={{ flex: 1 }}>
+            <span className="mga-meta__val">{M.hub.remindersTitle}</span>
             <span className="mga-meta__lbl" style={{ color: 'var(--mga-amber-fg)', fontWeight: 600 }}>
               {NEXT_REMINDER.text}
             </span>
@@ -114,8 +114,8 @@ export default function CuratioHubScreen() {
           <span className="mga-itile" style={{ background: 'var(--mga-green-bg)', color: 'var(--mga-green-fg)' }}>
             <Icon name="shield-check" size={17} />
           </span>
-          <span style={{ flex: 1, minWidth: 0, lineHeight: 1.3 }}>
-            <span className="mga-meta__val" style={{ display: 'block' }}>{M.hub.preventionTitle}</span>
+          <span className="mga-meta" style={{ flex: 1 }}>
+            <span className="mga-meta__val">{M.hub.preventionTitle}</span>
             <span className="mga-meta__lbl">{PREVENTION_NEXT.text}</span>
           </span>
           <span className="mga-prow__chv">

@@ -11,13 +11,22 @@
    A11y (Rule 7 + WCAG 1.4.1): every variant carries a LABEL, never colour alone —
    the tint is redundant reinforcement, not the signal.
 
-   Variants (palette per the R3 review — the docblock previously described the
-   INVERSE of what the CSS paints, which would have mis-ported to Figma):
-     · curatio  — in-network, TEAL      (#0b6e63 on #e9f5f3, 5.5:1)
-     · external — produced elsewhere, AMBER (#b45309 on #fef3d8, 4.55:1)
-     · referral — ordered by the family doctor, LAVENDER (#3a3d8f on #eef0fb, 8.2:1)
-   All three are in use; measured with a contrast checker, not estimated. */
+   Anatomy (user, 2026-08-20): rounded PILL with a leading icon, on its OWN LINE
+   under the meta row — no longer a rounded-rect right-slotted inline (supersedes
+   audit D1's stable-right-slot and the r6 shape-axis note). With shape shared
+   across all pills, ORIGIN is now marked by icon + placement instead.
 
+   Size (user, 2026-08-20): the CLINIC-CHIP tier — 12px label, 24px pill, 16px icon —
+   one step up from the h18 meta pills so origin reads at a glance.
+
+   Variants (user, 2026-08-20 — GPI pink for in-network, gray for external):
+     · curatio  — in-network, GPI PINK (#c01b60 on #fde7f1, 5.01:1) · building icon
+     · external — produced elsewhere, GRAY (#5b6078 on #eef0f4, 5.43:1) · building icon
+     · referral — ordered by the family doctor, LAVENDER (#3a3d8f on #eef0fb, 8.24:1) · stethoscope
+   Both non-token fgs are a step darker than their family token, which fails AA on
+   the tint (--mga-pink-fg 4.16:1, --mga-muted-fg 4.28:1). All measured, not estimated. */
+
+import Icon from '../lib/Icon.jsx'
 import { M } from './strings.js'
 
 const TONE = {
@@ -25,6 +34,9 @@ const TONE = {
   external: 'mga-srctag--external',
   referral: 'mga-srctag--referral',
 }
+
+/* Clinics get the building; the referral origin is the doctor's order, not a place. */
+const GLYPH = { curatio: 'building-2', external: 'building-2', referral: 'stethoscope' }
 
 export default function SourceTag({ src, clinic }) {
   if (!src || !TONE[src]) return null
@@ -34,5 +46,10 @@ export default function SourceTag({ src, clinic }) {
   const label = src === 'external' && clinic ? `${M.src[src]} · ${clinic}` : M.src[src]
   /* `clinic` is null when the uploader left the field blank — the guard above is what
      keeps the chip from reading „გარე · გარე". */
-  return <span className={'mga-srctag ' + TONE[src]}>{label}</span>
+  return (
+    <span className={'mga-srctag ' + TONE[src]}>
+      <Icon name={GLYPH[src]} size={16} />
+      {label}
+    </span>
+  )
 }

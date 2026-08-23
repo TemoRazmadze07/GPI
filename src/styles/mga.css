@@ -17,8 +17,9 @@
    numerals 20/26/44. Weights 400/600/700; 800 only on display numerals. Avatar
    initials exempt (0.4 × circle size). V1-only classes (.mga-qa__*, .mga-cur__*,
    .mga-hub__*, .mga-locksect*, .mga-queue__*) stay frozen. Icon↔text row gap = 10.
-   META PILLS (badge / srctag / langtag / pselect-tag) = p 2/8 + lh14 → h18;
-   srctag keeps its rounded-rect (shape marks the origin-vs-status axis).
+   META PILLS (badge / langtag / pselect-tag) = p 2/8 + lh14 → h18;
+   srctag left the spec 2026-08-20: CLINIC CHIP = 12px/lh16 + p 4/10 → h24, icon 16,
+   pill, own line, GPI pink for in-network / gray for external.
    LIST CARDS = .mga-card--list (v4 / side16; rows carry p12/0). */
 
 .mga-stage {
@@ -41,6 +42,8 @@
   --mga-green-fg: #1f9d55;
   --mga-amber-bg: #fef3d8;
   --mga-amber-fg: #b45309;
+  --mga-red-bg: #fdecec;
+  --mga-red-fg: #c2410c;
   /* warning SURFACE (card tint + its hairline) — lighter than the badge fill, which
      is too saturated to sit behind a whole row */
   --mga-warn-bg: #fff9ef;
@@ -284,14 +287,52 @@
 .mga-stage .mga-iconbtn--raised {
   box-shadow: var(--mga-shadow);
 }
-.mga-iconbtn__dot {
+/* ═══ NOTIFICATION DOT — one primitive, was THREE ═══
+   .mga-dot owns the SHAPE (size, colour, optional ring); each consumer owns its
+   own PLACEMENT via a context selector below — same split as .mga-btn, where the
+   primitive holds the tier and context selectors retarget it.
+   Sizes are box-border (the stage sets border-box), so --ring eats 1.5px on each
+   side of the 8px box: an 8px dot with a 5px visible core and a card-coloured
+   ring that lifts it off whatever it overlaps. --sm is the ringless 6px dot that
+   sits INSIDE a control rather than on its corner. */
+.mga-dot {
   position: absolute;
-  top: 7px;
-  right: 8px;
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--mga-pink);
+}
+.mga-dot--sm {
+  width: 6px;
+  height: 6px;
+}
+.mga-dot--ring {
+  border: 1.5px solid var(--mga-card);
+}
+.mga-dot--alert {
+  background: var(--mga-red-fg); /* expiry/overdue, not generic "new" */
+}
+/* A dot carries no text. Where one REPLACES a label (the history card's „N ვადა"),
+   the label moves here so it is still announced. */
+.mga-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+/* placements */
+.mga-iconbtn .mga-dot {
+  top: 7px;
+  right: 8px;
+}
+.mga-itile .mga-dot {
+  top: -2px;
+  right: -2px;
 }
 .mga-stage .mga-pts {
   height: 34px;
@@ -553,6 +594,7 @@
   margin-bottom: var(--mga-sp-md);
 }
 .mga-cur__mark {
+  align-self: flex-start;
   width: 28px;
   height: 28px;
   border-radius: 9px;
@@ -644,6 +686,10 @@
   padding: var(--mga-sp-sm) 0;
 }
 .mga-itile {
+  /* Leading tile top-aligns: centred, it drifted below the title on 2–3-line rows.
+     No-op on single-line rows, where the tile is the tallest item anyway. */
+  align-self: flex-start;
+  position: relative; /* anchors .mga-dot; no offsets, so nothing moves */
   width: 34px;
   height: 34px;
   border-radius: var(--mga-r-tile);
@@ -663,10 +709,13 @@
   color: var(--mga-teal);
 }
 .mga-itile--red {
-  background: #fdecec;
-  color: #c2410c;
+  background: var(--mga-red-bg);
+  color: var(--mga-red-fg);
 }
 .mga-meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mga-sp-xs); /* one two-line-meta spec: val↔lbl 4px, as .mga-h2__rx / .mga-prv__body */
   line-height: 1.3;
   min-width: 0;
 }
@@ -677,6 +726,45 @@
 .mga-meta__val {
   font-size: 13px;
   font-weight: 700;
+}
+
+/* ═══ KEY–VALUE TABLE — one spec-row primitive, was TWO tinted grids ═══
+   Static fact tables (A4 doctor detail, doctor-select confirm sheet): one row
+   per fact, label left, value right. Replaces .mga-docd__grid + .mga-dsheet__grid,
+   whose 2-col tinted cells stacked each pair vertically — collapsed into one
+   column those tints read as stripes, and the tint was only doing the grouping
+   work the 2-col split needed.
+   Label is 12/regular in --mga-muted-fg: at this size it is readable content,
+   not decoration, so it clears AA (4.88:1). The 10px --mga-muted it replaced was
+   3.19:1. No text-transform either — Mkhedruli has no case, so the old
+   `uppercase` only tracked the label out. */
+.mga-kv__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mga-sp-md);
+  padding: 10px 0;
+  line-height: 1.3; /* same spec as .mga-meta — the card's inherited 22px made a
+                       12px single-line row 43px tall and grew the card 20px */
+  border-bottom: 0.5px solid var(--mga-border);
+}
+.mga-kv__row:first-child {
+  padding-top: 0; /* the card label's own 8px margin is the gap */
+}
+.mga-kv__row:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+.mga-kv__lbl {
+  font-size: 12px;
+  color: var(--mga-muted-fg);
+}
+.mga-kv__val {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mga-text);
+  text-align: right;
+  min-width: 0;
 }
 .mga-daterow {
   display: flex;
@@ -725,6 +813,11 @@
   /* Deliberately NOT --mga-muted: this is the result reading, not a date, so it
      holds AA on white (4.9:1) while staying colourless. */
   color: #6b7089;
+  /* No fill → no box: the inherited 2/8 pill padding read as a phantom left indent
+     wherever this badge opens a meta line (user, 2026-08-20). Text now sits flush;
+     the right margin + the line's 4px gap keep an 8px breath before the date. */
+  padding: 2px 0;
+  margin-right: var(--mga-sp-xs);
 }
 .mga-actions {
   display: flex;
@@ -941,9 +1034,18 @@
   text-align: center;
   padding: 2px 0;
 }
+/* 4px label→value gap, explicit (user, 2026-08-20). Two of the three cells stack
+   block divs whose spacing fell out of line-height alone, while the სტატუსი cell
+   ends in an inline .mga-badge with its own 14px line-box — so the three cells
+   were not on the same rhythm. Flex column + the micro-scale 4 fixes all three at
+   once; align-items keeps the badge shrink-to-fit instead of stretching. */
 .mga-tstats__cell {
   flex: 1;
   line-height: 1.3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mga-sp-xs);
 }
 .mga-tstats__cell + .mga-tstats__cell {
   border-left: 0.5px solid var(--mga-border);
@@ -952,12 +1054,12 @@
   font-size: 15px;
   font-weight: 700;
 }
-.mga-tstats__live {
-  font-size: 13px; /* audit D2 — was 12 next to 16px siblings */
-  font-weight: 700;
-  color: var(--mga-green-fg);
-  padding-top: 2px;
-}
+/* The 2px badge nudge that used to live here is GONE (user asked for 4px, 2026-08-20).
+   It hand-tuned the status cell to equal-height its neighbours (label 14 + 2 + badge 18
+   = label 14 + value 20) back when spacing came from line-height alone — but it stacked
+   on top of the cell's new 4px gap and made this one cell 6. With the flex gap the three
+   values now START on the same line, which is the alignment that actually reads; the
+   badge simply ends 2px shorter than the taller value text, and the row stretches. */
 
 /* Toggle switch (button-based, role=switch). Consumer: the upload sheet's per-upload
    consent row (control on the LEFT per the 2026-08-17 global rule). The F-05
@@ -1270,9 +1372,23 @@
   text-align: left;
   background: var(--mga-card);
   border: 0.5px solid var(--mga-border);
-  border-radius: var(--mga-r-tile);
+  /* Pill (user, 2026-08-20): this is a CONTROL — a button that opens a listbox —
+     and every control in the module is a pill (.mga-seg above it, all three
+     .mga-btn tiers). At 51px tall it resolves to 25.5px, a step softer than the
+     switcher's 22 because it is taller, and it echoes the 34px round avatar
+     inside. It used to be --mga-r-tile 12px: the squarest element in a stack
+     that runs 22 above → 16 below. */
+  border-radius: var(--mga-r-pill);
   box-shadow: var(--mga-shadow);
-  padding: 8px 12px;
+  /* Asymmetric inset is deliberate (user, 2026-08-20 — "chevron perfectly
+     aligned"). A flat 12px both sides mirrors correctly only in a rectangle;
+     with round caps the two ends carry different mass — a 34px avatar fills its
+     cap, a 16px chevron floats in its own. Matching CENTRES instead of edges:
+     the chevron's centre sits 28px from the right edge. 20 stays on the micro-scale.
+     LEFT is 8 (user, 2026-08-20): the avatar sits the same distance from the left
+     edge as from the top and bottom — 8.5px on all three including the border —
+     so it reads as inset into the cap rather than pushed off-centre. */
+  padding: 8px 20px 8px 8px;
 }
 .mga-pselect__ava {
   position: relative;
@@ -1313,17 +1429,12 @@
   display: flex;
   flex-shrink: 0;
 }
-.mga-pselect__dot {
-  position: absolute;
+/* placements for the shared .mga-dot — the shape lives in the primitive */
+.mga-pselect__chev .mga-dot {
   top: -3px;
   right: -5px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--mga-pink);
-  border: 1.5px solid var(--mga-card);
 }
-.mga-pselect__dot--ava {
+.mga-pselect__ava .mga-dot {
   top: -1px;
   right: -1px;
 }
@@ -1342,7 +1453,9 @@
   z-index: 60;
   background: var(--mga-card);
   border: 0.5px solid var(--mga-border);
-  border-radius: var(--mga-r-tile);
+  /* Card radius, not tile: a pill trigger over a 12px popup reads mismatched.
+     The usual pairing is pill triggers, card surfaces. */
+  border-radius: var(--mga-r-card);
   box-shadow: 0 8px 28px rgba(41, 37, 98, 0.16);
   overflow: hidden;
 }
@@ -1352,7 +1465,12 @@
   gap: 10px;
   width: 100%;
   text-align: left;
-  padding: 10px 12px;
+  /* Right inset matches the TRIGGER's, not the left: open, the chevron and these
+     radio marks stack in one vertical line, so they share a centre (28px from the
+     right edge). LEFT follows the same equidistance rule as the trigger, against
+     this row's own 10px vertical padding — 1.5px from the trigger avatar's 8.5,
+     which is under the threshold of anything you can see. */
+  padding: 10px 20px 10px 10px;
 }
 .mga-stage .mga-pselect__row + .mga-pselect__row {
   border-top: 0.5px solid var(--mga-border);
@@ -1401,6 +1519,7 @@
 }
 .mga-hero__kicker {
   font-size: 10px;
+  line-height: 14px;
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -1415,11 +1534,13 @@
 }
 .mga-hero__proc {
   font-size: 15px; /* title tier; 800 stays reserved for display numerals (audit C1) */
+  line-height: 20px;
   font-weight: 700;
   margin-bottom: 4px;
 }
 .mga-hero__place {
   font-size: 11px;
+  line-height: 16px;
   color: rgba(255, 255, 255, 0.72);
 }
 .mga-hero__live {
@@ -1428,6 +1549,7 @@
   gap: 6px;
   margin-top: 8px;
   font-size: 11px;
+  line-height: 16px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
 }
@@ -1448,6 +1570,7 @@
 }
 .mga-hero__whenlbl {
   font-size: 10px;
+  line-height: 14px;
   color: rgba(255, 255, 255, 0.55);
   margin-bottom: 2px;
 }
@@ -1470,8 +1593,8 @@
 
 /* Badge tones missing until now */
 .mga-badge--red {
-  background: #fdecec;
-  color: #c2410c;
+  background: var(--mga-red-bg);
+  color: var(--mga-red-fg);
 }
 .mga-badge--teal {
   background: #e9f5f3;
@@ -1552,34 +1675,8 @@
   color: var(--mga-green-fg);
   margin-top: 4px;
 }
-.mga-docd__grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-}
-.mga-docd__cell {
-  background: var(--mga-queue-bg);
-  border-radius: 10px;
-  padding: 8px 10px;
-}
-.mga-docd__cell--wide {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 6px;
-}
-.mga-docd__lbl {
-  font-size: 10px; /* audit D3 — 9.5 was the module's smallest text */
-  color: var(--mga-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-bottom: 2px;
-}
-.mga-docd__val {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--mga-text);
-}
+/* The basic-info block is the shared .mga-kv table now — the 2×2 tinted grid
+   plus its one full-width row used to live here. */
 /* #3 (2026-08-18) — the icon+title+hint ACTION ROWS that lived here (WhatsApp +
    booking) are gone: WhatsApp was dropped by the stakeholder and the two bookings
    became buttons inside the profile card (.mga-doc__btns--stack). */
@@ -1611,6 +1708,7 @@
 .mga-ins__bnrtxt {
   display: flex;
   flex-direction: column;
+  gap: var(--mga-sp-xs);
   flex: 1;
   min-width: 0;
   line-height: 1.35;
@@ -1653,27 +1751,35 @@
 .mga-srctag {
   display: inline-flex;
   align-items: center;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
-  line-height: 1.6;
   white-space: nowrap;
-  gap: var(--mga-sp-xs);
-  /* rounded-rect ON PURPOSE while status badges are pills — shape marks the
-     origin-vs-status axis (corner-radius system: shape is a signal). */
-  border-radius: 6px;
-  padding: 2px 8px;
-  line-height: 14px;
+  gap: 6px;
+  /* pill + leading clinic icon, on its own line (user, 2026-08-20) — supersedes the
+     r6 shape-axis note and audit D1's right slot: with every pill the same shape,
+     origin reads via the icon and the dedicated line.
+     CLINIC-CHIP TIER (user, 2026-08-20): one step up from the meta pills —
+     12px / lh16 + p 4/10 → h24, icon 16 — so the record's origin reads at a
+     glance without competing with the 13px titles. */
+  border-radius: var(--mga-r-pill);
+  padding: 4px 10px;
+  line-height: 16px;
 }
-/* in-network: Curatio's own teal — 5.50:1 (measured; an earlier comment claimed 7.4) */
+.mga-srctag svg {
+  flex-shrink: 0;
+}
+/* in-network: GPI brand pink (user, 2026-08-20 — was Curatio teal). --mga-pink-fg
+   only reaches 4.16:1 on the soft tint, so the chip text is a step darker: 5.01:1
+   measured. Don't swap back to pink-fg without re-measuring. */
 .mga-srctag--curatio {
-  background: #e9f5f3;
-  color: var(--mga-teal-fg);
+  background: var(--mga-pink-soft);
+  color: #c01b60;
 }
-/* produced outside Curatio: amber — 4.55:1 measured, so AA by 0.05. Do NOT lighten
-   this fill or darken the page behind it without re-measuring. */
+/* produced outside Curatio: GRAY (user, 2026-08-20 — "not ours"; warm tints stay
+   reserved for status). 5.43:1 measured; --mga-muted-fg reaches only 4.28:1 here. */
 .mga-srctag--external {
-  background: var(--mga-amber-bg);
-  color: var(--mga-amber-fg);
+  background: #eef0f4;
+  color: #5b6078;
 }
 /* ordered by the family doctor: lavender — 8.24:1 */
 .mga-srctag--referral {
@@ -1681,18 +1787,18 @@
   color: var(--mga-lav-fg);
 }
 
-/* Row meta line: date + origin (+ the share marker on records the patient added). */
+/* Row meta line: status + date (+ the share marker on records the patient added);
+   the origin chip sits UNDER it on its own line since 2026-08-20. */
 .mga-hitem__meta {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: var(--mga-sp-xs);
 }
-/* Origin chip owns the line's RIGHT SLOT (audit D1): short metas kept it inline,
-   long ones wrapped it under — same list, two layouts. margin-left:auto gives it
-   one stable position whether or not the line wraps. */
-.mga-hitem__meta .mga-srctag {
-  margin-left: auto;
+/* Own-line origin chip inside a visits card: match the 4px rhythm the list
+   bodies get from their `* + *` rules. */
+.mga-card > .mga-srctag {
+  margin-top: var(--mga-sp-xs);
 }
 /* Inline settled-state marker: check + label, muted. Used where a state is quiet
    enough that a badge in the title line would only steal width from the title —
@@ -1788,6 +1894,7 @@
 .mga-upl__consenttxt {
   display: flex;
   flex-direction: column;
+  gap: var(--mga-sp-xs);
   flex: 1;
   line-height: 1.35;
   min-width: 0;
@@ -2087,7 +2194,8 @@
    existing initial-circles; search field mirrors the booking flow's controls. */
 .mga-doc__ava img,
 .mga-trf__ava img,
-.mga-docd__ava img {
+.mga-docd__ava img,
+.mga-pselect__ava img {
   width: 100%;
   height: 100%;
   border-radius: 50%;
@@ -2137,12 +2245,10 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* Doctor-details block inside the selection confirm sheet (reuses the A4
-   detail grid tokens — same information, one level earlier). */
-.mga-dsheet__grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
+/* Doctor-details block inside the selection confirm sheet: the shared .mga-kv
+   table, same information as the A4 detail screen one level earlier. Only the
+   sheet rhythm lives here. */
+.mga-dsheet__kv {
   margin: 0 0 var(--mga-sp-md);
 }
 /* Selection-sheet rhythm (user, 2026-08-18): title →lg16→ hero →md12→ grid
@@ -2167,24 +2273,11 @@
 .mga-trf__success .mga-trf__btns--stack {
   margin-top: var(--mga-sp-lg);
 }
-.mga-dsheet__cell {
-  background: var(--mga-queue-bg);
-  border-radius: 10px;
-  padding: 8px 10px;
-  min-width: 0;
-}
-.mga-dsheet__cell--wide {
-  grid-column: 1 / -1;
-}
+/* Kept for the UPLOAD sheet's form-field labels, its only remaining consumer —
+   this sheet's own doctor-detail cells moved to .mga-kv. */
 .mga-dsheet__lbl {
   font-size: 10px;
   color: var(--mga-muted);
-}
-.mga-dsheet__val {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--mga-text);
-  margin-top: 2px;
 }
 .mga-dsheet__hero {
   display: flex;
@@ -2246,15 +2339,6 @@
    itile / cta / badge patterns; only the tint + spacing are new. ── */
 .mga-stage .mga-arr__cta {
   margin: var(--mga-sp-md) 0 0;
-}
-.mga-arr__note {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: var(--mga-sp-sm);
-  font-size: 11px;
-  line-height: 1.4;
-  color: var(--mga-muted);
 }
 /* `.mga-stage` prefix is load-bearing: bare `.mga-arr--done` (0,1,0) loses to
    `.mga-stage .mga-card` (0,2,0), so this card rendered WHITE — the confirmed-arrival

@@ -12,6 +12,7 @@ import Icon from '../lib/Icon.jsx'
 import { M } from './strings.js'
 import { V2_PERSONS, V2_BOOKINGS } from './data.js'
 import { go, isVisitDay, personParam } from './nav.js'
+import { GateLock } from './purchase.jsx'
 
 export default function QueuePickerScreen() {
   const visitDay = isVisitDay()
@@ -35,7 +36,7 @@ export default function QueuePickerScreen() {
           <div className="mga-qpk__empty">
             <Icon name="calendar" size={22} />
             <div className="mga-meta__val" style={{ marginTop: 8 }}>{M.qpick.empty}</div>
-            <div className="mga-meta__lbl" style={{ marginTop: 2 }}>{M.qpick.emptyHint}</div>
+            <div className="mga-meta__lbl" style={{ marginTop: 4 }}>{M.qpick.emptyHint}</div>
           </div>
         )}
 
@@ -69,10 +70,29 @@ export default function QueuePickerScreen() {
                   {M.qpick.activate}
                 </button>
               ) : (
-                <div className="mga-note">
-                  <Icon name="clock" size={13} />
-                  {b.when === 'today' ? M.qpick.lockedFuture : M.qpick.lockedTomorrow}
-                </div>
+                /* A locked card KEEPS the action in place instead of replacing it with prose
+                   (user, 2026-08-20). The note alone put the only explanation of a blocked
+                   state into the quietest style in the system, in the slot where the button
+                   belongs — and it borrowed `.mga-note`, which everywhere else carries
+                   clinical guidance hanging off an actionable record. Now: the button says
+                   WHAT, the gated treatment says NOT YET, the note says WHEN, in that order
+                   of prominence. `--locked` (readable grey, 4.9:1) not `--off` (0.45 faded)
+                   per the gated-action rule in mga.css; genuinely `disabled` because — unlike
+                   the purchase gate — there is no sheet to open, so the note stays permanent. */
+                <>
+                  <button
+                    className="mga-btn mga-btn--secondary mga-btn--md mga-btn--block mga-btn--locked"
+                    style={{ marginTop: 12 }}
+                    disabled
+                  >
+                    {M.qpick.activate}
+                    <GateLock gated />
+                  </button>
+                  <div className="mga-note">
+                    <Icon name="clock" size={11} />
+                    {b.when === 'today' ? M.qpick.lockedFuture : M.qpick.lockedTomorrow}
+                  </div>
+                </>
               )}
             </div>
           )

@@ -106,7 +106,7 @@ export const M = {
        bookPhone verbatim: same action, same words, and both fit the 297px card. */
   },
   /* A4 — personal doctor detail (F-03). #3 (2026-08-18, stakeholder): WhatsApp is
-     GONE and the card now holds TWO bookings — clinic visit + phone consultation.
+     GONE and the card now holds TWO bookings — clinic visit + remote consultation.
      In-app chat + „დატოვე შეტყობინება" stay out (messaging = MVP2). Both CTAs
      deep-link into the mobile booking flow with the doctor preselected and its
      „ვიზიტის ტიპი" radio prefilled (inclinic | remote); dead ends here until that
@@ -120,12 +120,16 @@ export const M = {
     workDays: 'სამუშაო დღეები',
     workHours: 'სამუშაო საათები',
     nextVisit: 'შემდეგი ვიზიტი',
-    /* ⚠ TERMINOLOGY: the booking flow's own radio calls the second option
-       „დისტანციური კონსულტაცია" (value `remote`). The stakeholder wording is kept
-       here; one of the two has to move before dev — and item #10 needs to know
-       whether remote covers phone AND video or phone only. */
+    /* TERMINOLOGY resolved 2026-08-20 (user): this label is now VERBATIM the booking
+       flow's own radio option — „დისტანციური კონსულტაცია" (`remote`, EN "Online
+       consultation") — the service named, not an instruction. Note the pair is
+       deliberately asymmetric: bookClinic stayed a verb phrase at the user's scoping.
+       Channel-neutral on purpose: the flow's hint calls it „ონლაინ ზარი" and the B2B
+       guide describes it as a video call, so promising a PHONE here named a channel the
+       flow cannot actually book. hist2.visitTypes still says „სატელეფონო" — deliberately
+       left alone (scope was the buttons); see the note there. */
     bookClinic: 'ჩაეწერე ექიმთან კლინიკაში',
-    bookPhone: 'ჩაეწერე სატელეფონო კონსულტაციაზე',
+    bookPhone: 'დისტანციური კონსულტაცია',
     transferTitle: 'სამედიცინო ისტორიის გადატანა',
     transferBody: 'გადაიტანე შენი სამედიცინო ისტორია სხვა ექიმთან კურაციოს ქსელში',
     transferCta: 'ექიმის არჩევა და გადატანა',
@@ -250,8 +254,10 @@ export const M = {
     yearRange: 'თარიღი',
     visitStatuses: { done: 'დასრულებული' },
     /* #10 — icon AND label, never the icon alone: three encounter kinds are not
-       guessable from a glyph. Wording follows #3's CTA („სატელეფონო"), which is still
-       pending the flow's own „დისტანციური" — change both together. */
+       guessable from a glyph. ⚠ OUT OF SYNC since 2026-08-20: the doctor CTA moved to
+       „დისტანციური კონსულტაცია"; these RECORD labels were deliberately left as they are
+       (the user scoped that change to the buttons). Still unresolved for dev: the booking
+       flow offers ONE remote type while history files TWO (phone + online). */
     visitTypes: { visit: 'ვიზიტი კლინიკაში', phone: 'სატელეფონო კონსულტაცია', online: 'ონლაინ კონსულტაცია' },
     downloadPdf: 'ჩანაწერი PDF',
     uploadResult: 'შედეგის ატვირთვა',
@@ -279,7 +285,9 @@ export const M = {
        the wrong date. This says exactly what it is (audit 2026-08-18). */
     onVisitDay: 'ვიზიტის დღეს',
     tomorrow: 'ხვალ',
-    queueOpen: 'რიგი ღიაა',
+    /* Matches `ticket.live` (2026-08-20): the queue-picker badge and the e-ticket's
+       status badge name the same live queue, so they use the same word. */
+    queueOpen: 'მიმდინარე',
     activate: 'გაიაქტიურე ბილეთი',
     lockedTomorrow: 'ბილეთი ხელმისაწვდომი იქნება ხვალ 09:00-ზე',
     lockedFuture: 'ბილეთი ხელმისაწვდომი იქნება ვიზიტის დღეს 09:00-ზე',
@@ -301,13 +309,12 @@ export const M = {
     wait: 'მოლოდინი',
     ahead: 'წინ',
     status: 'სტატუსი',
-    live: 'ცოცხალი',
+    live: 'მიმდინარე',
     /* map CTA removed 2026-08-18 (review): maps are a dev pain point, deferred. */
     /* #5 (2026-08-18) — arrival check-in. */
     arriveTitle: 'კლინიკაში ხარ?',
     arriveHint: 'დააჭირე მისვლისთანავე — რიგი დაგიდასტურდება და ექიმი გაიგებს, რომ ადგილზე ხარ',
     arriveCta: 'მე მოვედი',
-    arriveGeo: 'კლინიკასთან მიახლოებისას ავტომატურ შეხსენებასაც მიიღებ',
     arrivedTitle: 'მოსვლა დადასტურდა',
     arrivedAt: (t) => `დადასტურდა ${t}`,
     arrivedBadge: 'რიგში ხარ',

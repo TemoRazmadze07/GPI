@@ -101,7 +101,7 @@ export default function DoctorSelectScreen() {
           <div className="mga-qpk__empty">
             <Icon name="search" size={22} />
             <div className="mga-meta__val" style={{ marginTop: 8 }}>{M.docsel.empty}</div>
-            <div className="mga-meta__lbl" style={{ marginTop: 2 }}>{M.docsel.emptyHint}</div>
+            <div className="mga-meta__lbl" style={{ marginTop: 4 }}>{M.docsel.emptyHint}</div>
           </div>
         )}
       </div>
@@ -153,18 +153,18 @@ export default function DoctorSelectScreen() {
                     </span>
                   </span>
                 </div>
-                <div className="mga-dsheet__grid">
-                  <div className="mga-dsheet__cell mga-dsheet__cell--wide">
-                    <div className="mga-dsheet__lbl">{M.docsel.clinicL}</div>
-                    <div className="mga-dsheet__val">{picked.clinic}</div>
+                <div className="mga-kv mga-dsheet__kv">
+                  <div className="mga-kv__row">
+                    <span className="mga-kv__lbl">{M.docsel.clinicL}</span>
+                    <span className="mga-kv__val">{picked.clinic}</span>
                   </div>
-                  <div className="mga-dsheet__cell">
-                    <div className="mga-dsheet__lbl">{M.docsel.langs}</div>
-                    <div className="mga-dsheet__val">{picked.langs.join(' · ')}</div>
+                  <div className="mga-kv__row">
+                    <span className="mga-kv__lbl">{M.docsel.langs}</span>
+                    <span className="mga-kv__val">{picked.langs.join(' · ')}</span>
                   </div>
-                  <div className="mga-dsheet__cell">
-                    <div className="mga-dsheet__lbl">{M.docsel.hours}</div>
-                    <div className="mga-dsheet__val">{picked.hours}</div>
+                  <div className="mga-kv__row">
+                    <span className="mga-kv__lbl">{M.docsel.hours}</span>
+                    <span className="mga-kv__val">{picked.hours}</span>
                   </div>
                 </div>
                 <div className="mga-trf__includes mga-dsheet__consent">{M.docsel.consent}</div>

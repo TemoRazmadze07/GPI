@@ -88,7 +88,7 @@ export default function TicketScreen() {
             </div>
             <div className="mga-tstats__cell">
               <div className="mga-meta__lbl">{M.ticket.status}</div>
-              <div className="mga-tstats__live">● {M.ticket.live}</div>
+              <span className="mga-badge mga-badge--green">{M.ticket.live}</span>
             </div>
           </div>
         </div>
@@ -105,13 +105,9 @@ export default function TicketScreen() {
                 <div className="mga-meta__lbl">{M.ticket.arriveHint}</div>
               </div>
             </div>
-            <button className="mga-btn mga-btn--primary mga-btn--lg mga-btn--block mga-arr__cta" onClick={checkIn}>
+            <button className="mga-btn mga-btn--primary mga-btn--md mga-btn--block mga-arr__cta" onClick={checkIn}>
               {M.ticket.arriveCta}
             </button>
-            <div className="mga-arr__note">
-              <Icon name="bell" size={12} />
-              {M.ticket.arriveGeo}
-            </div>
           </section>
         ) : (
           <section className="mga-card mga-arr--done" aria-label={M.ticket.arrivedTitle}>

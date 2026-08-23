@@ -49,7 +49,7 @@ export default function DoctorScreen() {
             <div className="mga-meta" style={{ flex: 1 }}>
               <div className="mga-docd__name">{doc.name}</div>
               <div className="mga-meta__lbl">{doc.role}</div>
-              {ONLINE_STATUS_ENABLED && <div className="mga-docd__online">● {M.doc.onlineNow}</div>}
+              {ONLINE_STATUS_ENABLED && <div className="mga-docd__online">{M.doc.onlineNow}</div>}
             </div>
           </div>
           {/* #3 — the two bookings sit in the doctor's OWN section (user, 2026-08-18),
@@ -69,29 +69,32 @@ export default function DoctorScreen() {
 
         <div className="mga-card">
           <div className="mga-meta__lbl mga-cardlbl">{M.doc.basicInfo}</div>
-          <div className="mga-docd__grid">
-            <div className="mga-docd__cell">
-              <div className="mga-docd__lbl">{M.doc.clinic}</div>
-              <div className="mga-docd__val">{doc.clinic}</div>
+          {/* One table, not a 2×2 grid (user, 2026-08-20): every fact reads
+              label-left / value-right, and შემდეგი ვიზიტი stops being a special
+              full-width row — it is just the last row. */}
+          <div className="mga-kv">
+            <div className="mga-kv__row">
+              <span className="mga-kv__lbl">{M.doc.clinic}</span>
+              <span className="mga-kv__val">{doc.clinic}</span>
             </div>
-            {/* „—" for anything unknown: a blank cell under a label reads as a broken
-                screen, and these are legitimately unknown for a just-picked doctor. */}
-            <div className="mga-docd__cell">
-              <div className="mga-docd__lbl">{M.doc.cabinet}</div>
-              <div className="mga-docd__val">{doc.cabinet || '—'}</div>
+            {/* „—" for anything unknown: a blank value beside a label reads as a
+                broken screen, and these are legitimately unknown for a just-picked doctor. */}
+            <div className="mga-kv__row">
+              <span className="mga-kv__lbl">{M.doc.cabinet}</span>
+              <span className="mga-kv__val">{doc.cabinet || '—'}</span>
             </div>
-            <div className="mga-docd__cell">
-              <div className="mga-docd__lbl">{M.doc.workDays}</div>
-              <div className="mga-docd__val">{doc.workDays || '—'}</div>
+            <div className="mga-kv__row">
+              <span className="mga-kv__lbl">{M.doc.workDays}</span>
+              <span className="mga-kv__val">{doc.workDays || '—'}</span>
             </div>
-            <div className="mga-docd__cell">
-              <div className="mga-docd__lbl">{M.doc.workHours}</div>
-              <div className="mga-docd__val">{doc.workHours || '—'}</div>
+            <div className="mga-kv__row">
+              <span className="mga-kv__lbl">{M.doc.workHours}</span>
+              <span className="mga-kv__val">{doc.workHours || '—'}</span>
             </div>
-          </div>
-          <div className="mga-docd__cell mga-docd__cell--wide">
-            <span className="mga-docd__lbl">{M.doc.nextVisit}</span>
-            <span className="mga-docd__val">{doc.nextVisit || '—'}</span>
+            <div className="mga-kv__row">
+              <span className="mga-kv__lbl">{M.doc.nextVisit}</span>
+              <span className="mga-kv__val">{doc.nextVisit || '—'}</span>
+            </div>
           </div>
         </div>
 

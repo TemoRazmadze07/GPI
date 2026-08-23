@@ -82,7 +82,7 @@ export default function History2Screen() {
           <div className="mga-qpk__empty">
             <Icon name="lock" size={22} />
             <div className="mga-meta__val" style={{ marginTop: 8 }}>{M.dash.protectedTitle}</div>
-            <div className="mga-meta__lbl" style={{ marginTop: 2 }}>{M.dash.protectedHint}</div>
+            <div className="mga-meta__lbl" style={{ marginTop: 4 }}>{M.dash.protectedHint}</div>
           </div>
         </div>
         <OtpSheet onSuccess={() => setUnlocked(true)} onClose={() => go('curatio')} />
@@ -141,13 +141,13 @@ export default function History2Screen() {
                         <span className={'mga-badge ' + BADGE[r.status]}>{M.history.statuses[r.status]}</span>
                       )}
                       <span className="mga-meta__lbl">{r.date}</span>
-                      <SourceTag src={r.src} clinic={r.clinic} />
                       {r.shared && (
                         <span className="mga-mark">
                           <Icon name="check" size={10} /> {M.upl.shared}
                         </span>
                       )}
                     </div>
+                    <SourceTag src={r.src} clinic={r.clinic} />
                     {r.note && <div className="mga-hitem__note">{r.note}</div>}
                     {r.book && (
                       <button className={'mga-btn mga-btn--secondary mga-btn--sm' + (gated ? ' mga-btn--locked' : '')} onClick={guard(noop)}>
@@ -228,8 +228,8 @@ export default function History2Screen() {
                         <span className="mga-meta__lbl">
                           {m.how} · {m.by}
                         </span>
-                        <SourceTag src={m.src} clinic={m.clinic} />
                       </div>
+                      <SourceTag src={m.src} clinic={m.clinic} />
                       {m.expiry && !off && <div className="mga-h2__exp">{m.expiry}</div>}
                       {/* User, 2026-08-18: „what if patient do not need the medicament
                           anymore?" — renewal was the row's only answer. The way out sits
@@ -265,8 +265,8 @@ export default function History2Screen() {
                     <div className="mga-meta__val">{st.title}</div>
                     <div className="mga-hitem__meta">
                       <span className="mga-meta__lbl">{st.meta}</span>
-                      <SourceTag src={st.src} />
                     </div>
+                    <SourceTag src={st.src} />
                     <div className="mga-note mga-note--teal">
                       <Icon name="info" size={11} /> {st.prep}
                     </div>
@@ -289,8 +289,8 @@ export default function History2Screen() {
                       <span className="mga-meta__lbl">
                         № {r.number} · {r.expiry}
                       </span>
-                      <SourceTag src={r.src} />
                     </div>
+                    <SourceTag src={r.src} />
                     {r.prep && (
                       <div className="mga-note mga-note--teal">
                         <Icon name="info" size={11} /> {r.prep}
@@ -324,8 +324,8 @@ export default function History2Screen() {
                   <span className="mga-meta__lbl">
                     {v.date} · {v.by}
                   </span>
-                  <SourceTag src={v.src} clinic={v.clinic} />
                 </div>
+                <SourceTag src={v.src} clinic={v.clinic} />
                 <div className="mga-h2__summary">{v.summary}</div>
                 <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
                   <button className="mga-btn mga-btn--secondary mga-btn--sm" onClick={noop}>

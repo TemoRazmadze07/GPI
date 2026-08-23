@@ -38,7 +38,7 @@ export default function TransferScreen() {
           <div className="mga-qpk__empty">
             <Icon name="lock" size={22} />
             <div className="mga-meta__val" style={{ marginTop: 8 }}>{M.dash.protectedTitle}</div>
-            <div className="mga-meta__lbl" style={{ marginTop: 2 }}>{M.dash.protectedHint}</div>
+            <div className="mga-meta__lbl" style={{ marginTop: 4 }}>{M.dash.protectedHint}</div>
           </div>
         </div>
         <OtpSheet onSuccess={() => setUnlocked(true)} onClose={() => go('doctor')} />

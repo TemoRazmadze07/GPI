@@ -15,8 +15,8 @@ function LockedCard({ icon, title, hint, onRequest }) {
       <span className="mga-itile" style={{ background: 'var(--mga-lav)', color: 'var(--mga-lav-fg)' }}>
         <Icon name={icon} size={17} />
       </span>
-      <span style={{ flex: 1, minWidth: 0, lineHeight: 1.3 }}>
-        <span className="mga-meta__val" style={{ display: 'block' }}>{title}</span>
+      <span className="mga-meta" style={{ flex: 1 }}>
+        <span className="mga-meta__val">{title}</span>
         <span className="mga-meta__lbl">{hint}</span>
       </span>
       <span className="mga-iconbtn mga-iconbtn--sm mga-iconbtn--tint" aria-label={M.dash.protectedHint}>
@@ -32,8 +32,8 @@ function OpenCard({ icon, title, hint, onClick }) {
       <span className="mga-itile">
         <Icon name={icon} size={17} />
       </span>
-      <span style={{ flex: 1, minWidth: 0, lineHeight: 1.3 }}>
-        <span className="mga-meta__val" style={{ display: 'block' }}>{title}</span>
+      <span className="mga-meta" style={{ flex: 1 }}>
+        <span className="mga-meta__val">{title}</span>
         <span className="mga-meta__lbl">{hint}</span>
       </span>
       <span className="mga-prow__chv">

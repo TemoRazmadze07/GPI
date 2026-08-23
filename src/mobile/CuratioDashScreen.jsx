@@ -79,8 +79,8 @@ export default function CuratioDashScreen() {
           <span className="mga-itile">
             <Icon name="ticket" size={17} />
           </span>
-          <span style={{ flex: 1, minWidth: 0, lineHeight: 1.3 }}>
-            <span className="mga-meta__val" style={{ display: 'block' }}>{M.dash2.queueTitle}</span>
+          <span className="mga-meta" style={{ flex: 1 }}>
+            <span className="mga-meta__val">{M.dash2.queueTitle}</span>
             <span className="mga-meta__lbl">{M.dash2.queueHint}</span>
           </span>
           <span className="mga-iconbtn mga-iconbtn--sm mga-iconbtn--fill" aria-hidden="true">
@@ -108,7 +108,7 @@ export default function CuratioDashScreen() {
                   {ONLINE_STATUS_ENABLED && (
                     <>
                       {' · '}
-                      <span style={{ color: 'var(--mga-green-fg)', fontWeight: 600 }}>● {M.hub.online}</span>
+                      <span style={{ color: 'var(--mga-green-fg)', fontWeight: 600 }}>{M.hub.online}</span>
                     </>
                   )}
                 </div>
@@ -163,14 +163,24 @@ export default function CuratioDashScreen() {
         <button className="mga-card mga-prow" onClick={() => go('histhub')}>
           <span className="mga-itile">
             <Icon name="file-text" size={17} />
+            {/* User, 2026-08-20: the „N ვადა" badge became a dot on the tile. At an
+                ENTRY POINT the row only has to say „there is something new" — the
+                count and the kind belong on the hub the row opens. The label moves
+                into .mga-sr so a dot does not silently drop it for screen readers.
+                Consequence, and an improvement: the chevron is no longer swapped
+                out in the alert state, so the row's affordance is constant. */}
+            {unlocked && historyAlert && (
+              <>
+                <span className="mga-dot mga-dot--ring mga-dot--alert" aria-hidden="true" />
+                <span className="mga-sr">{historyAlert}</span>
+              </>
+            )}
           </span>
-          <span style={{ flex: 1, minWidth: 0, lineHeight: 1.3 }}>
-            <span className="mga-meta__val" style={{ display: 'block' }}>{M.dash2.historyTitle}</span>
+          <span className="mga-meta" style={{ flex: 1 }}>
+            <span className="mga-meta__val">{M.dash2.historyTitle}</span>
             <span className="mga-meta__lbl">{M.dash2.historyHint}</span>
           </span>
-          {unlocked && historyAlert ? (
-            <span className="mga-badge mga-badge--red">{historyAlert}</span>
-          ) : !unlocked ? (
+          {!unlocked ? (
             <span className="mga-iconbtn mga-iconbtn--sm mga-iconbtn--tint" aria-label={M.dash.protectedHint}>
               <Icon name="lock" size={12} />
             </span>

@@ -58,13 +58,20 @@ export function OtpSheet({ onSuccess, onClose }) {
   const full = digits.every((d) => d !== '')
 
   const setDigit = (i, val) => {
-    const d = val.replace(/\D/g, '').slice(-1)
+    const typed = val.replace(/\D/g, '')
+    /* One box, many digits — paste or the SMS `one-time-code` autofill. Spill the
+       extras into the boxes to the right rather than keeping just the last one. */
+    const incoming = typed.length > 1 ? typed.slice(-4).split('') : [typed]
     setDigits((prev) => {
       const next = [...prev]
-      next[i] = d
+      incoming.forEach((d, n) => {
+        if (i + n < 4) next[i + n] = d
+      })
       return next
     })
-    if (d && i < 3) refs[i + 1].current?.focus()
+    const last = Math.min(i + incoming.length - 1, 3)
+    if (incoming[0] && last < 3) refs[last + 1].current?.focus()
+    else if (incoming[0]) refs[3].current?.focus()
   }
 
   const onKeyDown = (i, e) => {
@@ -96,6 +103,7 @@ export function OtpSheet({ onSuccess, onClose }) {
               ref={refs[i]}
               value={d}
               inputMode="numeric"
+              maxLength={4}
               autoComplete="one-time-code"
               aria-label={`ციფრი ${i + 1}`}
               onChange={(e) => setDigit(i, e.target.value)}
@@ -103,7 +111,11 @@ export function OtpSheet({ onSuccess, onClose }) {
             />
           ))}
         </div>
-        <button className={'mga-btn mga-btn--primary mga-btn--lg mga-btn--block' + (full ? '' : ' mga-btn--off')} onClick={confirm}>
+        <button
+          className={'mga-btn mga-btn--primary mga-btn--lg mga-btn--block' + (full ? '' : ' mga-btn--off')}
+          disabled={!full}
+          onClick={confirm}
+        >
           {M.otp.confirm}
         </button>
         <button className={'mga-link mga-link--block' + (left > 0 ? ' mga-link--quiet' : '')} style={{ marginTop: 12 }} disabled={left > 0} onClick={() => setLeft(47)}>

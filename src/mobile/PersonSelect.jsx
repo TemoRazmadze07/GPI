@@ -25,14 +25,16 @@ export default function PersonSelect({ persons, selectedId, onSelect, alerts = {
         aria-label={M.dash2.personAria}
         onClick={() => setOpen((o) => !o)}
       >
-        <span className="mga-pselect__ava" aria-hidden="true">{sel.initial}</span>
+        <span className="mga-pselect__ava" aria-hidden="true">
+          {sel.photo ? <img src={sel.photo} alt="" /> : sel.initial}
+        </span>
         <span className="mga-pselect__meta">
           <span className="mga-pselect__name">{sel.name}</span>
           <span className="mga-pselect__id">{sel.ocin}</span>
         </span>
         <span className="mga-pselect__chev">
           <Icon name={open ? 'chevron-up' : 'chevron-down'} size={16} />
-          {hasAlert && !open && <span className="mga-pselect__dot" aria-label={M.dash2.todayVisit} />}
+          {hasAlert && !open && <span className="mga-dot mga-dot--ring" aria-label={M.dash2.todayVisit} />}
         </span>
       </button>
 
@@ -54,8 +56,8 @@ export default function PersonSelect({ persons, selectedId, onSelect, alerts = {
                   }}
                 >
                   <span className="mga-pselect__ava" aria-hidden="true">
-                    {p.initial}
-                    {!on && alerts[p.id] && <span className="mga-pselect__dot mga-pselect__dot--ava" />}
+                    {p.photo ? <img src={p.photo} alt="" /> : p.initial}
+                    {!on && alerts[p.id] && <span className="mga-dot mga-dot--ring" />}
                   </span>
                   <span className="mga-pselect__meta">
                     <span className="mga-pselect__name">{p.name}</span>

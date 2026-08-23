@@ -14,7 +14,7 @@ import Icon from '../lib/Icon.jsx'
 import { PRODUCT_IMG } from '../lib/assets.js'
 import { M } from './strings.js'
 import { PERSONS, BOOKING, NEXT_BOOKING, QUEUE, REFERRAL, CHRONIC, COUNTS } from './data.js'
-import { go } from './nav.js'
+import { go, isInsured } from './nav.js'
 import { isUnlocked } from './otp.jsx'
 import { usePurchaseGate, GateLock } from './purchase.jsx'
 
@@ -35,7 +35,7 @@ export function TopBar() {
       </button>
       <button className="mga-iconbtn" aria-label="Notifications" onClick={noop}>
         <Icon name="bell" size={16} />
-        <span className="mga-iconbtn__dot" aria-hidden="true" />
+        <span className="mga-dot mga-dot--sm" aria-hidden="true" />
       </button>
       <button className="mga-pts" onClick={noop}>
         <Icon name="coins" size={14} />
@@ -78,10 +78,17 @@ export function ProductSwitcher({ v2 = false, active = 'health' }) {
       {label}
     </button>
   )
+  /* The switcher lists the products the user actually HOLDS, so with no health policy the
+     Health pill is not rendered at all (user, 2026-08-20) — there is no health dashboard to
+     switch to. კურაციო stays: the medical record is available without insurance, which is the
+     whole point of the uninsured state. `--3` only exists to shrink type for a three-up row,
+     so two-up drops it and gets the roomier base size. */
+  const showHealth = isInsured()
   return (
-    <div className="mga-seg mga-seg--3" role="tablist" aria-label="Products and services">
+    <div className={'mga-seg' + (showHealth ? ' mga-seg--3' : '')} role="tablist" aria-label="Products and services">
       {pill('auto', false, M.tabsV2.auto, <img className="mga-prodimg" src={PRODUCT_IMG['auto.png']} alt="" />, noop)}
-      {pill('health', active === 'health', M.tabsV2.health, <img className="mga-prodimg" src={PRODUCT_IMG['health.png']} alt="" />, () => go('health'))}
+      {showHealth &&
+        pill('health', active === 'health', M.tabsV2.health, <img className="mga-prodimg" src={PRODUCT_IMG['health.png']} alt="" />, () => go('health'))}
       {pill(
         'curatio',
         active === 'curatio',
@@ -158,8 +165,8 @@ function HistoryRow() {
       <span className="mga-cur__mark" aria-hidden="true">
         <Icon name="activity" size={15} />
       </span>
-      <span style={{ flex: 1, minWidth: 0, lineHeight: 1.3 }}>
-        <span className="mga-meta__val" style={{ display: 'block' }}>{M.dash2.historyTitle}</span>
+      <span className="mga-meta" style={{ flex: 1 }}>
+        <span className="mga-meta__val">{M.dash2.historyTitle}</span>
         <span className="mga-meta__lbl">{M.dash2.historyHint}</span>
       </span>
       <span className="mga-prow__chv">
@@ -221,7 +228,7 @@ function BookingsWidget({ visitDay, v2 = false }) {
                 </div>
               </div>
             </div>
-            <div className="mga-queue__live">● {M.bookings.queueLive}</div>
+            <div className="mga-queue__live">{M.bookings.queueLive}</div>
           </div>
           <button className="mga-btn mga-btn--primary mga-btn--md mga-btn--block" onClick={() => go('ticket')}>
             {M.bookings.ticket}
@@ -252,7 +259,7 @@ function BookingsWidget({ visitDay, v2 = false }) {
             <span className="mga-daterow__val">
               {BOOKING.date} · {BOOKING.time}
             </span>
-            <span className="mga-badge mga-badge--green">● {M.bookings.active}</span>
+            <span className="mga-badge mga-badge--green">{M.bookings.active}</span>
           </div>
           {v2 && visitDay ? (
             <button className="mga-card mga-irow mga-strip" style={{ marginBottom: 0 }} onClick={() => go('ticket')}>
@@ -323,7 +330,7 @@ function ReferralsWidget() {
       <div className="mga-refnum">
         <span className="mga-refnum__lbl">{M.referrals.number}</span>
         <span className="mga-refnum__val">{REFERRAL.number}</span>
-        <span className="mga-badge mga-badge--amber">● {M.referrals.inReview}</span>
+        <span className="mga-badge mga-badge--amber">{M.referrals.inReview}</span>
       </div>
       <button className="mga-btn mga-btn--navy mga-btn--md mga-btn--block" style={{ marginTop: 8 }} onClick={noop}>
         {M.referrals.request}
@@ -397,7 +404,7 @@ export default function HealthHomeScreen({ visitDay, v2 = false }) {
             </span>
           </button>
         ))}
-        <button className="mga-btn mga-btn--primary mga-btn--lg mga-btn--block mga-btn--page" onClick={noop}>
+        <button className="mga-btn mga-btn--primary mga-btn--md mga-btn--block mga-btn--page" onClick={noop}>
           {M.newAppointment}
         </button>
         {!v2 && <CuratioBlock />}
