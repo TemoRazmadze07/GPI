@@ -59,6 +59,15 @@ function resolveLang() {
     if (isLang(candidate)) return candidate
   }
   if (ENGLISH_FIRST.test(window.location.hash || '')) return 'en'
+  /* A USABILITY-STUDY link (`?study`) must render exactly what the researcher sent,
+     so it ignores whatever this browser happens to remember. Two reasons, and the
+     second is the sharp one: (a) a study session is supposed to be reproducible —
+     the same link has to open the same session on any machine; (b) `?study` HIDES
+     every demo control, including the language chips, so a participant who inherits
+     a stored `en` from an earlier visit would be locked in a language they may not
+     read with no way back. An explicit `?lang=` above still wins, which is how a
+     researcher runs the study in English on purpose. */
+  if (new URLSearchParams(window.location.search).has('study')) return DEFAULT_LANG
   const remembered = stored()
   return isLang(remembered) ? remembered : DEFAULT_LANG
 }

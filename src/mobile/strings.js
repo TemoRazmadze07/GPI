@@ -1,7 +1,16 @@
-/* MyGPI mobile app copy. Chrome deliberately mirrors the LIVE app's mixed language
-   (English chrome, Georgian content) — do not "fix" to all-Georgian without the user. */
+/* MyGPI mobile app copy — GEORGIAN (ka), the PRIMARY delivery language and the
+   default. Chrome deliberately mirrors the LIVE app's mixed language (English chrome,
+   Georgian content) — do not "fix" to all-Georgian without the user.
 
-export const M = {
+   BILINGUAL SINCE 2026-08-27. English lives in ./strings.en.js as a mirror of this
+   table; the active one is resolved at the bottom of this file and exported as `M`,
+   so every screen keeps its existing `import { M } from './strings.js'`. Georgian is
+   untouched by that change and stays what a bare link renders.
+   ⚠ Add/rename/remove ANYTHING here and mirror it in strings.en.js in the same place,
+   with the same value TYPE — screens address keys by path, so a missing key is a
+   crash, not a blank string. */
+
+export const ka = {
   hello: 'Hello',
   userName: 'Anna',
   points: '120 pts',
@@ -256,9 +265,17 @@ export const M = {
     filterCat: 'კატეგორია',
     filterYear: 'წელი',
     /* clinic-origin filter (2026-08-26 co-brand pass) — user's „inside/outside
-       Curatio" ask. Labels mirror the SourceTag vocabulary. */
+       Curatio" ask. Labels mirror the SourceTag vocabulary — and since 2026-08-27
+       „გარე" mirrors it EXACTLY. It was „გარე კლინიკები", which was the odd one out:
+       every record card's origin chip has always said „გარე" (M.src.external), so the
+       filter naming the same thing in two words contradicted its own stated rule.
+       It also cost ~50px in a row that now shares its full width across three pills —
+       with the long form, picking it truncated all three labels („1 წე…" included).
+       One word fixes both. The sheet reads fine on one word too: next to „ყველა" and
+       „კურაციო", „გარე" is unambiguous. Don't lengthen it back without re-measuring
+       the row in GEORGIAN with „ინსტრუმენტული" also selected — that is the worst case. */
     filterClinic: 'კლინიკა',
-    clinics: { all: 'ყველა', curatio: 'კურაციო', external: 'გარე კლინიკები' },
+    clinics: { all: 'ყველა', curatio: 'კურაციო', external: 'გარე' },
     medStates: { active: 'აქტიური', expiring: 'ვადა იწურება', chronic: 'ქრონიკული' },
     /* #11 (2026-08-18, stakeholder): renewal is no longer a REQUEST the patient
        files — it is a VISIT they book with their personal doctor. The note says so
@@ -421,4 +438,27 @@ export const M = {
     upload: 'ატვირთე სხვა კლინიკის დოკუმენტი',
     download: 'ჩამოტვირთვა',
   },
+  /* Screen-reader-only labels. Extracted from the JSX 2026-08-27 when English was
+     added: these were hard-coded Georgian aria-labels scattered across ten screens —
+     invisible on screen, and therefore the easiest strings in the module to leave
+     untranslated by accident. Anything a screen reader speaks belongs in here. */
+  a11y: {
+    back: 'უკან',
+    patient: 'პაციენტი',
+    period: 'პერიოდი',
+    digit: (n) => `ციფრი ${n}`,
+    language: 'ენა',
+  },
 }
+
+/* ── LOCALE RESOLUTION ────────────────────────────────────────────────────────
+   The choice itself is resolved ONCE, app-wide, in ../i18n/index.js (`?lang=en` in
+   the page query → `lang=` inside the hash route → localStorage → 'ka'). This module
+   only picks a table with it, so the mobile app, the desktop My-Cabinet and the
+   student flow all obey ONE language switch and one stored preference.
+   Load-time, like every other prototype flag (?study, ?v=1, ?day=visit): switching
+   language reloads the page, which is what i18n's setLang() does. */
+import { lang } from '../i18n/index.js'
+import { en } from './strings.en.js'
+
+export const M = lang === 'en' ? en : ka

@@ -65,7 +65,7 @@ export default function PreventionScreen() {
   return (
     <>
       <div className="mga-hdr">
-        <button className="mga-iconbtn" aria-label="უკან" onClick={() => go('curatio')}>
+        <button className="mga-iconbtn" aria-label={M.a11y.back} onClick={() => go('curatio')}>
           <Icon name="chevron-left" size={16} />
         </button>
         <h1 className="mga-hdr__title">{M.prev.title}</h1>

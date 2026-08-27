@@ -106,7 +106,7 @@ export default function History2Screen() {
 
   const header = (
     <div className="mga-hdr">
-      <button className="mga-iconbtn" aria-label="უკან" onClick={() => go('histhub')}>
+      <button className="mga-iconbtn" aria-label={M.a11y.back} onClick={() => go('histhub')}>
         <Icon name="chevron-left" size={16} />
       </button>
       <h1 className="mga-hdr__title">{M.histhub.rows[sec]}</h1>
@@ -248,7 +248,11 @@ export default function History2Screen() {
 
       {sec === 'analyses' && (
         <>
-          <div className="mga-chiprow" role="group" aria-label={M.hist2.filterPeriod + ' · ' + M.hist2.filterCat}>
+          {/* --fill (2026-08-27, user): the three pills share the row's full width
+              instead of huddling at the left and side-scrolling once a long value is
+              picked. Proportional, so „გარე კლინიკები" takes its space from its own
+              slack rather than from „3 თვე" — see .mga-chiprow--fill in mga.css. */}
+          <div className="mga-chiprow mga-chiprow--fill" role="group" aria-label={M.hist2.filterPeriod + ' · ' + M.hist2.filterCat}>
             <FilterPill value={M.history.periods[period]} onOpen={() => setSheet('period')} />
             <FilterPill label={M.hist2.filterCat} value={cat === 'all' ? null : catLabel} onOpen={() => setSheet('cat')} />
             <FilterPill label={M.hist2.filterClinic} value={clinic === 'all' ? null : M.hist2.clinics[clinic]} onOpen={() => setSheet('clinic')} />

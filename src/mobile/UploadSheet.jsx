@@ -25,7 +25,7 @@
 import { useState } from 'react'
 import Icon from '../lib/Icon.jsx'
 import { M } from './strings.js'
-import { V2_ANALYSIS_CATS, V2_PERSONS, DOCTOR, getPickedDoctor } from './data.js'
+import { V2_ANALYSIS_CATS, V2_PERSONS, DOCTOR, getPickedDoctor, UPLOAD_DEFAULT_DATE } from './data.js'
 import { FilterSheet } from './filters.jsx'
 
 const SOURCES = [
@@ -47,7 +47,7 @@ export default function UploadSheet({ cat = 'all', kind = 'analyses', attach = f
   const [step, setStep] = useState(1)
   const [name, setName] = useState('')
   const [clinic, setClinic] = useState('')
-  const [date, setDate] = useState('18 აგვ')
+  const [date, setDate] = useState(UPLOAD_DEFAULT_DATE)
   const [catId, setCatId] = useState(cat)
   const [kindId, setKindId] = useState(kind)
   const [personId, setPersonId] = useState(V2_PERSONS[0].id)

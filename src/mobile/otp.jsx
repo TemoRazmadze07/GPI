@@ -105,7 +105,7 @@ export function OtpSheet({ onSuccess, onClose }) {
               inputMode="numeric"
               maxLength={4}
               autoComplete="one-time-code"
-              aria-label={`ციფრი ${i + 1}`}
+              aria-label={M.a11y.digit(i + 1)}
               onChange={(e) => setDigit(i, e.target.value)}
               onKeyDown={(e) => onKeyDown(i, e)}
             />

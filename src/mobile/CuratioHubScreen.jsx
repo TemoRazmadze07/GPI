@@ -28,7 +28,7 @@ export default function CuratioHubScreen() {
   return (
     <>
       <div className="mga-hdr">
-        <button className="mga-iconbtn" aria-label="უკან" onClick={() => go('health')}>
+        <button className="mga-iconbtn" aria-label={M.a11y.back} onClick={() => go('health')}>
           <Icon name="chevron-left" size={16} />
         </button>
         <span className="mga-hdr__mark" aria-hidden="true">
@@ -37,7 +37,7 @@ export default function CuratioHubScreen() {
         <h1 className="mga-hdr__title">{M.hub.title}</h1>
       </div>
 
-      <div className="mga-chiprow" role="tablist" aria-label="პაციენტი">
+      <div className="mga-chiprow" role="tablist" aria-label={M.a11y.patient}>
         <button
           className={'mga-chip' + (scope === 'all' ? ' mga-chip--on' : '')}
           role="tab"

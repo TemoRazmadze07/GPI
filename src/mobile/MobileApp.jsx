@@ -11,6 +11,7 @@
 
 import Icon from '../lib/Icon.jsx'
 import { M } from './strings.js'
+import { lang, setLang } from '../i18n/index.js'
 import { isVisitDay, isV2, hasDoctor, isInsured, go } from './nav.js'
 import { clearPickedDoctor, clearArrived } from './data.js'
 import HealthHomeScreen from './HealthHomeScreen.jsx'
@@ -176,6 +177,35 @@ export default function MobileApp({ section = 'health' }) {
               </button>
             </>
           )}
+          {/* LANGUAGE (2026-08-27). Outside the `v2` block on purpose: the archived
+              two-tab build reads from the same tables, so it is bilingual too.
+              Labels are ENDONYMS, each in its own script and never translated — a
+              reviewer who cannot read the active language still has to be able to
+              find their way out, which a translated „English"/„ინგლისური" pair
+              defeats. `lang` on each button so a screen reader changes voice.
+              setLang() persists the choice and reloads (../i18n/index.js); the hash
+              survives, so the reviewer stays on the screen they were reading. */}
+          <span className="mga-demo__sep" aria-hidden="true" />
+          {/* Its own labelled group inside „Demo state": the two chips are endonyms, so
+              a screen reader announcing them alone gives no clue what the choice IS. */}
+          <span className="mga-demo__lang" role="group" aria-label={M.a11y.language}>
+            <button
+              className={'mga-demo__chip' + (lang === 'ka' ? ' mga-demo__chip--on' : '')}
+              aria-pressed={lang === 'ka'}
+              lang="ka"
+              onClick={() => setLang('ka')}
+            >
+              ქართული
+            </button>
+            <button
+              className={'mga-demo__chip' + (lang === 'en' ? ' mga-demo__chip--on' : '')}
+              aria-pressed={lang === 'en'}
+              lang="en"
+              onClick={() => setLang('en')}
+            >
+              English
+            </button>
+          </span>
         </div>
       )}
       <div className="mga-frame">

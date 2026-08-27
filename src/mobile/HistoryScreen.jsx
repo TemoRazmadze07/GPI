@@ -29,7 +29,7 @@ export default function HistoryScreen() {
     return (
       <>
         <div className="mga-hdr">
-          <button className="mga-iconbtn" aria-label="უკან" onClick={() => go('curatio')}>
+          <button className="mga-iconbtn" aria-label={M.a11y.back} onClick={() => go('curatio')}>
             <Icon name="chevron-left" size={16} />
           </button>
           <h1 className="mga-hdr__title">{M.history.title}</h1>
@@ -51,7 +51,7 @@ export default function HistoryScreen() {
   return (
     <>
       <div className="mga-hdr">
-        <button className="mga-iconbtn" aria-label="უკან" onClick={() => go('curatio')}>
+        <button className="mga-iconbtn" aria-label={M.a11y.back} onClick={() => go('curatio')}>
           <Icon name="chevron-left" size={16} />
         </button>
         <h1 className="mga-hdr__title">{M.history.title}</h1>
@@ -71,7 +71,7 @@ export default function HistoryScreen() {
         ))}
       </div>
 
-      <div className="mga-chiprow" role="group" aria-label="პერიოდი">
+      <div className="mga-chiprow" role="group" aria-label={M.a11y.period}>
         {Object.entries(M.history.periods).map(([key, label]) => (
           <button
             key={key}

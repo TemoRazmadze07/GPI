@@ -137,8 +137,21 @@
 /* Demo controls (outside the phone; hidden in study mode via JSX) */
 .mga-demo {
   display: flex;
+  /* Wraps since 2026-08-27: the LANGUAGE pair (ქართული / English) joined the row,
+     and at nine chips + three separators a single line overflowed the stage on a
+     laptop viewport. Row-gap keeps a wrapped second line from touching the first. */
+  flex-wrap: wrap;
   gap: 8px;
+  row-gap: 8px;
   margin-bottom: 16px;
+}
+/* The language pair is its own labelled group (screen readers). A real flex box
+   rather than `display: contents` — that value has a history of dropping elements
+   out of the accessibility tree, which would silently delete the very label this
+   wrapper exists to carry. Same 8px gap as the parent row, so it looks identical. */
+.mga-demo__lang {
+  display: inline-flex;
+  gap: 8px;
 }
 .mga-stage .mga-demo__chip {
   font-size: 12px;
@@ -2385,19 +2398,35 @@
    clinic name (e.g. „კურაციო ბათუმში") has the same room as a short one instead
    of the row growing past the frame. Scoped to the modifier: the history
    screen's pills stay content-sized. */
-.mga-chiprow--fill {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-}
+/* PROPORTIONAL, not equal columns (2026-08-27, user: „resize any of these so they
+   will fit full widths, after I select anything, it should not break").
+   Was `grid-template-columns: 1fr 1fr` — equal halves, and hard-coded to the two
+   pills docselect happens to have. Two problems with that: it could not take a third
+   pill, and equal columns are the exact thing the user REJECTED for `.mga-seg` on
+   2026-08-26 (see the note there — „მედიკამენტები" ended up with 2.1px of side
+   padding against its neighbour's 20.4, so the text sat inside the corner radius).
+   The same unevenness lives in these values: „ინსტრუმენტული" and „გარე კლინიკები"
+   against „3 თვე".
+   `flex: 1 1 auto` fills the row from the CONTENT width, so every pill gets a share
+   proportional to what it has to say, and — because shrink is proportional to basis
+   too — a long selection eats its own slack first instead of squeezing „3 თვე".
+   The row therefore never overflows and never side-scrolls, whatever gets picked. */
 .mga-stage .mga-chiprow--fill .mga-fpill {
-  width: 100%;
+  flex: 1 1 auto;
   min-width: 0;
   justify-content: space-between;
 }
+/* Beats `.mga-chiprow > * { flex-shrink: 0 }` on specificity (0,3,0 vs 0,1,0) —
+   that rule is what keeps the NON-fill rows scrolling instead of squashing. */
 .mga-stage .mga-chiprow--fill .mga-fpill span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+/* The chevron is a flex item too, so it would shrink before the label ellipsized —
+   a 7px-wide chevron reads as a rendering bug, not as a tight fit. */
+.mga-stage .mga-chiprow--fill .mga-fpill svg {
+  flex-shrink: 0;
 }
 /* Doctor-details block inside the selection confirm sheet: the shared .mga-kv
    table, same information as the A4 detail screen one level earlier. Only the

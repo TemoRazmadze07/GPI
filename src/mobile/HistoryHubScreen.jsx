@@ -70,7 +70,7 @@ export default function HistoryHubScreen() {
 
   const header = (
     <div className="mga-hdr">
-      <button className="mga-iconbtn" aria-label="უკან" onClick={() => go(backTarget())}>
+      <button className="mga-iconbtn" aria-label={M.a11y.back} onClick={() => go(backTarget())}>
         <Icon name="chevron-left" size={16} />
       </button>
       <h1 className="mga-hdr__title">{M.histhub.title}</h1>

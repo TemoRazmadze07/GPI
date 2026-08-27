@@ -20,7 +20,7 @@ export default function TransferScreen() {
 
   const header = (
     <div className="mga-hdr">
-      <button className="mga-iconbtn" aria-label="უკან" onClick={() => go('doctor')}>
+      <button className="mga-iconbtn" aria-label={M.a11y.back} onClick={() => go('doctor')}>
         <Icon name="chevron-left" size={16} />
       </button>
       <div>
