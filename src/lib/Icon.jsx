@@ -480,6 +480,34 @@ const PATHS = {
       <path d="M22 2 11 13" />
     </>
   ),
+  /* Added 2026-08-26 for the dashboard host (#/dash): the four glyphs its
+     tiles and benefit rows need that the set did not carry yet. Same Lucide
+     source + stroke-only rule as everything above.
+     TODO: port these four into the Figma Icon component set. */
+  wrench: (
+    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+  ),
+  receipt: (
+    <>
+      <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z" />
+      <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+      <path d="M12 17.5v-11" />
+    </>
+  ),
+  'file-output': (
+    <>
+      <path d="M4 7V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2h-2" />
+      <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+      <path d="M2 15h10" />
+      <path d="m9 18 3-3-3-3" />
+    </>
+  ),
+  droplets: (
+    <>
+      <path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z" />
+      <path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97" />
+    </>
+  ),
 }
 
 const STROKE = { 16: 1.5, 20: 1.75, 24: 2 }

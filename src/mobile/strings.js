@@ -171,6 +171,8 @@ export const M = {
   /* A6c — V2 history hub (menu page between dash and section pages). */
   histhub: {
     title: 'სამედიცინო ისტორია',
+    /* claims only what the app does (the OTP gate) — see the note above hist2 */
+    confid: 'სამედიცინო ისტორია დაცულია ერთჯერადი კოდით — წვდომა მხოლოდ ავტორიზაციის შემდეგაა შესაძლებელი',
     rows: {
       /* #7 (2026-08-18) — studies live here too, so the name says so.
          #8 — „ვიზიტები" became „ვიზიტები და კონსულტაციები": phone and online
@@ -184,6 +186,9 @@ export const M = {
     },
     metaAnalyses: (n, last) => `${n} ჩანაწერი · ბოლო ${last}`,
     metaPrescriptions: 'მედიკამენტები · კვლევები · მიმართვები',
+    /* a member with nothing in a section: the row stays tappable (the empty state
+       inside explains itself) — it just cannot claim a count or a last date */
+    metaEmpty: 'ჩანაწერი არ არის',
     metaVisits: (n) => `${n} ჩანაწერი · 2025–2026`,
     expiry: (n) => `${n} ვადა`,
   },
@@ -216,6 +221,12 @@ export const M = {
     date: 'თარიღი',
     cat: 'კატეგორია',
     catPick: 'აირჩიე' /* the field is half-width — the long form ellipsized */,
+    /* F-02's metadata list always said „name/clinic/date/TYPE" — until 2026-08-26 the
+       type was only the ANALYSIS category, which is why every upload landed in
+       analyses. Now type = which history section the document belongs to, and the
+       record files there (user: „upload for all types of records and sections"). */
+    kind: 'ტიპი',
+    kinds: { analyses: 'ანალიზი / კვლევა', prescriptions: 'დანიშნულება / რეცეპტი', visits: 'ვიზიტის ჩანაწერი' },
     person: 'ვისთვის',
     consent: 'გავუზიაროთ პირად ექიმს?',
     consentOn: (doc) => `${doc} იხილავს ამ დოკუმენტს`,
@@ -227,12 +238,27 @@ export const M = {
     shared: 'ექიმს გაზიარებულია',
   },
   /* A6 — V2 history parity (F-02/F-03; charts OUT — PDF only). */
+  /* Hub trust footnote (2026-08-26). Deliberately claims only what the APP does
+     (the OTP gate) — nothing about sharing/visibility policy, which is a product/
+     legal statement we have not been given (F-02 auto-shares uploads with Curatio
+     doctors, so „only you can see this" would be FALSE). Re-check before dev. */
   hist2: {
     sections: { meds: 'მედიკამენტები', studies: 'კვლევები', referrals: 'მიმართვები' },
     groups: 'დანიშნულებების ჯგუფები',
+    /* Empty states, 2026-08-27 — the person selector made them reachable: a member
+       can genuinely own no records in a section. TWO messages, because the two
+       causes ask for different things from the user: nothing exists (switch person,
+       nothing to loosen) vs the filter cut everything (loosen the filter). One
+       generic „ცარიელია" would leave them guessing which. */
+    emptyPerson: 'ამ პირს ამ განყოფილებაში ჯერ არ აქვს ჩანაწერი',
+    emptyFilter: 'არჩეულ ფილტრს ჩანაწერი არ შეესაბამება',
     filterPeriod: 'პერიოდი',
     filterCat: 'კატეგორია',
     filterYear: 'წელი',
+    /* clinic-origin filter (2026-08-26 co-brand pass) — user's „inside/outside
+       Curatio" ask. Labels mirror the SourceTag vocabulary. */
+    filterClinic: 'კლინიკა',
+    clinics: { all: 'ყველა', curatio: 'კურაციო', external: 'გარე კლინიკები' },
     medStates: { active: 'აქტიური', expiring: 'ვადა იწურება', chronic: 'ქრონიკული' },
     /* #11 (2026-08-18, stakeholder): renewal is no longer a REQUEST the patient
        files — it is a VISIT they book with their personal doctor. The note says so
@@ -259,8 +285,26 @@ export const M = {
        (the user scoped that change to the buttons). Still unresolved for dev: the booking
        flow offers ONE remote type while history files TWO (phone + online). */
     visitTypes: { visit: 'ვიზიტი კლინიკაში', phone: 'სატელეფონო კონსულტაცია', online: 'ონლაინ კონსულტაცია' },
+    /* uploaded-documents cluster shown in prescriptions/visits (2026-08-26) */
+    uploadedLbl: 'ატვირთული დოკუმენტები',
+    /* per-record attach (2026-08-26): „…ამ ჩანაწერს" is what separates it from the
+       section-level entry above the list — this document belongs to THIS record. */
+    /* Short on purpose: as a BUTTON it shares the actions row (user, 2026-08-26 —
+       „attach file like download button"). Measured: at 390 the row is 297 wide and
+       „ფაილის მიმაგრება" (167.4) pairs with NOTHING — every card fell to one button
+       per line. „მიმაგრება" pairs with the PDF action and the paperclip carries the
+       rest of the meaning. Don't lengthen it without re-measuring the row. */
+    attach: 'მიმაგრება',
+    attached: (n) => `მიმაგრებული დოკუმენტი · ${n}`,
+    uplPdf: 'დოკუმენტი PDF',
     downloadPdf: 'ჩანაწერი PDF',
+    /* UNUSED since 2026-08-26 — the visit card's upload button was removed as a
+       duplicate of attach. Kept as the wording of record if that action ever returns. */
     uploadResult: 'შედეგის ატვირთვა',
+    /* record-card actions, per artifact (2026-08-26): a visit downloads its RECORD,
+       an analysis its RESULT, a prescription-section entry its ORDER. */
+    resultPdf: 'შედეგი PDF',
+    rxPdf: 'დანიშნულება PDF',
   },
   /* A5 — history transfer (F-03: doctor list + confirmation overlay). */
   transfer: {

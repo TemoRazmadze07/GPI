@@ -83,6 +83,40 @@ export const V2_PERSONS = [
   { id: 'ap', name: 'ანი გიორგაძე', initial: 'ა', ocin: 'OCIN 00142912', photo: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=96&h=96&fit=crop&crop=faces&auto=format&q=60' },
 ]
 
+/* ── PERSON SCOPE (user, 2026-08-27) ──────────────────────────────────────────
+   The insured-person selector moved INTO the history section pages (it replaced
+   the per-section upload entry), so the choice can no longer be one screen's local
+   state: a person picked on the კურაციო dash must still be the one whose records
+   the section lists, and switching there must hold on the way back. One store,
+   read by the dash, the history hub and the section pages.
+   sessionStorage = the same lifetime as the OTP unlock. Changing person NEVER
+   re-locks (user: „no need to have another verification when we change the
+   person") — the passcode gates the family's protected zone as a whole, and
+   re-asking per member would punish the switch we just made easier. */
+const PERSON_KEY = 'mgaPersonScope'
+
+export function getPersonScope() {
+  const id = sessionStorage.getItem(PERSON_KEY)
+  /* an unknown id (stale storage, hand-typed) falls back to the policyholder
+     rather than rendering a person-less screen */
+  return V2_PERSONS.some((p) => p.id === id) ? id : V2_PERSONS[0].id
+}
+
+export function setPersonScope(id) {
+  try {
+    sessionStorage.setItem(PERSON_KEY, id)
+  } catch {
+    /* private mode — the scope just won't survive navigation */
+  }
+}
+
+/* Records carry the person's FIRST name (that is what a list line needs to read);
+   the selector speaks ids. One map here, so no screen re-derives it. */
+export function personFirstName(id) {
+  const p = V2_PERSONS.find((x) => x.id === id)
+  return p ? p.name.split(' ')[0] : ''
+}
+
 /* Today's visit per person — exists only in the visit-day demo mode. */
 export const V2_TODAY = {
   /* #5: the cabinet is now surfaced in the arrival confirmation, so the
@@ -166,8 +200,43 @@ export function setMedDismissed(name, on) {
 }
 
 const UPLOADS_KEY = 'mgaUploads'
+/* Per-record attachments (2026-08-26): same session store shape as the uploads, but
+   keyed by the record they hang off.
+   ⚠️ The key MUST match whatever makes that record unique in its own list — variadic
+   for exactly that reason. Title+date is NOT enough in analyses: the same test exists
+   twice on the same date, once done at Curatio and once uploaded from another clinic
+   (the list key carries `clinic || src` for the same reason). Found the hard way —
+   a document attached to one ბიოქიმია rendered on both. */
+const ATTACH_KEY = 'mgaAttachments'
 
-export function getUploads() {
+export const recKey = (...parts) => parts.filter(Boolean).join('__')
+
+export function getAttachments() {
+  try {
+    return JSON.parse(sessionStorage.getItem(ATTACH_KEY) || '{}')
+  } catch {
+    return {}
+  }
+}
+
+export function addAttachment(key, rec) {
+  try {
+    const all = getAttachments()
+    sessionStorage.setItem(ATTACH_KEY, JSON.stringify({ ...all, [key]: [...(all[key] || []), rec] }))
+  } catch {
+    /* private mode — the prototype just forgets, same as the uploads store */
+  }
+}
+
+/* No arg = every upload; with a kind, only that section's. Records saved before
+   the type field existed carry no `kind` — they were all analyses, so that is the
+   legacy default. */
+export function getUploads(kind) {
+  const all = getAllUploads()
+  return kind ? all.filter((u) => (u.kind || 'analyses') === kind) : all
+}
+
+function getAllUploads() {
   try {
     return JSON.parse(sessionStorage.getItem(UPLOADS_KEY) || '[]')
   } catch {
@@ -185,6 +254,7 @@ export function addUpload(rec) {
 
 export function clearUploads() {
   try {
+    sessionStorage.removeItem(ATTACH_KEY) /* attachments are uploads too — reset together */
     sessionStorage.removeItem(UPLOADS_KEY)
   } catch {
     /* ignore */
@@ -224,7 +294,16 @@ export const V2_HISTORY = {
      per-upload consent from the upload sheet. */
   analyses: [
     { title: 'სისხლის საერთო', cat: 'blood', date: '22 აპრ', src: 'curatio', person: 'თამარ', status: 'norm' },
+    /* HIDDEN 2026-08-26 at the user's request — this abnormal-result sample was a
+       distraction during stakeholder demos („the team was a bit stressed when I
+       presented this"). It is DEMO DATA ONLY; nothing about real records changes.
+       ⚠️ It was also the ONLY analyses record exercising `status:'warn'`, `note` and
+       `book:true`, so with it commented out the section no longer demonstrates the
+       attention badge, the clinical note or the „ჩაეწერე ექიმთან" CTA. Restore this
+       one line to get that coverage back (or swap in a calmer sample) before any
+       review where those states matter.
     { title: 'ბიოქიმია', cat: 'bio', date: '14 აპრ', src: 'curatio', person: 'თამარ', status: 'warn', note: 'ALT/AST ამაღლებულია — საჭიროა ექიმის კონსულტაცია', book: true },
+    */
     { title: 'ფარისებრი (TSH)', cat: 'thyroid', date: '3 აპრ', src: 'curatio', person: 'თამარ', status: 'norm' },
     { title: 'ლიპიდური სპექტრი', cat: 'lipid', date: '15 თებ', src: 'external', clinic: 'BMSC კლინიკა', person: 'თამარ', shared: true },
     { title: 'სისხლის საერთო', cat: 'blood', date: '2 მარ', src: 'curatio', person: 'ნიკა', status: 'norm' },
@@ -233,15 +312,20 @@ export const V2_HISTORY = {
     { title: 'ბიოქიმია', cat: 'bio', date: '14 აპრ', src: 'external', clinic: 'BMSC კლინიკა', person: 'თამარ', shared: true },
     { title: 'MRI — თავის ტვინი', cat: 'imaging', date: '2 მარ', src: 'external', clinic: 'EMC', person: 'თამარ', shared: false },
   ],
+  /* `person` added 2026-08-27 with the person selector: these three carried none,
+     so a person-scoped list had nothing to cut on. D3 is ნიკა's deliberately —
+     switching member on დანიშნულებები then SHOWS a different record instead of
+     emptying the page, which is what proves the scope works in a demo. */
   meds: [
-    { name: 'ვიტამინი D3 2000 IU', how: 'დღეში 1 კაფსულა · 15 ივნისამდე', by: 'ნ. გიგაური', src: 'curatio', state: 'active' },
-    { name: 'Metformin 500mg', how: 'დღეში 2 აბი', by: 'ნ. გიგაური', src: 'curatio', expiry: 'ვადა: 30 აპრ · 6 დღეში', state: 'expiring' },
-    { name: 'Atorvastatin 20mg', how: 'საღამოს 1 აბი · 1 სექტემბრამდე', by: 'გ. მამულაძე', src: 'external', clinic: 'EMC', state: 'chronic' },
+    { name: 'ვიტამინი D3 2000 IU', how: 'დღეში 1 კაფსულა · 15 ივნისამდე', by: 'ნ. გიგაური', src: 'curatio', person: 'ნიკა', state: 'active' },
+    { name: 'Metformin 500mg', how: 'დღეში 2 აბი', by: 'ნ. გიგაური', src: 'curatio', person: 'თამარ', expiry: 'ვადა: 30 აპრ · 6 დღეში', state: 'expiring' },
+    { name: 'Atorvastatin 20mg', how: 'საღამოს 1 აბი · 1 სექტემბრამდე', by: 'გ. მამულაძე', src: 'external', clinic: 'EMC', person: 'თამარ', state: 'chronic' },
   ],
   studies: [
     {
       src: 'referral',
       title: 'ექოსკოპია — მუცლის ღრუ',
+      person: 'თამარ',
       meta: 'დანიშნა ნ. გიგაურმა · 14 მარ',
       prep: 'მომზადება: 4–6 სთ მარხვა, ბუშტი სავსე',
       repeat: 'გამეორება 3 თვეში · ივნ 2026',
@@ -250,8 +334,8 @@ export const V2_HISTORY = {
   /* #9 — referrals come FROM the family doctor: that is their origin, and SourceTag
      renders it with the same enum the analyses and the card use. */
   referrals: [
-    { title: 'ლაბორატორიული — ბიოქიმია', number: 'EED 336 135 / 23', expiry: 'ვადა: 14 ივლ 2026', prep: 'მომზადება: 8–12 სთ მარხვა, მხოლოდ წყალი', src: 'referral', status: 'booked' },
-    { title: 'კარდიოლოგის კონსულტაცია', number: 'EED 336 218 / 23', expiry: 'ვადა: 8 ივლ 2026', src: 'referral', status: 'waiting' },
+    { title: 'ლაბორატორიული — ბიოქიმია', number: 'EED 336 135 / 23', expiry: 'ვადა: 14 ივლ 2026', prep: 'მომზადება: 8–12 სთ მარხვა, მხოლოდ წყალი', src: 'referral', person: 'თამარ', status: 'booked' },
+    { title: 'კარდიოლოგის კონსულტაცია', number: 'EED 336 218 / 23', expiry: 'ვადა: 8 ივლ 2026', src: 'referral', person: 'თამარ', status: 'waiting' },
   ],
   /* #10 (2026-08-18) — the card holds every ENCOUNTER, not only in-clinic visits:
      phone and online consultations produce records too, and a patient scanning the

@@ -19,14 +19,16 @@
    Size (user, 2026-08-20): the CLINIC-CHIP tier — 12px label, 24px pill, 16px icon —
    one step up from the h18 meta pills so origin reads at a glance.
 
-   Variants (user, 2026-08-20 — GPI pink for in-network, gray for external):
-     · curatio  — in-network, GPI PINK (#c01b60 on #fde7f1, 5.01:1) · building icon
+   Variants (colour re-cut 2026-08-26 co-brand pass — Curatio blue for in-network,
+   superseding the 2026-08-20 GPI-pink call; gray for external unchanged):
+     · curatio  — in-network, CURATIO BLUE (tint/fg tokens, 7.4:1) · the real logo mark
      · external — produced elsewhere, GRAY (#5b6078 on #eef0f4, 5.43:1) · building icon
      · referral — ordered by the family doctor, LAVENDER (#3a3d8f on #eef0fb, 8.24:1) · stethoscope
    Both non-token fgs are a step darker than their family token, which fails AA on
    the tint (--mga-pink-fg 4.16:1, --mga-muted-fg 4.28:1). All measured, not estimated. */
 
 import Icon from '../lib/Icon.jsx'
+import CuratioMark from '../lib/CuratioMark.jsx'
 import { M } from './strings.js'
 
 const TONE = {
@@ -46,9 +48,12 @@ export default function SourceTag({ src, clinic }) {
   const label = src === 'external' && clinic ? `${M.src[src]} · ${clinic}` : M.src[src]
   /* `clinic` is null when the uploader left the field blank — the guard above is what
      keeps the chip from reading „გარე · გარე". */
+  /* Curatio's own records carry the real logo mark (2026-08-26 co-brand pass) —
+     the chip names the brand, so it wears the brand. External/referral keep their
+     generic glyphs; the icon slot stays the spec's 16px either way. */
   return (
     <span className={'mga-srctag ' + TONE[src]}>
-      <Icon name={GLYPH[src]} size={16} />
+      {src === 'curatio' ? <CuratioMark size={16} /> : <Icon name={GLYPH[src]} size={16} />}
       {label}
     </span>
   )

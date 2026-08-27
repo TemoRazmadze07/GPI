@@ -1,0 +1,1024 @@
+/* ==========================================================================
+   Dashboard host (#/dash) — the client web dashboard, rebuilt on the design
+   system as the surface the Curatio module will be prepared for.
+
+   SCOPED `.dash-*`, its own file, loaded after components.css. It never
+   overrides a `.gpi-*` rule: where it reuses the kit (Card, Badge, Avatar,
+   Icon, LanguageSwitcher, the link and empty-state classes) it uses those
+   classes as-is and only adds around them. That is what keeps the My-Cabinet
+   booking application untouched by this project.
+
+   EVERY value below is a token from tokens.css, with exactly three documented
+   exceptions (the page tint and two partner brand colours) — see each one.
+   ========================================================================== */
+
+.dash-shell {
+  /* ⚠️ SAMPLED FROM THE DESIGN SHOTS, not pulled from Figma: the dashboard's
+     page ground is a pale blue-lavender, not the neutral --surface-page the
+     rest of My-Cabinet sits on. Kept scoped here rather than re-pointing the
+     global token, which would repaint the booking flow too.
+     TODO: port as `surface/page/tinted` into the Figma foundation, then delete. */
+  --dash-page-bg: #f1f5fb;
+
+  min-height: 100vh;
+  background: var(--dash-page-bg);
+}
+
+/* The design's layout is FLUID, not a fixed 1280 container: content occupies
+   ~88.8% of the viewport at both widths we were shown (1719/1933 and
+   1775/2000). So the gutter is proportional, capped so an ultrawide monitor
+   does not stretch a data card to 2300px. */
+.dash-shell__inner {
+  max-width: 1944px;
+  margin-inline: auto;
+  padding-inline: clamp(var(--space-20), 5.6vw, 112px);
+}
+
+/* ---- Top bar -------------------------------------------------------------- */
+.dash-topbar {
+  background: var(--surface-card);
+  border-bottom: var(--border-width-sm) solid var(--border-default);
+}
+.dash-topbar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-24);
+  min-height: 72px;
+}
+.dash-logo { display: inline-flex; }
+.dash-logo__img { display: block; height: 44px; width: auto; }
+
+.dash-topbar__utils {
+  display: flex;
+  align-items: center;
+  gap: var(--space-20);
+}
+
+.dash-points {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-4) var(--space-12);
+  border: none;
+  border-radius: var(--radius-full);
+  background: none;
+  color: var(--color-indigo-800);
+  font: 700 15px/1.4 var(--font-sans);
+  cursor: pointer;
+}
+.dash-points:hover { background: var(--interactive-hover-bg); }
+
+.dash-user {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-4) var(--space-8);
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-indigo-800);
+  font: 500 14px/1.4 var(--font-sans);
+  cursor: pointer;
+}
+.dash-user:hover { background: var(--interactive-hover-bg); }
+.dash-user__ava {
+  display: grid;
+  place-items: center;
+  width: var(--avatar-md);
+  height: var(--avatar-md);
+  border-radius: var(--radius-full);
+  background: var(--color-neutral-100);
+  color: var(--color-indigo-800);
+}
+
+.dash-burger {
+  display: none;
+  place-items: center;
+  width: var(--control-md);
+  height: var(--control-md);
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-indigo-800);
+  cursor: pointer;
+}
+
+/* ---- Primary nav ---------------------------------------------------------- */
+.dash-nav {
+  background: var(--surface-card);
+  border-bottom: var(--border-width-sm) solid var(--border-default);
+}
+.dash-nav__inner {
+  display: flex;
+  align-items: center;
+  /* ONE ROW, ALWAYS. `flex-wrap` was the earlier answer here and it was wrong:
+     ten Georgian labels need 1306px of intrinsic width, so on any normal
+     desktop one item was stranded alone on a second row — which reads as a
+     broken header, not as a design. DashShell now measures the row and moves
+     the remainder into a „მეტი" menu, so nothing wraps and nothing is hidden.
+     The clamp still closes the gaps up first, so the menu stays empty as long
+     as it possibly can. */
+  flex-wrap: nowrap;
+  gap: clamp(var(--space-4), 2vw, var(--space-32));
+  height: 56px;
+}
+.dash-nav__item { flex: 0 0 auto; }
+
+/* Overflow trigger + its panel. The panel reuses the design system's menu
+   surface (.gpi-actmenu__panel/__item) rather than growing a second dropdown
+   look — only the placement is local. */
+.dash-nav__more { position: relative; flex: 0 0 auto; }
+.dash-nav__panel { left: auto; right: 0; top: calc(100% + var(--space-4)); }
+.gpi-actmenu__item.is-active { color: var(--text-brand); }
+
+/* Width probe: must occupy layout to be measurable, so it cannot be
+   display:none — it is collapsed to zero and lifted out of the flow instead. */
+.dash-nav__probe {
+  position: absolute;
+  visibility: hidden;
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-8);
+  font: 500 14px/1 var(--font-sans);
+  white-space: nowrap;
+}
+.dash-nav__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-8);
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-indigo-800);
+  font: 500 14px/1 var(--font-sans);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.dash-nav__item svg { color: var(--icon-muted); }
+.dash-nav__item:hover { background: var(--interactive-hover-bg); }
+.dash-nav__item.is-active,
+.dash-nav__item.is-active svg { color: var(--text-brand); }
+
+/* ---- Page ----------------------------------------------------------------- */
+.dash-main__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-40);
+  padding-block: var(--space-40) var(--space-64);
+}
+
+/* A page header is one unit: breadcrumb, title and the title row's control.
+   Its own tight rhythm, so the 40px gap between CARDS never lands inside it. */
+.dash-pagehead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+.dash-pagehead .dash-sechead { margin-bottom: 0; }
+
+.dash-sechead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Wraps so a header control (the person Select, min-width 280) drops to its
+     own line instead of pushing the page sideways — measured overflowing at
+     360px, where title + 280 exceeds the 328 content box. */
+  flex-wrap: wrap;
+  gap: var(--space-8) var(--space-16);
+  margin-bottom: var(--space-16);
+}
+.dash-sechead__title {
+  margin: 0;
+  color: var(--color-indigo-800);
+  font: 700 15px/20px var(--font-sans);
+  /* Mkhedruli has no case, so text-transform is a no-op in Georgian and only
+     shapes the English locale — which is exactly what the design does. Tracking
+     stays modest so the ka string does not read as spaced-out. */
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Always-underlined link. `.gpi-link` underlines on hover only; every "view
+   all" in this design is underlined at rest, so this is the resting variant
+   rather than a second link component. */
+.dash-link {
+  /* min-height is the WCAG 2.2 target-size floor (Rule 7). `.gpi-link` is a
+     text link at its natural 21px line box, which is fine INSIDE a sentence —
+     every one of these is a standalone control on its own, so the inline
+     exception does not apply and the box has to grow. Scoped to .dash-link so
+     the booking flow's inline links are untouched. */
+  min-height: var(--control-xs);
+  font-size: 14px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ---- ACTIVE POLICIES strip ------------------------------------------------ */
+.dash-strip {
+  display: grid;
+  grid-template-columns: repeat(var(--dash-cols, 3), minmax(0, 1fr));
+  gap: var(--space-20);
+}
+.dash-psum {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-20);
+  padding: var(--space-24);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-xl);
+  background: var(--surface-card);
+  box-shadow: var(--elevation-card);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+.dash-psum:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--elevation-dropdown);
+}
+.dash-psum__top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+}
+.dash-psum__disc {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: var(--avatar-xl);
+  height: var(--avatar-xl);
+  border-radius: var(--radius-lg);
+}
+.dash-psum__disc--health { background: var(--color-pink-50); color: var(--action-primary); }
+.dash-psum__disc--auto { background: var(--color-link-50); color: var(--color-link-600); }
+.dash-psum__id {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  flex: 1;
+}
+.dash-psum__name {
+  color: var(--color-indigo-800);
+  font: 700 17px/22px var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+.dash-psum__no { color: var(--text-muted); font: 400 13px/18px var(--font-sans); }
+.dash-psum__chev { flex: 0 0 auto; color: var(--color-indigo-800); }
+.dash-psum__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-8);
+  font: 400 14px/20px var(--font-sans);
+  color: var(--text-muted);
+}
+.dash-psum__val { color: var(--color-indigo-800); font-weight: 600; }
+.dash-psum__tier {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-left: var(--space-8);
+  color: var(--color-indigo-800);
+  font-weight: 600;
+}
+
+/* ---- Product card --------------------------------------------------------- */
+.dash-pcard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  overflow: hidden;
+  border-top: 3px solid var(--dash-rail);
+}
+.dash-pcard--health { --dash-rail: var(--color-pink-500); }
+.dash-pcard--auto { --dash-rail: var(--color-link-600); }
+
+.dash-pcard__main {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-32);
+}
+.dash-pcard__rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-32);
+  padding: var(--space-32);
+  background: var(--surface-page);
+  border-left: var(--border-width-sm) solid var(--border-divider);
+}
+
+.dash-chead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  /* Wraps so the payment note drops to its own line before it can squeeze the
+     policy's name — the name is the thing the reader is looking for. */
+  flex-wrap: wrap;
+  gap: var(--space-8) var(--space-16);
+}
+.dash-chead__main { flex: 1 1 260px; min-width: 0; }
+.dash-chead__titlerow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  flex-wrap: wrap;
+}
+.dash-chead__name {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+.dash-chead__title {
+  margin: 0;
+  min-width: 0;
+  color: var(--color-indigo-800);
+  font: 700 20px/26px var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+.dash-chead__switch {
+  display: grid;
+  place-items: center;
+  width: var(--control-sm);
+  height: var(--control-sm);
+  border: none;
+  border-radius: var(--radius-full);
+  background: none;
+  color: var(--color-indigo-800);
+  cursor: pointer;
+}
+.dash-chead__switch:hover { background: var(--interactive-hover-bg); }
+.dash-chead__sub {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  color: var(--color-indigo-800);
+  font: 500 14px/20px var(--font-sans);
+}
+.dash-chead__note {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  flex: 0 0 auto;
+  margin: 0;
+  color: var(--text-muted);
+  font: 400 14px/20px var(--font-sans);
+  white-space: nowrap;
+}
+.dash-chead__note svg { color: var(--icon-muted); }
+.dash-chead__note strong { color: var(--color-indigo-800); font-weight: 600; }
+
+.dash-pcard__state {
+  margin: var(--space-4) 0 0;
+  color: var(--text-muted);
+  font: 400 14px/20px var(--font-sans);
+}
+.dash-pcard__body {
+  margin: var(--space-24) 0 0;
+  max-width: 62ch;
+  color: var(--text-main);
+  font: 400 14px/22px var(--font-sans);
+}
+.dash-rule {
+  height: 0;
+  margin: var(--space-24) 0 0;
+  border: 0;
+  border-top: var(--border-width-sm) solid var(--border-divider);
+}
+
+/* ---- Limit meters --------------------------------------------------------- */
+.dash-meters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-32);
+  margin-top: var(--space-24);
+}
+.dash-meter__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+.dash-meter__label { color: var(--color-indigo-800); font: 400 14px/20px var(--font-sans); }
+.dash-meter__value { color: var(--color-indigo-800); font: 600 15px/20px var(--font-sans); white-space: nowrap; }
+.dash-meter__track {
+  height: 6px;
+  margin-top: var(--space-8);
+  border-radius: var(--radius-full);
+  background: var(--color-neutral-200);
+  overflow: hidden;
+}
+.dash-meter__fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--color-indigo-800);
+}
+.dash-meter__rest {
+  margin: var(--space-8) 0 0;
+  color: var(--text-muted);
+  font: 400 13px/18px var(--font-sans);
+}
+
+/* ---- Action tiles --------------------------------------------------------- */
+.dash-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-16);
+  margin-top: var(--space-24);
+}
+.dash-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-16);
+  padding: var(--space-24) var(--space-16);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+.dash-tile:hover { border-color: var(--border-strong); background: var(--color-neutral-50); }
+.dash-tile__disc {
+  display: grid;
+  place-items: center;
+  width: var(--avatar-xl);
+  height: var(--avatar-xl);
+  border-radius: var(--radius-full);
+}
+.dash-tile__disc--neutral { background: var(--color-neutral-100); color: var(--color-indigo-800); }
+.dash-tile__disc--pink { background: var(--color-pink-50); color: var(--action-primary); }
+.dash-tile__disc--blue { background: var(--color-link-50); color: var(--color-indigo-800); }
+/* The mark brings its own disc (a partner lockup) — don't ring a ring. */
+.dash-tile__disc--bare { background: none; }
+/* Label and its count are one block: the 16px rhythm belongs between the disc
+   and the text, not inside the text. Without this the count read as a third
+   element and pushed the tile 50px taller than the policy cards' tiles. */
+.dash-tile__text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+.dash-tile__label {
+  color: var(--color-indigo-800);
+  font: 500 15px/20px var(--font-sans);
+  text-align: center;
+}
+
+/* ---- Brand marks ---------------------------------------------------------- */
+.dash-mark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: var(--radius-full);
+}
+.dash-mark--voovly {
+  background: var(--color-indigo-800);
+  /* ⚠️ PARTNER BRAND COLOUR, deliberately outside the palette: Voovly's lime on
+     GPI navy. A partner lockup is not a semantic colour, so it is not tokenised.
+     Replace the whole mark when GPI supplies voovly.svg — see dash/marks.jsx. */
+  color: #c8e64c;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.dash-mark--expertise { background: var(--color-sky-100); color: var(--color-sky-700); }
+
+/* ---- Meta row (personal doctor · second opinion · auto assistant) ---------- */
+.dash-mrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  margin-top: var(--space-16);
+  padding: var(--space-16);
+  border-radius: var(--radius-lg);
+  background: var(--surface-page);
+}
+.dash-mrow__lead { flex: 0 0 auto; display: inline-flex; }
+.dash-mrow__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 0;
+}
+.dash-mrow__title { color: var(--color-indigo-800); font: 600 15px/20px var(--font-sans); }
+.dash-mrow__sub { color: var(--text-muted); font: 400 13px/18px var(--font-sans); }
+.dash-mrow__action { flex: 0 0 auto; }
+.dash-wa { gap: var(--space-8); }
+
+/* ---- Rail sections and rows ----------------------------------------------- */
+.dash-rsec { display: flex; flex-direction: column; gap: var(--space-12); }
+.dash-rsec__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+}
+.dash-rsec__title { margin: 0; color: var(--color-indigo-800); font: 700 17px/22px var(--font-sans); }
+.dash-rsec__body { display: flex; flex-direction: column; gap: var(--space-12); }
+.dash-rsec__empty {
+  margin: 0;
+  padding: var(--space-24);
+  color: var(--text-muted);
+  font: 400 14px/20px var(--font-sans);
+  text-align: center;
+}
+.dash-rsec__emptybox { padding: var(--space-24) var(--space-16) var(--space-32); }
+
+.dash-lrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  width: 100%;
+  padding: var(--space-12) var(--space-16);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  text-align: left;
+}
+.dash-lrow--btn { cursor: pointer; transition: border-color 0.12s ease, background 0.12s ease; }
+.dash-lrow--btn:hover { border-color: var(--border-strong); background: var(--color-neutral-50); }
+.dash-lrow__lead { flex: 0 0 auto; display: inline-flex; }
+.dash-lrow__disc {
+  display: grid;
+  place-items: center;
+  width: var(--avatar-lg);
+  height: var(--avatar-lg);
+  border-radius: var(--radius-full);
+  background: var(--color-neutral-100);
+  color: var(--color-indigo-800);
+}
+.dash-lrow__disc--green { background: var(--status-success-bg); color: var(--status-success-fg); }
+.dash-lrow__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  /* min-width:0 is what stops a long title from pushing the trailing facts
+     off the row; the title wraps inside its own column instead. */
+  min-width: 0;
+  flex: 1;
+}
+.dash-lrow__titlerow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.dash-lrow__title {
+  color: var(--color-indigo-800);
+  font: 500 14px/20px var(--font-sans);
+  overflow-wrap: anywhere;
+}
+.dash-lrow__sub { color: var(--text-muted); font: 400 12px/16px var(--font-sans); }
+.dash-lrow__trail {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-12);
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+.dash-lrow__fact { color: var(--color-indigo-800); font: 600 13px/18px var(--font-sans); white-space: nowrap; }
+.dash-lrow__tier {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  color: var(--color-indigo-800);
+  font: 600 13px/18px var(--font-sans);
+  white-space: nowrap;
+}
+.dash-lrow__chev { flex: 0 0 auto; color: var(--text-muted); }
+
+/* ---- Support launcher ----------------------------------------------------- */
+.dash-fab {
+  position: fixed;
+  right: clamp(var(--space-20), 3vw, var(--space-48));
+  bottom: clamp(var(--space-20), 3vw, var(--space-48));
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  color: var(--color-indigo-800);
+  box-shadow: var(--elevation-popover);
+  cursor: pointer;
+}
+.dash-fab:hover { background: var(--color-neutral-50); }
+
+/* ---- Focus ---------------------------------------------------------------- */
+.dash-nav__item:focus-visible,
+.dash-points:focus-visible,
+.dash-user:focus-visible,
+.dash-burger:focus-visible,
+.dash-psum:focus-visible,
+.dash-tile:focus-visible,
+.dash-lrow--btn:focus-visible,
+.dash-chead__switch:focus-visible,
+.dash-fab:focus-visible,
+.dash-link:focus-visible {
+  outline: var(--focus-ring-width) solid var(--border-focus);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* ---- Responsive -----------------------------------------------------------
+   The design was given to us at ~1933 and ~2000px. These are the breakpoints
+   where each grid stops being honest, not a full responsive design pass —
+   that is a separate round with the user. */
+@media (max-width: 1180px) {
+  .dash-pcard { grid-template-columns: minmax(0, 1fr); }
+  .dash-pcard__rail {
+    border-left: none;
+    border-top: var(--border-width-sm) solid var(--border-divider);
+  }
+}
+@media (max-width: 1023px) {
+  .dash-burger { display: grid; }
+  .dash-nav { display: none; }
+  .dash-shell.is-navopen .dash-nav { display: block; }
+  .dash-nav__inner {
+    flex-direction: column;
+    align-items: stretch;
+    flex-wrap: nowrap;
+    height: auto;
+    padding-block: var(--space-8);
+  }
+  /* In the burger drawer every item has its own line, so nothing overflows and
+     the menu must not appear. */
+  .dash-nav__more { display: none; }
+  .dash-nav__item { justify-content: flex-start; padding: var(--space-12) var(--space-8); }
+}
+@media (max-width: 860px) {
+  .dash-strip { grid-template-columns: minmax(0, 1fr); }
+  .dash-meters { grid-template-columns: minmax(0, 1fr); gap: var(--space-20); }
+  .dash-tiles { grid-template-columns: minmax(0, 1fr); }
+  .dash-pcard__main,
+  .dash-pcard__rail { padding: var(--space-20); }
+  .dash-chead { flex-direction: column; align-items: flex-start; gap: var(--space-8); }
+}
+
+/* Phone widths are NOT this product's job — the consumer phone experience is the
+   MyGPI app, its own platform context (Rule 5). But a stakeholder will open the
+   review link on a phone, and a dashboard that scrolls sideways reads as broken.
+   So: keep everything reachable, drop only the two labels whose marks already
+   say the same thing. Measured at 390 — the top bar was the only overflow. */
+@media (max-width: 640px) {
+  /* Wrap rather than shrink: the utilities drop to a second row before anything
+     is pushed off-screen, whatever a locale does to their widths. The label
+     hiding below is what usually keeps it to one row anyway. */
+  .dash-topbar__inner { flex-wrap: wrap; gap: var(--space-8); padding-block: var(--space-8); }
+  .dash-topbar__utils { flex: 1 1 auto; justify-content: flex-end; gap: var(--space-8); min-width: 0; }
+  .dash-logo__img { height: 34px; }
+  /* Marks only. Both buttons keep their accessible names (aria-label on the
+     switcher, the visible points number on the chip) — nothing is lost to a
+     screen reader, only to the eye that already has the mark. */
+  .dash-user__name { display: none; }
+  .gpi-langsw__lbl,
+  .gpi-langsw__chev { display: none; }
+  .dash-points { padding-inline: var(--space-8); }
+  .dash-shell__inner { padding-inline: var(--space-16); }
+}
+
+/* ==========================================================================
+   ჩემი კურაციო (web) — concept agreed 2026-08-26, built same day.
+   ========================================================================== */
+
+.dash-shell {
+  /* Curatio's OWN brand colour — the locked #424F9D traced from the real mark
+     (see lib/CuratioMark.jsx CURATIO_BLUE + the mobile --mga-curatio token; the
+     tint/fg pair mirrors mobile's --mga-curatio-tint / -fg, fg measured 7.2:1
+     on tint). Redeclared here rather than imported from mga.css because the
+     two surfaces must stay splittable (Rule 5).
+     TODO: port `brand/curatio/*` into the Figma foundation, then point both. */
+  --dash-curatio: #424f9d;
+  --dash-curatio-tint: #e7ecf8;
+  --dash-curatio-fg: #3a4690;
+}
+.dash-pcard--curatio { --dash-rail: var(--dash-curatio); }
+
+/* ---- The dashboard card ---------------------------------------------------
+   ANATOMY MATCHES THE POLICY CARDS. It used to be one padded box with an inset
+   grey panel floating inside it, which read as a different species next to the
+   health/auto cards — those split edge-to-edge into a white main column and a
+   tinted rail that runs the full height of the card. This card now does the
+   same: `.dash-pcard` supplies the grid + the coloured top rail, and only the
+   HEAD spans both columns, because the card has one title, not two. */
+.dash-ccard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  padding: 0;
+}
+.dash-ccard__head {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+  flex-wrap: wrap;
+  padding: var(--space-24) var(--space-32);
+  border-bottom: var(--border-width-sm) solid var(--border-divider);
+}
+.dash-ccard__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-12);
+  min-width: 0;
+}
+.dash-ccard__mark {
+  display: grid;
+  place-items: center;
+  width: var(--avatar-md);
+  height: var(--avatar-md);
+  border-radius: var(--radius-md);
+  background: var(--dash-curatio);
+  color: #ffffff; /* white-on-blue IS Curatio's lockup (locked, 2026-08-26) */
+}
+.dash-ccard__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-16);
+}
+/* The tiles column: the card's main, on white, matching .dash-pcard__main. */
+.dash-ccard__tiles {
+  margin-top: 0;
+  /* Centred, not top-aligned: three tiles are shorter than the rail's rows, and
+     start-alignment left a block of dead space under them while the rail ran
+     full. Centring balances the two columns without inventing filler content. */
+  align-content: center;
+  padding: var(--space-32);
+}
+.dash-tile__sub { color: var(--text-muted); font: 400 12px/16px var(--font-sans); text-align: center; }
+.dash-tile__disc--curatio { background: var(--dash-curatio-tint); color: var(--dash-curatio-fg); }
+
+/* The rail: same tint, same hairline, same padding as .dash-pcard__rail, so
+   the three cards share one silhouette instead of three. */
+.dash-ccard__recent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  padding: var(--space-32);
+  background: var(--surface-page);
+  border-left: var(--border-width-sm) solid var(--border-divider);
+}
+.dash-ccard__locked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-24) var(--space-16);
+  text-align: center;
+  color: var(--text-muted);
+  font: 400 14px/20px var(--font-sans);
+}
+.dash-ccard__locked p { margin: 0; }
+.dash-ccard__locked svg { color: var(--icon-muted); }
+
+/* The quiet variant: an action that undoes rather than opens (ჩაკეტვა). */
+.dash-link--quiet { color: var(--text-muted); display: inline-flex; align-items: center; gap: var(--space-4); }
+/* Inline meta-line action: rides a 20px sub line, so the standalone link's
+   24px floor is met by the ROW around it, not the link's own box. */
+.dash-link--inline { min-height: 0; font-size: 12px; }
+
+/* ---- Visit-day strip (F-01 web scope: read-only, points at the phone) ------ */
+/* Inside the card grid the strip spans both columns and squares off, so it
+   reads as a band of the card rather than a floating pill. Standalone (the
+   section page) it keeps its rounded card shape. */
+.dash-cvisit--full {
+  grid-column: 1 / -1;
+  border-radius: 0;
+}
+.dash-cvisit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+  flex-wrap: wrap;
+  padding: var(--space-16) var(--space-20);
+  border-radius: var(--radius-lg);
+  background: var(--dash-curatio);
+  color: #ffffff;
+}
+.dash-cvisit__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font: 400 14px/20px var(--font-sans);
+  min-width: 0;
+}
+.dash-cvisit__main strong { font-weight: 700; }
+.dash-cvisit__phone {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  font: 500 13px/18px var(--font-sans);
+  color: rgba(255, 255, 255, 0.92);
+  white-space: nowrap;
+}
+
+/* ---- Section (#/dash/curatio) --------------------------------------------- */
+/* The shared Select stretches to its container (form default); as a HEADER
+   control (person scope, filters) it sizes to content instead. */
+.dash-sechead .gpi-fsel { flex: 0 1 auto; min-width: 280px; }
+.dash-hist__filters .gpi-fsel { flex: 0 1 auto; min-width: 170px; }
+
+.dash-cur__cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: var(--space-24);
+  align-items: start;
+}
+.dash-cur__main,
+.dash-cur__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+  min-width: 0;
+}
+
+.dash-shelf { display: flex; flex-direction: column; gap: var(--space-12); padding: var(--space-24); }
+
+.dash-doc { margin-top: 0; background: var(--surface-card); box-shadow: var(--elevation-card); border-radius: var(--radius-xl); padding: var(--space-24); align-items: flex-start; }
+.dash-doc__text { display: flex; flex-direction: column; gap: var(--space-4); flex: 1; min-width: 0; }
+.dash-doc__btns {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  margin-top: var(--space-12);
+}
+.dash-doc__gate {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  /* neutral/600, not text-muted: muted on the sunken ground measures 4.24 — and
+     the sentence explaining WHY booking is locked is meaningful text (Rule 7). */
+  color: var(--color-neutral-600);
+  font: 400 13px/18px var(--font-sans);
+}
+.dash-doc__gate svg { flex: 0 0 auto; }
+
+.dash-lrow__disc--curatio { background: var(--dash-curatio-tint); color: var(--dash-curatio-fg); }
+
+.dash-rem { display: flex; flex-direction: column; gap: var(--space-12); }
+.dash-rem__note { margin: 0; color: var(--text-muted); font: 400 12px/16px var(--font-sans); }
+
+/* ---- OTP modal -------------------------------------------------------------
+   A code entry is a CENTRED, FOCUSED MOMENT — one axis for the sent line, the
+   boxes, the resend and the note. That is not a new idea: it is exactly what
+   the accounts console does for the same component (`.acc-code`, accounts.css
+   193–197), and OtpInput has only two consumers, so they get one treatment
+   (Rule 1) rather than two.
+
+   Width 420, not the shared 520: 520 is sized for PROSE dialogs, and four 56px
+   boxes cap at 248px, so the default left them stranded with 224px of dead
+   space beside them (measured). 420 is already the system's small-dialog width
+   (.gpi-modal--sms, .gpi-modal--cols). */
+/* ⚠️ The explicit max-width is REQUIRED, not belt-and-braces. The overlay is a
+   place-items:center grid, so the shell's own `max-width: 100%` resolves
+   circularly and a fixed width wins (mobile.css documents this trap and caps
+   `.gpi-modal` to 100vw-32 in a media query) — but dash.css loads AFTER
+   mobile.css, so a bare `width: 420px` here beats that cap and ran off the
+   right edge at 390px (measured: right 436 in a 390 viewport). Capping in this
+   same rule makes it order-independent and needs no breakpoint. */
+.dash-otpmodal { width: 420px; max-width: calc(100vw - 2 * var(--space-16)); }
+.dash-otpmodal .gpi-modal__body { text-align: center; }
+.dash-otpmodal .gpi-otp { justify-content: center; }
+/* The footer joins the same axis — a right-pinned lone button reads as a
+   leftover from the form dialogs when everything above it is centred. */
+.dash-otpmodal .gpi-modal__ft { justify-content: center; }
+.dash-otp__body { margin: 0; color: var(--text-main); font: 400 14px/22px var(--font-sans); }
+.dash-otp__resend { margin: 0; color: var(--text-muted); font: 400 13px/18px var(--font-sans); }
+.dash-otp__demo { margin: 0; color: var(--text-disabled); font: 400 12px/16px var(--font-sans); }
+
+/* ---- History (#/dash/curatio/history) -------------------------------------- */
+.dash-histlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-64) var(--space-24);
+  text-align: center;
+  color: var(--text-muted);
+  font: 400 14px/20px var(--font-sans);
+}
+.dash-histlock p { margin: 0; }
+.dash-histlock svg { color: var(--icon-muted); }
+
+.dash-hist {
+  display: grid;
+  /* The rail gives width back as the window narrows — at 1200 a fixed 300 left
+     the table 51px short of its own columns and it scrolled inside its card. */
+  grid-template-columns: clamp(224px, 21vw, 300px) minmax(0, 1fr);
+  gap: var(--space-24);
+  align-items: start;
+}
+.dash-hist__rail { display: flex; flex-direction: column; gap: var(--space-12); min-width: 0; }
+.dash-hist__nav { display: flex; flex-direction: column; padding: var(--space-8); }
+.dash-hist__navitem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+  min-height: var(--control-md);
+  padding: var(--space-8) var(--space-12);
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--text-main);
+  font: 500 14px/20px var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+}
+.dash-hist__navitem:hover { background: var(--interactive-hover-bg); }
+.dash-hist__navitem.is-active { background: var(--interactive-selected-bg); color: var(--text-brand); }
+.dash-hist__count { color: var(--text-muted); font-weight: 400; }
+.dash-hist__navitem.is-active .dash-hist__count { color: var(--text-brand); }
+.dash-hist__action { width: 100%; }
+
+.dash-hist__main { display: flex; flex-direction: column; gap: var(--space-16); min-width: 0; }
+.dash-hist__filters {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  flex-wrap: wrap;
+}
+.dash-hist__filters .gpi-search { flex: 1 1 220px; }
+.dash-hist__table { display: flex; flex-direction: column; gap: var(--space-16); }
+
+.dash-medcell { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+.dash-medcell__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  flex-wrap: wrap;
+  color: var(--text-muted);
+  font: 400 12px/16px var(--font-sans);
+}
+.dash-visitname { display: inline-flex; align-items: center; gap: var(--space-8); }
+.dash-visitname svg { color: var(--icon-muted); flex: 0 0 auto; }
+.dash-cell-muted { color: var(--text-disabled); }
+
+.dash-srcmark { display: inline-flex; align-items: center; gap: var(--space-8); min-width: 0; }
+.dash-srcmark--curatio { color: var(--dash-curatio-fg); font-weight: 500; }
+.dash-srcmark svg { flex: 0 0 auto; }
+
+/* ---- Upload modal ---------------------------------------------------------- */
+.dash-uplmodal .gpi-modal__body { display: flex; flex-direction: column; gap: var(--space-16); }
+.dash-upl__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-16);
+}
+.dash-upl__consent { padding-top: var(--space-4); }
+
+/* ---- Focus for the new controls ------------------------------------------- */
+.dash-hist__navitem:focus-visible,
+.dash-link--quiet:focus-visible,
+.dash-link--inline:focus-visible {
+  outline: var(--focus-ring-width) solid var(--border-focus);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* ---- Responsive ------------------------------------------------------------ */
+/* The table's declared column widths are SUGGESTIONS (table-layout: auto), so
+   content min-widths can still push it a few px past its card and trip the
+   pinned-edge scroll shadow. Below the comfortable width the card gives its own
+   padding back rather than letting the table scroll inside it. */
+@media (max-width: 1320px) {
+  .dash-hist__table { padding: var(--space-16); }
+}
+
+@media (max-width: 1180px) {
+  .dash-ccard { grid-template-columns: minmax(0, 1fr); }
+  .dash-ccard__recent {
+    border-left: none;
+    border-top: var(--border-width-sm) solid var(--border-divider);
+  }
+  .dash-cur__cols { grid-template-columns: minmax(0, 1fr); }
+  .dash-hist { grid-template-columns: minmax(0, 1fr); }
+  .dash-hist__rail { flex-direction: row; flex-wrap: wrap; align-items: stretch; }
+  .dash-hist__rail > * { flex: 1 1 220px; }
+  .dash-hist__action { width: auto; }
+}
+@media (max-width: 860px) {
+  .dash-ccard__head,
+  .dash-ccard__tiles,
+  .dash-ccard__recent { padding: var(--space-20); }
+  .dash-upl__grid { grid-template-columns: minmax(0, 1fr); }
+}

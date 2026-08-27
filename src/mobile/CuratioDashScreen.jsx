@@ -19,7 +19,7 @@
 import { useState } from 'react'
 import Icon from '../lib/Icon.jsx'
 import { M } from './strings.js'
-import { V2_PERSONS, V2_TODAY, V2_HISTORY_ALERT, DOCTOR, getPickedDoctor, ONLINE_STATUS_ENABLED } from './data.js'
+import { V2_PERSONS, V2_TODAY, V2_HISTORY_ALERT, DOCTOR, getPickedDoctor, getPersonScope, setPersonScope, ONLINE_STATUS_ENABLED } from './data.js'
 import { go, hasDoctor, isVisitDay } from './nav.js'
 import { usePurchaseGate, UninsuredBanner } from './purchase.jsx'
 import { isUnlocked } from './otp.jsx'
@@ -32,7 +32,15 @@ export default function CuratioDashScreen() {
   /* #14 — the banner states the situation once at the top; the locks below are then
      a consequence the user already understands. */
   const { gated, guard, sheet } = usePurchaseGate()
-  const [personId, setPersonId] = useState(V2_PERSONS[0].id)
+  /* Shared scope since 2026-08-27 (the selector also lives on the history section
+     pages now): local state would have made the two disagree the moment the user
+     switched member one level down. Default is still the policyholder — that is
+     getPersonScope's fallback. */
+  const [personId, setPersonId] = useState(getPersonScope)
+  const pickPerson = (id) => {
+    setPersonScope(id)
+    setPersonId(id)
+  }
   const visitDay = isVisitDay()
   const unlocked = isUnlocked()
   /* #1 (2026-08-18): ?doc=0 = no personal doctor → empty card + docselect CTA.
@@ -49,7 +57,7 @@ export default function CuratioDashScreen() {
     <>
       <TopBar />
       <ProductSwitcher v2 active="curatio" />
-      <PersonSelect persons={V2_PERSONS} selectedId={personId} onSelect={setPersonId} alerts={alerts} />
+      <PersonSelect persons={V2_PERSONS} selectedId={personId} onSelect={pickPerson} alerts={alerts} />
 
       <div className="mga-body" style={{ paddingTop: 0 }}>
         {gated && <UninsuredBanner onOpen={guard(() => {})} />}

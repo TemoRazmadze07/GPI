@@ -51,6 +51,33 @@ export const apps = [
     ],
   },
   {
+    id: 'dash',
+    label: 'dashboard',
+    icon: 'layout-grid',
+    sub: 'client web dashboard — Curatio host',
+    features: [
+      {
+        id: 'host',
+        label: 'dashboard host',
+        status: 'in-progress',
+        flows: [
+          { id: 'dHome',   path: 'dash',                 label: 'dashboard — health + auto + curatio', status: 'in-progress', hash: '/dash' },
+        ],
+      },
+      {
+        id: 'curatio-web',
+        label: 'ჩემი კურაციო — web',
+        status: 'in-progress',
+        flows: [
+          { id: 'dCur',     path: 'dash/curatio',          label: 'section — doctor · records · prevention · reminders', status: 'in-progress', hash: '/dash/curatio' },
+          { id: 'dCurHist', path: 'dash/curatio/history',  label: 'history — analyses (OTP-gated)',   status: 'in-progress', hash: '/dash/curatio/history' },
+          { id: 'dCurMeds', path: '…/history?sec=meds',    label: '↳ prescriptions — expiry + renewal', status: 'in-progress', hash: '/dash/curatio/history?sec=meds' },
+          { id: 'dCurVis',  path: '…/history?sec=visits',  label: '↳ visits — form 100',              status: 'in-progress', hash: '/dash/curatio/history?sec=visits' },
+        ],
+      },
+    ],
+  },
+  {
     id: 'mobile',
     label: 'mobile',
     icon: 'smartphone',

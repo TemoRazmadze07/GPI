@@ -10,6 +10,7 @@
 
 import { useState } from 'react'
 import Icon from '../lib/Icon.jsx'
+import CuratioMark from '../lib/CuratioMark.jsx'
 import { M } from './strings.js'
 import { PERSONS, BOOKING, QUEUE, DOCTOR, HISTORY_COUNTS, NEXT_REMINDER, PREVENTION_NEXT } from './data.js'
 import { go, isVisitDay } from './nav.js'
@@ -31,7 +32,7 @@ export default function CuratioHubScreen() {
           <Icon name="chevron-left" size={16} />
         </button>
         <span className="mga-hdr__mark" aria-hidden="true">
-          <Icon name="activity" size={14} />
+          <CuratioMark size={17} />
         </span>
         <h1 className="mga-hdr__title">{M.hub.title}</h1>
       </div>

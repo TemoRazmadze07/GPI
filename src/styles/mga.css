@@ -18,7 +18,7 @@
    initials exempt (0.4 × circle size). V1-only classes (.mga-qa__*, .mga-cur__*,
    .mga-hub__*, .mga-locksect*, .mga-queue__*) stay frozen. Icon↔text row gap = 10.
    META PILLS (badge / langtag / pselect-tag) = p 2/8 + lh14 → h18;
-   srctag left the spec 2026-08-20: CLINIC CHIP = 12px/lh16 + p 4/10 → h24, icon 16,
+   srctag left the spec 2026-08-20: CLINIC CHIP = 12px/lh16 + p 6/10 → h28, icon 16,
    pill, own line, GPI pink for in-network / gray for external.
    LIST CARDS = .mga-card--list (v4 / side16; rows carry p12/0). */
 
@@ -37,9 +37,35 @@
   --mga-lav-fg: #3a3d8f;
   --mga-blue: #2563c9;
   --mga-teal: #0d9488;
+  /* CURATIO's own brand blue, sampled off the supplied logo artwork. It is the
+     PARTNER's identity colour, not one of ours — keep it off everything that is
+     not the Curatio mark. --mga-teal stays what it always was here: the clinical
+     accent (guidance notes, in-network tints), which is a different job. */
+  --mga-curatio: #424F9D;
+  /* Curatio band gradient ends + tint pair (2026-08-26, user-approved look&feel pass).
+     Deep/2 bound the dashboard band; tint/fg are the in-zone accent ground (tiles,
+     srctag, active pills) — fg on tint measures 7.4:1. bg-top swaps the zone's ambient
+     gradient start (GPI pink stays everywhere else); band-light is the interior
+     header wash. All sampled from / derived off the supplied brand artwork. */
+  --mga-curatio-deep: #3a4690;
+  --mga-curatio-2: #4a58ab;
+  --mga-curatio-tint: #e7ecf8;
+  --mga-curatio-fg: #3a4690;
+  --mga-curatio-bg-top: #eef4fb;
+  --mga-curatio-band: #dcebfa;
+  --mga-curatio-edge: #d3dcf1; /* in-network record-card hairline (decorative, Rule 7) */
+  /* The in-network card's left accent, running Curatio's OWN colour sequence —
+     stops sampled cell-by-cell off the logo mosaic (indigo → blue → sky → teal),
+     which is why it reads as their brand and not just „a blue bar". */
+  --mga-curatio-stripe: linear-gradient(180deg, #424f9d 0%, #4290cd 38%, #48b6e8 72%, #50c2c0 100%);
   --mga-teal-fg: #0b6e63; /* AA text-on-teal-tint (audit 2026-08-04) */
   --mga-green-bg: #e4f7ec;
   --mga-green-fg: #1f9d55;
+  /* --green-fg only reaches ~3.1:1 on the tint — fine for the short bold badges it
+     serves, NOT for body text. This is the AA step for sentences on green-bg
+     (4.9:1 measured), same move as --mga-teal-fg. Border mirrors --mga-warn-brd. */
+  --mga-green-text: #17784a;
+  --mga-green-brd: #c9e9d6;
   --mga-amber-bg: #fef3d8;
   --mga-amber-fg: #b45309;
   --mga-red-bg: #fdecec;
@@ -359,8 +385,18 @@
   align-items: center;
   gap: 4px;
 }
+/* Tabs are CONTENT-SIZED, not equal thirds (user, 2026-08-26). Equal segments only
+   work when labels are about the same length; Georgian section names are not —
+   „მედიკამენტები" is 100px against „კვლევები"'s 63, so equal thirds left the longest
+   label 2.1px of side padding (measured) while its neighbour had 20.4. With an 18px
+   corner radius, 2px means the text sits inside the curve.
+   `flex: 1 1 auto` sizes each tab from its own text, then shares the slack, so every
+   tab keeps the same 12px gutter and the row still spans full width. This is the
+   standard fix (UIKit calls it apportionsSegmentWidthsByContent); shrinking the type
+   to fit was the alternative and it costs legibility. If labels ever outgrow the row,
+   the next step is scrollable tabs — NOT smaller text. */
 .mga-stage .mga-seg__item {
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -369,7 +405,7 @@
   font-weight: 600;
   color: var(--mga-muted);
   border-radius: 18px;
-  padding: 8px 2px;
+  padding: 8px 12px;
   white-space: nowrap;
 }
 .mga-stage .mga-seg__item--on {
@@ -598,7 +634,7 @@
   width: 28px;
   height: 28px;
   border-radius: 9px;
-  background: var(--mga-teal);
+  background: var(--mga-curatio);
   color: #fff;
   display: flex;
   align-items: center;
@@ -715,7 +751,7 @@
 .mga-meta {
   display: flex;
   flex-direction: column;
-  gap: var(--mga-sp-xs); /* one two-line-meta spec: val↔lbl 4px, as .mga-h2__rx / .mga-prv__body */
+  gap: var(--mga-sp-xs); /* one two-line-meta spec: val↔lbl 4px, as .mga-card--rec / .mga-prv__body */
   line-height: 1.3;
   min-width: 0;
 }
@@ -983,7 +1019,7 @@
   width: 26px;
   height: 26px;
   border-radius: 8px;
-  background: var(--mga-teal);
+  background: var(--mga-curatio);
   color: #fff;
   display: flex;
   align-items: center;
@@ -996,6 +1032,17 @@
   display: flex;
   gap: 6px;
   padding: 0 var(--mga-sp-xl) var(--mga-sp-md);
+  /* three filter pills overflow a 390 frame (analyses grew a clinic pill,
+     2026-08-26) — filter rows scroll sideways, the mobile standard. Scrollbar
+     hidden; no change when content fits. */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.mga-chiprow::-webkit-scrollbar {
+  display: none;
+}
+.mga-chiprow > * {
+  flex-shrink: 0;
 }
 .mga-stage .mga-chip {
   font-size: 11px;
@@ -1209,20 +1256,27 @@
 }
 
 /* Three-up switcher: tighter pills, short labels */
+/* Three-up switcher: type steps down to 11 so three product names fit 390. The side
+   padding used to be 0 — a fit hack from the equal-thirds era, which left the active
+   pill's ground hugging its label. Now that tabs are content-sized it can hold a real
+   gutter (10, one step under the base 12 to suit the smaller type) and still fit with
+   room to spare, so the „every tab keeps a gutter" guarantee holds here too. */
 .mga-seg--3 .mga-seg__item {
   font-size: 11px;
   gap: 4px;
-  padding: 8px 0;
+  padding: 8px 10px;
 }
 .mga-seg--3 .mga-prodimg {
   height: 14px;
 }
+/* The კურაციო pill carries Curatio's real mark, BARE — no disc. Two reasons:
+   its siblings (auto/health) carry their product mark bare too, so a disc was the
+   odd one out; and a 32-diamond mosaic reversed out of a 16px disc fuses into a
+   speckle, while on the pill's light ground the rosette still reads. */
 .mga-seg__cur {
   width: 16px;
   height: 16px;
-  border-radius: 50%;
-  background: var(--mga-teal);
-  color: #fff;
+  color: var(--mga-curatio);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1362,7 +1416,13 @@
 .mga-pselect {
   position: relative;
   margin: 0 var(--mga-sp-xl) var(--mga-sp-md); /* 12 after any control zone (audit B4) */
-  z-index: 60;
+  /* 20 sits in the ONE gap that works: above the page zones it drops its panel over
+     (.mga-chiprow / .mga-body at 1) and below the bottom sheets (.mga-sheetwrap 30),
+     which must be able to dim it like everything else. It used to be 60 — high enough
+     to punch through a sheet's scrim, which only stayed invisible because the curatio
+     zone was flattening it to 1 (and breaking the panel instead). The 55/60 inside
+     are the panel and its own scrim: children of this stacking context, not peers. */
+  z-index: 20;
 }
 .mga-stage .mga-pselect__btn {
   display: flex;
@@ -1657,6 +1717,14 @@
   border: 1px dashed var(--mga-border);
   border-radius: var(--mga-r-card);
 }
+/* The block's HEADLINE line (the lock title, the person/filter empty message added
+   2026-08-27). The container's --mga-muted is right for the glyph and a secondary
+   hint, but at 13px it measures 3.19:1 — below AA for the one line the user is on
+   this screen to read. __val already carries the weight; it just inherited the
+   wrong colour. */
+.mga-qpk__empty .mga-meta__val {
+  color: var(--mga-text);
+}
 
 /* ═══ A4 — doctor detail (F-03) ═══ */
 .mga-docd__ava {
@@ -1759,21 +1827,28 @@
      r6 shape-axis note and audit D1's right slot: with every pill the same shape,
      origin reads via the icon and the dedicated line.
      CLINIC-CHIP TIER (user, 2026-08-20): one step up from the meta pills —
-     12px / lh16 + p 4/10 → h24, icon 16 — so the record's origin reads at a
-     glance without competing with the 13px titles. */
+     12px / lh16 + p 6/10 → h28, icon 16 — so the record's origin reads at a
+     glance without competing with the 13px titles.
+     Vertical padding 4 → 6 (user, 2026-08-26): the Curatio mark's viewBox IS its
+     artwork, so at 16px it inked the full box and left exactly 4px of air top and
+     bottom — the round mosaic read as collapsing into the pill's edges. The two
+     glyph variants (building-2 / stethoscope) are strokes inside a 24-unit box and
+     carry their own optical inset, which is why only the logo showed it. */
   border-radius: var(--mga-r-pill);
-  padding: 4px 10px;
+  padding: 6px 10px;
   line-height: 16px;
 }
 .mga-srctag svg {
   flex-shrink: 0;
 }
-/* in-network: GPI brand pink (user, 2026-08-20 — was Curatio teal). --mga-pink-fg
-   only reaches 4.16:1 on the soft tint, so the chip text is a step darker: 5.01:1
-   measured. Don't swap back to pink-fg without re-measuring. */
+/* in-network: CURATIO BLUE (user, 2026-08-26 co-brand pass — supersedes the
+   2026-08-20 GPI-pink call, which itself replaced teal). The chip literally says
+   „კურაციო", so it wears the partner's colour and their logo mark (SourceTag swaps
+   the building glyph for CuratioMark on this variant only). 7.4:1 on the tint.
+   Pink now stays reserved for GPI actions. */
 .mga-srctag--curatio {
-  background: var(--mga-pink-soft);
-  color: #c01b60;
+  background: var(--mga-curatio-tint);
+  color: var(--mga-curatio-fg);
 }
 /* produced outside Curatio: GRAY (user, 2026-08-20 — "not ours"; warm tints stay
    reserved for status). 5.43:1 measured; --mga-muted-fg reaches only 4.28:1 here. */
@@ -2004,19 +2079,101 @@
 }
 /* #11 — prescription row: name+status line, dosage, expiry, note, then a
    full-width booking CTA. Stacked, so the CTA is not squeezed into a rail. */
-.mga-h2__rx {
-  padding: var(--mga-sp-md) 0;
+/* RECORD CARD (2026-08-26, user): history records are individual cards with
+   labeled actions — the grammar visits already had, extended to analyses and all
+   prescription groups (the old .mga-h2__rx list-rows + naked download icon died
+   with it). --rec owns the inner rhythm; .mga-h2__actions is the labeled-buttons
+   row every record ends with. */
+.mga-stage .mga-card--rec {
   line-height: 1.3;
 }
-.mga-h2__rx > * + * {
+.mga-card--rec > * + * {
   margin-top: var(--mga-sp-xs);
 }
-.mga-stage .mga-h2__rx > .mga-btn {
+.mga-stage .mga-card--rec > .mga-btn {
   margin-top: var(--mga-sp-sm);
 }
-.mga-h2__rx + .mga-h2__rx {
+/* ORIGIN ROW (user, 2026-08-26: „reduce the white space… move the buttons to the
+   corner"). The origin chip sat alone on a short line and the icons sat alone on the
+   next one, so a card with two utilities spent two rows saying very little. They now
+   share ONE line — chip left, icons pushed right — which costs zero extra height (the
+   32px icons set the row, the 28px chip centres in it) and lands the utilities in the
+   card's bottom-right corner, the same place on every card.
+   `align-items: center` (not baseline): a pill and an icon button have no shared
+   text baseline to align on. */
+.mga-h2__originrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* UTILITY CLUSTER (user, 2026-08-26: „use icon buttons for uploading or attaching…
+   for the booking consultation it can be still a button — it will reduce the visual
+   noise"). Two tiers on a record card:
+     · UTILITIES (download the artifact, attach a document) = icon buttons, pushed to
+       the card's right edge, so they land in the SAME place on every card and read as
+       a quiet column down the list;
+     · CALLS TO ACTION (ჩაეწერე ექიმთან / განახლებისთვის) keep their label — an action
+       with intent has to say what it does.
+   `margin-left:auto` does the alignment, so a card with no CTA still parks its icons
+   right. Icons take --control-sm (32) rather than .mga-iconbtn's own 34, so they sit
+   exactly flush with a labelled sm button beside them. */
+.mga-h2__util {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+.mga-stage .mga-h2__util .mga-iconbtn {
+  width: var(--mga-control-sm);
+  height: var(--mga-control-sm);
+}
+
+.mga-h2__actions {
+  /* WRAPS since 2026-08-26: attach became a button here, so cards carry up to three
+     actions and no single line holds them. (It was nowrap while cards had exactly two
+     — the visits pair misses one line by ~6px and flex-shrink hid that in the padding.
+     With a third button that trick would squeeze all three.) Buttons keep their
+     natural width and wrap left-aligned; labels are kept short so the common pair
+     still shares a line. */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: var(--mga-sp-sm) !important;
+}
+/* Attached documents on a record card (2026-08-26) — the proof half of the
+   per-record attach action: a file that uploads and then shows nothing reads as a
+   failure. Deliberately a quiet list, not cards: these hang OFF a record, they are
+   not records themselves, and nesting card-in-card would break the list rhythm. */
+.mga-attach {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: var(--mga-sp-sm) !important;
+  padding-top: var(--mga-sp-sm);
   border-top: 0.5px solid var(--mga-border);
 }
+.mga-attach__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--mga-text);
+  min-width: 0;
+}
+.mga-attach__row svg {
+  flex-shrink: 0;
+  color: var(--mga-muted);
+}
+.mga-attach__name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mga-attach__row .mga-meta__lbl {
+  flex-shrink: 0;
+}
+
 .mga-h2__renewnote {
   font-size: 11px;
   color: var(--mga-muted);
@@ -2026,23 +2183,12 @@
 }
 /* WARNING, not danger (user, 2026-08-18): „red is too aggressive" — an expiring
    prescription is a heads-up with days left on it, not a critical result. Red stays
-   reserved for actual alarms. */
-/* Doubled class on purpose: `.mga-h2__rx + .mga-h2__rx` (0,2,0) outranks a single
-   modifier, so the separator's grey was overriding this card's own hairline. */
-/* FULL-BLEED tint (audit B3): the inset-card version indented this row's title 12px
-   off its siblings' left edge — titles in one list must align. The band now runs to
-   the card's padding edges (full-bleed exemption), text stays at the shared 16. Side
-   borders dropped — hairlines flush on the card edge read as clipping. */
-.mga-h2__rx.mga-h2__rx--warn {
+   reserved for actual alarms. As a standalone record card (2026-08-26) the state is
+   simply a warn-tinted card — the old full-bleed row device (audit B3) and its
+   specificity/separator workarounds went with the list rows. */
+.mga-stage .mga-card--warn {
   background: var(--mga-warn-bg);
-  border: 0.5px solid var(--mga-warn-brd);
-  border-width: 0.5px 0;
-  border-radius: 0;
-  padding: var(--mga-sp-md) var(--mga-sp-lg);
-  margin: var(--mga-sp-xs) calc(-1 * var(--mga-sp-lg));
-}
-.mga-h2__rx--warn + .mga-h2__rx {
-  border-top: none;
+  border-color: var(--mga-warn-brd);
 }
 .mga-h2__exp {
   font-size: 10px;
@@ -2088,22 +2234,30 @@
 }
 /* .mga-h2__uzone / .mga-h2__uico REMOVED 2026-08-19 (audit C5) — the docs-tab
    upload zone died with #13; no JSX referenced either class. */
-.mga-h2__confid {
+/* Confidentiality note — was `.mga-h2__confid`, an ORPHAN since its history-section
+   consumer died; revived 2026-08-26 as the history hub's trust footnote (renamed:
+   it is not h2-scoped any more). Icon went teal → lav-fg: the lock belongs to the
+   protected-zone vocabulary (.mga-locksect), teal is the clinical accent. */
+/* SUCCESS state, not neutral metadata (user, 2026-08-26): „protected" is a positive
+   assurance, so the note speaks the status/success vocabulary — green tint + border,
+   shield-check glyph, and the AA text step (--green-text, 4.9:1; --green-fg would
+   only reach ~3.1:1 at this size). */
+.mga-confid {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  background: var(--mga-queue-bg);
-  border: 0.5px solid var(--mga-border);
+  background: var(--mga-green-bg);
+  border: 0.5px solid var(--mga-green-brd);
   border-radius: var(--mga-r-tile);
   padding: 10px 12px;
   font-size: 10px;
-  color: var(--mga-muted);
+  color: var(--mga-green-text);
   line-height: 1.5;
-  margin-bottom: var(--mga-sp-md);
+  margin-top: var(--mga-sp-xs);
 }
-.mga-h2__confid svg {
+.mga-confid svg {
   flex-shrink: 0;
-  color: var(--mga-teal);
+  color: var(--mga-green-fg);
   margin-top: 1px;
 }
 
@@ -2358,4 +2512,216 @@
   font-size: 12px;
   font-weight: 700;
   color: var(--mga-text);
+}
+
+
+/* ═══ CURATIO CO-BRAND ZONE (2026-08-26 — user-approved look&feel pass) ═══
+   Stakeholder ask: the კურაციო tab should read as a DIFFERENT place inside MyGPI.
+   The zone = every screen behind the კურაციო tab plus the F-01 queue screens
+   (`CURATIO_ZONE` in MobileApp.jsx stamps the classes; V2 only — the ?v=1 archive
+   keeps the look it was frozen with). Grammar, decided in the theme-lab round:
+     · DASHBOARD (`--curdash`) = the zone's front door: deep brand band over the
+       whole chrome zone (status → person select), white text, white logo watermark.
+     · INTERIOR (every other zone screen) = calm: light band that fades out, navy
+       text untouched, NO watermark (see the note at the interior rules). User
+       explicitly chose light over a slim deep band for interiors.
+     · Cards, buttons, badges, semantic colours stay GPI — Curatio hosts, GPI acts.
+   The bands live on ::before/::after so no screen markup changes; content lifts
+   above them via z-index. .mga-screen is position:relative + overflow:hidden, so
+   both layers clip to the phone. */
+
+.mga-screen--curatio {
+  --mga-bg-top: var(--mga-curatio-bg-top);
+}
+.mga-screen--curatio .mga-status,
+.mga-screen--curatio .mga-top,
+.mga-screen--curatio .mga-seg,
+.mga-screen--curatio .mga-hdr,
+.mga-screen--curatio .mga-chiprow,
+.mga-screen--curatio .mga-body {
+  position: relative;
+  z-index: 1;
+}
+/* PersonSelect is deliberately NOT in that list (bug found 2026-08-27, present on
+   the კურაციო dash since the wash landed): lifting the zone above the ::before wash
+   at z-index 1 also flattened the selector to 1, and its OPEN PANEL is a sibling of
+   a .mga-body / .mga-chiprow that comes LATER in the DOM at the same level — so the
+   dropdown painted underneath the very list it filters. It keeps the base rule's 60:
+   above the wash like the rest of the zone, and above its own page like a menu. */
+.mga-screen--curatio .mga-pselect {
+  position: relative;
+  z-index: 20;
+}
+
+/* interior: light wash that dissolves — robust to any header height, no edge */
+.mga-screen--curatio:not(.mga-screen--curdash)::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 150px;
+  background: linear-gradient(180deg, var(--mga-curatio-band) 0%, rgba(220, 235, 250, 0) 100%);
+  pointer-events: none;
+}
+/* THE ONE INTERIOR EXCEPTION — the history hub's bottom art (user, 2026-08-26:
+   „on this page only"). The hub is a 3-row menu, the emptiest screen in the zone,
+   and the void read as unfinished. A large mosaic anchored to the BOTTOM corner
+   (the opposite corner from the killed top-right stamp), at 4.5%, fills it as
+   environment rather than decoration-on-content: nothing sits under it but empty
+   ground. This does NOT reopen the every-page watermark — it is scoped to the
+   hub's own body hook, one screen, and the arrival-moments rule above still
+   stands. z-index:-1 keeps it under the rows on short screens (the body is
+   already a stacking context via the zone rules). */
+.mga-screen--curatio .mga-body--hub::after {
+  content: '';
+  position: absolute;
+  right: -70px;
+  bottom: -20px;
+  width: 320px;
+  height: 320px;
+  background: url('../assets/curatio-mark.svg') no-repeat center / contain;
+  opacity: 0.045;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* NO corner watermark on interiors (user, 2026-08-26 — „this top-part logo
+   background everywhere is a bit annoying"). It shipped, then died the same day:
+   the same crop at the same position on every screen stops reading as brand and
+   starts reading as wallpaper. Brand density tracks ARRIVAL — the mark lives on
+   the dash (the zone's front door) and the e-ticket hero (a branded artifact),
+   and interiors are never brand-empty anyway: the chip logos, the card stripe and
+   the band already say where you are. Don't re-add it here. */
+
+/* dashboard: the full brand statement. Band height is a measured constant — the
+   chrome zone above the first card (status 30 + top 64 + seg 52 + pselect 72 +
+   margins) is compositionally fixed on this screen, incl. the uninsured two-pill
+   state. Re-measure if the dash header stack ever changes. */
+.mga-screen--curdash::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 242px;
+  background: linear-gradient(168deg, var(--mga-curatio-deep) 0%, var(--mga-curatio) 60%, var(--mga-curatio-2) 100%);
+  pointer-events: none;
+}
+.mga-screen--curdash::after {
+  content: '';
+  position: absolute;
+  top: -26px;
+  right: -56px;
+  width: 225px;
+  height: 225px;
+  background: url('../assets/curatio-mark.svg') no-repeat center / contain;
+  /* the asset is flat brand blue; the band wants it white */
+  filter: brightness(0) invert(1);
+  opacity: 0.09;
+  pointer-events: none;
+}
+/* chrome on the band goes white. Status bars + battery key off --mga-text, so one
+   variable recolours the whole status bar without touching global text. */
+.mga-screen--curdash .mga-status {
+  --mga-text: #ffffff;
+  color: #fff;
+}
+.mga-screen--curdash .mga-hello__hi {
+  color: rgba(255, 255, 255, 0.8); /* .65 measured 4.0:1 on the band — lifted */
+}
+.mga-screen--curdash .mga-hello__name {
+  color: #fff;
+}
+.mga-screen--curdash .mga-top .mga-iconbtn {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+.mga-screen--curdash .mga-top .mga-pts {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: transparent;
+  color: #fff;
+}
+.mga-screen--curdash .mga-ava {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+/* in-zone accent: the default (lavender) icon tile turns Curatio. The :not guard
+   keeps every semantic tile variant (--teal/--red/--amber…) exactly as it was. */
+.mga-screen--curatio .mga-itile:not([class*='itile--']) {
+  background: var(--mga-curatio-tint);
+  color: var(--mga-curatio);
+}
+/* …and the active pill of in-zone segmented rows follows the same tint */
+.mga-screen--curatio .mga-seg__item--on {
+  background: var(--mga-curatio-tint);
+  color: var(--mga-curatio-fg);
+}
+
+/* An in-network record CARD stays WHITE and is marked by the gradient stripe plus a
+   brand-tinted hairline (user, 2026-08-26).
+   ⚠️ Two dead ends the same day, both worth remembering:
+   · a blue WASH on these cards INVERTED the hierarchy — on a tinted page a white
+     card is the brightest thing on screen, so the external records read as the
+     highlighted ones. Ground brightness outranks any decoration; „important" is
+     never marked by tinting it DOWN toward the page.
+   · a corner MOSAIC on every card was one voice too many once the stripe landed
+     (user: „the gradient already does its work") — the pattern now lives only on
+     the dash band and the ticket hero.
+   Status still outranks brand: a warn card is excluded entirely. The chip carries
+   the meaning (WCAG 1.4.1); stripe and edge are reinforcement. */
+.mga-screen--curatio .mga-card--rec:has(.mga-srctag--curatio):not(.mga-card--warn) {
+  position: relative;
+  overflow: hidden;
+  border-color: var(--mga-curatio-edge);
+}
+/* Left accent (user, 2026-08-26 — „some stroke on the left side"). This is what the
+   killed row-rails were reaching for, and it works here because each record is now
+   its own card: the stroke is part of the card's shape (clipped by its radius via the
+   overflow:hidden above), not a bar floating beside a list row. Left over top: a top
+   stroke reads as a progress/tab indicator, while a left stroke builds a scannable
+   rail down the list. */
+.mga-screen--curatio .mga-card--rec:has(.mga-srctag--curatio):not(.mga-card--warn)::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--mga-curatio-stripe);
+  pointer-events: none;
+}
+
+/* NO row rail. Tried 2026-08-26 (3px gutter pill on Curatio rows) and killed the
+   same day — five railed rows of varying heights read as clutter (user: „clunky").
+   The srctag chip alone marks the origin; if scanning ever needs more punch, the
+   step-up is the chip itself (solid brand fill), not row furniture. */
+
+/* E-TICKET hero → the „boarding pass": the one place the zone goes full brand on a
+   CARD, because the ticket is Curatio's physical artifact in the app. Structure
+   untouched — this is a skin. line1 + labels inside use --mga-muted, so one local
+   override recolours them; the strip is the perforation edge. */
+.mga-screen--curatio .mga-thero {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(160deg, var(--mga-curatio-deep) 0%, var(--mga-curatio) 65%, var(--mga-curatio-2) 100%);
+  color: #fff;
+  --mga-muted: rgba(255, 255, 255, 0.78);
+}
+/* The perforation strip along the hero's bottom edge is GONE (user, 2026-08-26:
+   „remove the bottom line with dots; the other thing is okay") — the corner
+   watermark stays. `curatio-strip.svg` is now generated but unreferenced; the
+   generator still emits it in case the motif earns a place elsewhere. */
+.mga-screen--curatio .mga-thero::after {
+  content: '';
+  position: absolute;
+  top: -22px;
+  right: -30px;
+  width: 130px;
+  height: 130px;
+  background: url('../assets/curatio-mark.svg') no-repeat center / contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.12;
+  pointer-events: none;
 }

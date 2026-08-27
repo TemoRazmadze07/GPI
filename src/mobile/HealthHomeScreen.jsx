@@ -11,6 +11,7 @@
    history POINTER row (stakeholder comment #2) closes the dashboard. */
 
 import Icon from '../lib/Icon.jsx'
+import CuratioMark from '../lib/CuratioMark.jsx'
 import { PRODUCT_IMG } from '../lib/assets.js'
 import { M } from './strings.js'
 import { PERSONS, BOOKING, NEXT_BOOKING, QUEUE, REFERRAL, CHRONIC, COUNTS } from './data.js'
@@ -64,8 +65,10 @@ export function ProductSwitcher({ v2 = false, active = 'health' }) {
     )
   }
   /* V2: three pills. Full product names can't fit 390px three-up → short labels.
-     The კურაციო pill uses the Curatio teal mark, not a product illustration —
-     it's a service layer, not an insurance product. */
+     The კურაციო pill carries CURATIO'S OWN LOGO MARK (user, 2026-08-26), bare and
+     in their brand blue — exactly how auto/health carry their product mark. It was
+     a Lucide pulse glyph on a teal disc, which named a service we'd invented a
+     colour for; the partner has an identity, so we use it. */
   const pill = (key, on, label, img, onClick) => (
     <button
       key={key}
@@ -94,7 +97,7 @@ export function ProductSwitcher({ v2 = false, active = 'health' }) {
         active === 'curatio',
         M.tabsV2.curatio,
         <span className="mga-seg__cur" aria-hidden="true">
-          <Icon name="activity" size={11} />
+          <CuratioMark size={16} />
         </span>,
         () => go('curatio'),
       )}
@@ -118,7 +121,7 @@ function CuratioBlock() {
     <section className="mga-card mga-cur" aria-label={M.curatio.title}>
       <div className="mga-cur__head">
         <span className="mga-cur__mark" aria-hidden="true">
-          <Icon name="activity" size={15} />
+          <CuratioMark size={18} />
         </span>
         <h2 className="mga-cur__title" style={{ margin: 0, fontSize: 14 }}>
           {M.curatio.title}
@@ -154,16 +157,18 @@ function HistoryRow() {
      and this screen is public (user: "only button, not actual information").
      `from` makes the hub's back return here instead of to the კურაციო tab.
      V2 only — in V1 the Curatio block already carries an ისტორია tile.
-     Leading visual = the CURATIO MARK (mga-cur__mark, same solid teal glyph as
-     the კურაციო switcher pill), not a pastel tile + document icon — the row is
-     a cross-tab pointer, so the mark names the destination and visually rhymes
-     with the pill (user, 2026-08-18: the generic icon tile had to go).
+     Leading visual = the CURATIO MARK (mga-cur__mark — Curatio's logo reversed
+     out of a brand-blue tile), not a pastel tile + document icon: the row is a
+     cross-tab pointer, so the mark names the destination and rhymes with the
+     კურაციო pill (user, 2026-08-18: the generic icon tile had to go). The tile
+     stays a tile — a list row's leading slot is one — while the pill goes bare
+     to match its siblings; both now carry the same mark in the same blue.
      No lock chip — a plain chevron is enough (user); the OTP sheet on the hub
      explains the gate itself. Placed LAST on the dashboard for now (user). */
   return (
     <button className="mga-card mga-prow" onClick={() => go('histhub', { from: 'health' })}>
       <span className="mga-cur__mark" aria-hidden="true">
-        <Icon name="activity" size={15} />
+        <CuratioMark size={18} />
       </span>
       <span className="mga-meta" style={{ flex: 1 }}>
         <span className="mga-meta__val">{M.dash2.historyTitle}</span>

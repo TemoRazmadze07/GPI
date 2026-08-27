@@ -3,9 +3,16 @@
 
    The point of #7 is that uploading happens IN CONTEXT: you are looking at your
    analyses, so the result you add lands in analyses — no trip to a separate
-   დოკუმენტები drawer (which #13 then removes). Consequences visible here:
-     · the CATEGORY is preselected from whatever the section is filtered to, so
-       the common case is a straight confirm rather than a form;
+   დოკუმენტები drawer (which #13 then removes). Extended 2026-08-26 (user: „upload
+   for all types of records and sections"): the sheet now serves EVERY history
+   section through one new TYPE field — F-02's metadata list („name/clinic/date/
+   type") finally meaning section, not just analysis category. The record files
+   wherever the type says, whichever screen opened the sheet. Consequences here:
+     · the TYPE is preselected from the section that opened the sheet, and the
+       CATEGORY from whatever analyses was filtered to, so the common case is
+       still a straight confirm rather than a form;
+     · the category row only exists while type = analyses — the other sections
+       have no category axis;
      · the record is stamped `src: 'external'` + its clinic, which is what
        SourceTag renders — the origin is never inferred from a status badge;
      · consent is PER UPLOAD („გავუზიაროთ პირად ექიმს?"), defaulting ON per the
@@ -30,12 +37,19 @@ const SOURCES = [
 /* Real categories only — „ყველა" is a filter value, not a property of a record. */
 const CATS = V2_ANALYSIS_CATS.filter((c) => c.id !== 'all')
 
-export default function UploadSheet({ cat = 'all', onClose, onDone }) {
+/* `attach` = the sheet is hanging a document off an EXISTING record rather than
+   filing a new one. Filing axes then disappear: TYPE and CATEGORY are inherited
+   from the parent record, and PERSON is already stated by it — asking again invites
+   a contradiction and (for category) blocked submit on a field that means nothing
+   here. What's left is what actually describes the document: name, clinic, date,
+   and the same per-upload consent. */
+export default function UploadSheet({ cat = 'all', kind = 'analyses', attach = false, onClose, onDone }) {
   const [step, setStep] = useState(1)
   const [name, setName] = useState('')
   const [clinic, setClinic] = useState('')
   const [date, setDate] = useState('18 აგვ')
   const [catId, setCatId] = useState(cat)
+  const [kindId, setKindId] = useState(kind)
   const [personId, setPersonId] = useState(V2_PERSONS[0].id)
   const [shared, setShared] = useState(true)
   const [picker, setPicker] = useState(null) /* 'cat' | 'person' | null */
@@ -47,10 +61,13 @@ export default function UploadSheet({ cat = 'all', onClose, onDone }) {
 
   const submit = () => {
     if (!name.trim()) return setErr('name')
-    if (catId === 'all') return setErr('cat')
+    if (!attach && kindId === 'analyses' && catId === 'all') return setErr('cat')
     onDone({
       title: name.trim(),
-      cat: catId,
+      kind: kindId,
+      /* category is an analyses-only axis — a prescription doc carrying one would
+         be a lie the filters could trip over */
+      ...(kindId === 'analyses' ? { cat: catId } : {}),
       date,
       src: 'external',
       /* Blank stays blank: falling back to M.src.external made SourceTag compose
@@ -67,7 +84,9 @@ export default function UploadSheet({ cat = 'all', onClose, onDone }) {
       <div className="mga-sheet">
         <div className="mga-sheet__grab" aria-hidden="true" />
         <div className="mga-sheet__head mga-upl__head">
-          <h2 className="mga-sheet__title">{step === 1 ? M.upl.pickTitle : M.upl.metaTitle}</h2>
+          <h2 className="mga-sheet__title">
+            {step === 1 ? (attach ? M.hist2.attach : M.upl.pickTitle) : M.upl.metaTitle}
+          </h2>
           <span className="mga-upl__step">{M.upl.step(step)}</span>
         </div>
 
@@ -126,7 +145,26 @@ export default function UploadSheet({ cat = 'all', onClose, onDone }) {
               </div>
             </div>
 
+            {!attach && (
             <div className="mga-upl__row">
+              <div className="mga-upl__field">
+                <span className="mga-dsheet__lbl">{M.upl.kind}</span>
+                <button className="mga-upl__inp mga-upl__sel" onClick={() => setPicker('kind')}>
+                  <span>{M.upl.kinds[kindId]}</span>
+                  <Icon name="chevron-down" size={13} />
+                </button>
+              </div>
+              <div className="mga-upl__field">
+                <span className="mga-dsheet__lbl">{M.upl.person}</span>
+                <button className="mga-upl__inp mga-upl__sel" onClick={() => setPicker('person')}>
+                  <span>{person.name.split(' ')[0]}</span>
+                  <Icon name="chevron-down" size={13} />
+                </button>
+              </div>
+            </div>
+            )}
+
+            {!attach && kindId === 'analyses' && (
               <div className="mga-upl__field">
                 <span className="mga-dsheet__lbl">{M.upl.cat}</span>
                 <button
@@ -138,14 +176,7 @@ export default function UploadSheet({ cat = 'all', onClose, onDone }) {
                 </button>
                 {err === 'cat' && <div className="mga-upl__err">{M.upl.errCat}</div>}
               </div>
-              <div className="mga-upl__field">
-                <span className="mga-dsheet__lbl">{M.upl.person}</span>
-                <button className="mga-upl__inp mga-upl__sel" onClick={() => setPicker('person')}>
-                  <span>{person.name.split(' ')[0]}</span>
-                  <Icon name="chevron-down" size={13} />
-                </button>
-              </div>
-            </div>
+            )}
 
             {/* Consent is a choice per upload, not a setting buried elsewhere — and the
                 hint changes with the state so „off" is as legible as „on". */}
@@ -180,6 +211,18 @@ export default function UploadSheet({ cat = 'all', onClose, onDone }) {
         )}
       </div>
 
+      {picker === 'kind' && (
+        <FilterSheet
+          title={M.upl.kind}
+          options={Object.entries(M.upl.kinds).map(([id, label]) => ({ id, label }))}
+          value={kindId}
+          onPick={(id) => {
+            setKindId(id)
+            if (err === 'cat' && id !== 'analyses') setErr(null)
+          }}
+          onClose={() => setPicker(null)}
+        />
+      )}
       {picker === 'cat' && (
         <FilterSheet
           title={M.upl.cat}

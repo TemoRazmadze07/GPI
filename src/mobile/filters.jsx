@@ -41,9 +41,15 @@ export function FilterSheet({ title, options, value, onPick, onClose }) {
 }
 
 export function FilterPill({ label, value, onOpen }) {
+  /* One of two words, never both (user, 2026-08-26): the LABEL while the filter is
+     at its „ყველა" default („კატეგორია ▾" = unset), the VALUE alone once something
+     is chosen („კურაციო ▾"). „კლინიკა: გარე კლინიკები" pushed the row past the
+     frame; a chosen value already names its own filter, so the prefix was paying
+     width for nothing. `label` is optional — callers that always carry a value
+     (period, year, docselect) simply show it. */
   return (
     <button className="mga-chip mga-fpill" onClick={onOpen}>
-      <span>{label ? label + ': ' + value : value}</span>
+      <span>{value || label}</span>
       <Icon name="chevron-down" size={12} />
     </button>
   )

@@ -1281,7 +1281,11 @@
 .gpi-bw3__dirlist { display: none; }
 
 /* Search field */
-.gpi-search { display: flex; align-items: center; gap: var(--space-8); height: 38px; padding: 0 var(--space-12); border: var(--border-width-sm) solid var(--border-field); border-radius: var(--radius-md); background: var(--surface-card); }
+/* Height/radius corrected 2026-08-26: 38px/radius-md predated the locked
+   control spec (md control = 40, control radius = 12 — the rule .gpi-fsel__btn
+   already cites). A search field IS a control and sat 2px short with the wrong
+   corner next to every Select it shares a row with. */
+.gpi-search { display: flex; align-items: center; gap: var(--space-8); height: var(--control-md); padding: 0 var(--space-12); border: var(--border-width-sm) solid var(--border-field); border-radius: var(--radius-lg); background: var(--surface-card); }
 .gpi-search:focus-within { border-color: var(--border-focus); }
 .gpi-search svg { color: var(--text-muted); flex: 0 0 auto; }
 .gpi-search input { flex: 1; min-width: 0; border: none; outline: none; background: none; font: 400 14px/1 var(--font-sans); color: var(--text-main); }

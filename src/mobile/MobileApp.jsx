@@ -78,6 +78,13 @@ function BottomNav({ section }) {
   )
 }
 
+/* The Curatio co-brand zone (2026-08-26): every screen behind the კურაციო tab
+   PLUS the F-01 queue screens — the ticket is a Curatio clinic service whichever
+   dashboard opened it. V2 only: the ?v=1 archive keeps the look it was frozen
+   with. `curatio` themes the ambient + interiors; the dash additionally gets
+   `--curdash` (deep brand band) — see the CURATIO CO-BRAND ZONE block in mga.css. */
+const CURATIO_ZONE = new Set(['curatio', 'doctor', 'docselect', 'transfer', 'histhub', 'history', 'ticket', 'queuepicker', 'prevention'])
+
 const SCREENS = {
   health: HealthHomeScreen,
   curatio: CuratioHubScreen,
@@ -172,7 +179,13 @@ export default function MobileApp({ section = 'health' }) {
         </div>
       )}
       <div className="mga-frame">
-        <div className="mga-screen">
+        <div
+          className={
+            'mga-screen' +
+            (v2 && CURATIO_ZONE.has(sect) ? ' mga-screen--curatio' : '') +
+            (v2 && sect === 'curatio' ? ' mga-screen--curdash' : '')
+          }
+        >
           <StatusBar />
           <Screen visitDay={visitDay} v2={v2} />
           <BottomNav section={sect} />

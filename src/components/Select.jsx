@@ -4,7 +4,12 @@ import Icon from '../lib/Icon.jsx'
 /* Select — lightweight dropdown (trigger + menu of options), mirroring the
    Figma Select component (node 69:148). Closes on outside-click / Escape.
    Composes our Menu Item visual. `error` = red stroke (Figma Error variant). */
-export default function Select({ value, placeholder, options, onChange, disabled = false, error = false, className = '', ariaLabel }) {
+/* `renderValue` (additive, 2026-08-26): how the CLOSED trigger prints the
+   selection. Filter selects need "ფილტრი: მნიშვნელობა" on the trigger — three
+   bare "ყველა" side by side name nothing — but baking the prefix into option
+   labels made the OPEN menu read "კლინიკა: კურაციო" per row. Options stay
+   plain; the trigger alone gets the context. */
+export default function Select({ value, placeholder, options, onChange, disabled = false, error = false, className = '', ariaLabel, renderValue }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
@@ -36,7 +41,9 @@ export default function Select({ value, placeholder, options, onChange, disabled
         aria-disabled={disabled || undefined}
         disabled={disabled}
       >
-        <span className={selected ? '' : 'gpi-fsel__ph'}>{selected ? selected.label : placeholder}</span>
+        <span className={selected ? '' : 'gpi-fsel__ph'}>
+          {selected ? (renderValue ? renderValue(selected) : selected.label) : placeholder}
+        </span>
         <Icon name={disabled ? 'lock' : 'chevron-down'} size={16} />
       </button>
       {open && !disabled && (
