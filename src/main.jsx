@@ -12,6 +12,7 @@ import './styles/mga.css'
 import './styles/accounts.css'
 import './styles/student.css'
 import './styles/dash.css'
+import './styles/payment.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

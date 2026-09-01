@@ -1,0 +1,610 @@
+/* ===========================================================================
+   Payment portal (devpayment.gpih.ge redesign) — own Rule 5 surface, prefix
+   `pay-`. Mobile-first single column (max 480), desktop is the same column
+   centred on the page. Every value resolves to a foundation token; the two
+   sanctioned literals are the wallet-button black and the card-network brand
+   colours (brand-locked assets, per the Figma Wallet Pay Button precedent).
+   Type sizes are the 9-size scale as literal px (the codebase idiom).
+   =========================================================================== */
+
+/* ---- Chrome: 1:1 with the accounts console's pill top bar ----------------
+   Same visual language as `.acc-topbar` (accounts.css), which is itself
+   anchored on GPI's SHIPPED login screen: white full-pill bar floating on
+   surface-page, h72 / logo 40 / elevation-card, going FLUSH (radius 0,
+   elevation-dropdown) below 768 per the locked mobile header-band rule.
+   ⚠️ SECOND CONSUMER: these metrics now exist twice (.acc-topbar and here).
+   Per the codebase's promote-on-second-consumer rule this pill bar + pill
+   button should become ONE shared component — deferred because that edits the
+   live accounts console (Rule 4: ask first). Keep the two in sync until then.
+   The full-pill radius is a deliberate, already-approved exception to the
+   12px-controls rule: it is top-bar chrome, not a form control. */
+.pay-page {
+  min-height: 100vh;
+  /* Whisper-quiet brand washes over the flat grey (user, 2026-09-01: "very
+     minor gradient… it can alive the page"). Decorative only (Rule 7), so the
+     tints ride at 5-6% via color-mix on brand primitives — no raw hex. Both
+     gradients end in transparent, so surface-page stays the readable ground. */
+  /* Ground colour rides a custom property: grey on desktop (sheets float on
+     it), WHITE on mobile (user, 2026-09-01 — the sheets are gone there, so the
+     page itself becomes the surface). The washes stay on both. */
+  --pay-ground: var(--surface-page);
+  background:
+    radial-gradient(120% 55% at 92% -8%, color-mix(in srgb, var(--color-pink-500) 6%, transparent), transparent 62%),
+    radial-gradient(110% 60% at -12% 42%, color-mix(in srgb, var(--color-indigo-500) 5%, transparent), transparent 58%),
+    var(--pay-ground);
+  padding: var(--space-24) var(--space-32);
+  box-sizing: border-box;
+  font-family: var(--font-sans);
+}
+
+.pay-topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  height: 72px;
+  padding: 0 var(--space-32);
+  background: var(--surface-card);
+  border-radius: var(--radius-full);
+  box-shadow: var(--elevation-card);
+}
+.pay-logo { height: 40px; display: block; }
+.pay-topbar__spacer { flex: 1; }
+
+.pay-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  height: var(--control-md);
+  padding: 0 var(--space-16);
+  border-radius: var(--radius-full);
+  border: var(--border-width-sm) solid var(--action-secondary);
+  background: var(--surface-card);
+  color: var(--action-secondary);
+  font: 500 14px/16px var(--font-sans);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.pay-pill:hover { background: var(--interactive-hover-bg); }
+.pay-pill:focus-visible {
+  outline: var(--focus-ring-width) solid var(--border-focus);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.pay-main {
+  width: 100%;
+  max-width: 480px;
+  margin: var(--space-24) auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+@media (max-width: 767px) {
+  .pay-page { padding: 0 0 var(--space-32); --pay-ground: var(--surface-card); }
+  .pay-topbar {
+    height: 64px;
+    padding: 0 var(--space-16);
+    border-radius: 0;
+    box-shadow: var(--elevation-dropdown);
+    position: relative;
+    z-index: 10;
+  }
+  .pay-logo { height: 32px; }
+  /* Sheet-less mobile felt cramped at 16 (user, 2026-09-01) — inline inset
+     raised to 40 (+24), matching the desktop sheet's own 40px padding. */
+  .pay-main { margin-top: var(--space-24); padding-inline: var(--space-40); }
+}
+
+/* ---- Step sheet (every screen: login / OTP / policies / payment / done) --
+   ONE elevated white sheet per step; radius 16 = the top of the ladder
+   (outer 16 / nested 12 / inset 8). Everything inside uses border grammar. */
+.pay-card {
+  background: var(--surface-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--elevation-card);
+  padding: var(--space-40);
+}
+/* .pay-stack = the vertical rhythm INSIDE a step sheet. Same 16 gap as
+   .pay-main so wrapping a screen in a sheet never changes its spacing. */
+.pay-stack { display: flex; flex-direction: column; gap: var(--space-16); }
+.pay-stack__head { display: flex; flex-direction: column; gap: var(--space-4); }
+.pay-h1 { font: 600 20px/28px var(--font-sans); color: var(--color-indigo-800); margin: 0; }
+.pay-lead { font: 400 14px/22px var(--font-sans); color: var(--text-muted); margin: 0; }
+.pay-phone { color: var(--text-main); font-weight: 600; font-variant-numeric: tabular-nums; }
+.pay-help { font: 400 12px/18px var(--font-sans); color: var(--text-muted); text-align: center; margin: 0; }
+
+/* OTP block: label, boxes, then the countdown as META BELOW the field — never
+   parked inside it (the live portal's timer reads as part of the value). */
+.pay-otp { display: flex; flex-direction: column; gap: var(--space-8); }
+.pay-otp__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+  flex-wrap: wrap;
+}
+.pay-otp__timer { font: 400 13px/20px var(--font-sans); color: var(--text-muted); }
+.pay-otp__expired { font: 500 13px/20px var(--font-sans); color: var(--status-warning-fg); }
+
+/* ---- Policy selection ---------------------------------------------------- */
+.pay-policies { display: flex; flex-direction: column; gap: var(--space-8); }
+.pay-pcard {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-12);
+  width: 100%;
+  text-align: left;
+  background: var(--surface-card);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-16);
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+.pay-pcard:hover { border-color: var(--border-field-hover); }
+.pay-pcard:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--surface-page), 0 0 0 4px var(--border-focus);
+}
+.pay-pcard--on {
+  border-color: var(--action-primary);
+  box-shadow: inset 0 0 0 0.5px var(--action-primary);
+  background: var(--interactive-selected-bg);
+}
+.pay-pcard--on:focus-visible {
+  box-shadow: inset 0 0 0 0.5px var(--action-primary), 0 0 0 2px var(--surface-page), 0 0 0 4px var(--action-primary);
+}
+/* Zero balance: nothing to pay, so the row is inert rather than offering a
+   0 ₾ transaction. Its radio is hidden — an unselectable radio is a lie. */
+.pay-pcard--none { background: var(--surface-page); cursor: default; }
+.pay-pcard--none:hover { border-color: var(--border-default); }
+.pay-pcard--none .pay-cardrow__radio { visibility: hidden; }
+.pay-pcard--none .pay-pcard__name { color: var(--text-muted); }
+.pay-pcard__body { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; flex: 1; }
+.pay-pcard__name { font: 600 15px/22px var(--font-sans); color: var(--text-main); }
+.pay-pcard__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  flex-wrap: wrap;
+  font: 400 12px/16px var(--font-sans);
+  color: var(--text-muted);
+}
+.pay-pcard__due {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-8);
+  border-top: var(--border-width-sm) solid var(--border-divider);
+  margin-top: var(--space-8);
+  padding-top: var(--space-8);
+}
+.pay-pcard__duelabel { font: 400 13px/20px var(--font-sans); color: var(--text-muted); }
+.pay-pcard__amount { font: 700 18px/24px var(--font-sans); color: var(--text-main); }
+.pay-pcard .pay-cardrow__radio { margin-top: var(--space-2); }
+
+/* ---- Header row ---------------------------------------------------------- */
+.pay-head { display: flex; align-items: center; gap: var(--space-8); }
+.pay-back {
+  width: var(--control-md);
+  height: var(--control-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-full);
+  color: var(--icon-default);
+  cursor: pointer;
+  margin-left: calc(-1 * var(--space-8));
+}
+.pay-back:hover { background: var(--interactive-hover-bg); }
+.pay-back:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--surface-page), 0 0 0 4px var(--border-focus);
+}
+.pay-title { font: 600 20px/28px var(--font-sans); color: var(--color-indigo-800); margin: 0; }
+
+/* ---- Policy context card (top-level card → radius 16) -------------------- */
+/* Nested inside the step sheet since 2026-09-01 (one elevated surface per
+   screen): border grammar + radius 12, visually the SAME dress as .pay-pcard —
+   it is the same object the user just picked on the previous screen. */
+.pay-policy {
+  background: var(--surface-card);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-16);
+}
+.pay-policy__toprow { display: flex; align-items: center; justify-content: space-between; gap: var(--space-8); }
+.pay-policy__name { font: 600 16px/24px var(--font-sans); color: var(--text-main); margin: 0; }
+.pay-policy__meta { font: 400 13px/20px var(--font-sans); color: var(--text-muted); margin: var(--space-4) 0 0; }
+.pay-policy__due {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-top: var(--border-width-sm) solid var(--border-divider);
+  margin-top: var(--space-12);
+  padding-top: var(--space-12);
+}
+.pay-policy__duelabel { font: 400 14px/22px var(--font-sans); color: var(--text-muted); }
+.pay-amount, .pay-num { font-variant-numeric: tabular-nums; }
+.pay-amount { font: 700 24px/32px var(--font-sans); color: var(--text-main); }
+
+/* ---- Express wallets (brand-locked black, per Apple/Google guidelines) --- */
+.pay-wallets { display: flex; gap: var(--space-8); }
+.pay-wallet {
+  flex: 1;
+  height: var(--control-lg);
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.pay-wallet:hover { opacity: 0.88; }
+.pay-wallet:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--surface-page), 0 0 0 4px var(--color-neutral-600);
+}
+.pay-wallet__mark { display: inline-flex; align-items: center; gap: 3px; }
+.pay-wallet__word { font: 500 16px/24px var(--font-sans); letter-spacing: 0.2px; }
+.pay-wallet__img { height: 18px; width: auto; display: block; }
+
+/* ---- "or pay by card" divider (mirrors the Figma Divider 172:52) --------- */
+.pay-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  font: 400 12px/16px var(--font-sans);
+  color: var(--text-muted);
+}
+.pay-divider::before,
+.pay-divider::after {
+  content: '';
+  flex: 1;
+  border-top: var(--border-width-sm) solid var(--border-default);
+}
+
+/* ---- Visa campaign promo (modular slot — delete the block when the campaign
+        ends; nothing else depends on it) ------------------------------------
+   Structure per the user's 2026-09-01 mock: intro copy beside the card-stack
+   artwork, then a FULL-WIDTH tier radio group, then the terms link. Nested in
+   the step sheet → border grammar, radius 12 (ladder), no own elevation.
+   The artwork asset includes the export's blue gradient glow UNCROPPED (the
+   first extraction cut it at the cards' bbox); the row's overflow:hidden crops
+   the bleed exactly the way the export's own card clip did. */
+.pay-promo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  background: var(--surface-card);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-16);
+}
+/* A tier chosen: brand border — the same "selected" grammar as the card rows. */
+.pay-promo--on {
+  border-color: var(--action-primary);
+  box-shadow: inset 0 0 0 0.5px var(--action-primary);
+}
+.pay-promo__top {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  /* Let the glow wash reach the sheet's edges like the export's own clip. */
+  margin: calc(-1 * var(--space-16)) calc(-1 * var(--space-16)) 0;
+  padding: var(--space-16) 0 0 var(--space-16);
+}
+.pay-promo__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  /* Above the glow, which spreads well past the cards themselves. */
+  position: relative;
+  z-index: 1;
+}
+/* Artwork = cards + the full gradient glow. Flex sibling, never an absolute
+   overlay (that overlapped the copy at 390 once already). The negative margins
+   bleed the wash off the edges so it reads as the banner's background.
+   The MASK is what keeps every cut smooth (user, 2026-09-01: "gradient is not
+   smooth"): the glow's blur is computed only inside the SVG's filter region,
+   so the image's own edges cut it at visible strength — and any clip (overflow,
+   negative margin) used to leave a hard line. The radial mask fades the image
+   out before its edges while the stops keep the CARDS fully opaque (cards span
+   20–74.5% × 20.5–67.6% of the viewBox; corners sit at ~65% of the ellipse).
+   Margins are sized so the cards themselves are never cropped — only glow
+   bleeds (glow-only zones: 20.5% above, 32.4% below the cards). */
+.pay-promo__art {
+  flex: none;
+  width: 195px;
+  height: auto;
+  margin: -24px -16px -36px 0;
+  pointer-events: none;
+  user-select: none;
+  -webkit-mask-image: radial-gradient(ellipse 56% 56% at 47% 44%, #000 70%, transparent 95%);
+  mask-image: radial-gradient(ellipse 56% 56% at 47% 44%, #000 70%, transparent 95%);
+}
+.pay-promo__title { font: 600 16px/24px var(--font-sans); color: var(--color-indigo-800); margin: 0; }
+.pay-promo__text { font: 400 13px/20px var(--font-sans); color: var(--color-indigo-500); margin: 0; }
+
+/* Compact (returning user, 2026-09-01): the informational top block only — no
+   tier radios, no terms. With nothing below it, the top block bleeds to ALL
+   four edges (the full version bleeds top/right only) and inherits the radius
+   so its overflow clip cannot square off the banner's rounded corners. */
+.pay-promo--compact .pay-promo__top {
+  margin: calc(-1 * var(--space-16));
+  padding: var(--space-16) 0 var(--space-16) var(--space-16);
+  border-radius: inherit;
+}
+
+/* Tier choice — full-width rows under the intro, per the mock. */
+.pay-promo__choice { display: flex; flex-direction: column; gap: var(--space-8); }
+/* Tier labels wrap to two lines on a phone; the ring must stay with the FIRST
+   line (the tier name), not float centred against the block. Scoped override —
+   the shared .gpi-radiopt centres, which is right for its one-line consumers. */
+.pay-promo__choice .gpi-radiopt { align-items: flex-start; }
+.pay-promo__choice .gpi-radio { margin-top: 1px; flex: none; }
+.pay-promo__choice .pay-promo__tier { flex-direction: column; gap: var(--space-2); align-items: flex-start; }
+.pay-promo__chooselbl { font: 400 13px/20px var(--font-sans); color: var(--color-indigo-500); margin: 0; }
+.pay-promo__tier { display: flex; align-items: baseline; gap: var(--space-8); flex-wrap: wrap; }
+.pay-promo__tiername { font: 600 14px/20px var(--font-sans); color: var(--color-indigo-800); }
+.pay-promo__tierpts { font: 400 13px/20px var(--font-sans); color: var(--text-muted); }
+
+.pay-promo__terms { font: 400 12px/18px var(--font-sans); color: var(--text-muted); margin: 0; }
+/* Keep the link phrase whole — an underline split across two lines reads as
+   two separate links. The line breaks before it instead. */
+.pay-promo__link { color: var(--text-link); text-decoration: underline; white-space: nowrap; }
+.pay-promo__link:focus-visible {
+  outline: var(--focus-ring-width) solid var(--border-focus);
+  outline-offset: var(--focus-ring-offset);
+  border-radius: var(--radius-sm);
+}
+
+/* Narrow: the art shrinks but STAYS — the tier rows live below it now, so it
+   only has to coexist with the intro copy. Two steps, because at 320 a 132px
+   image left the copy ~116px = one word per line. */
+@media (max-width: 419px) {
+  .pay-promo__art { width: 132px; margin: -36px -32px -20px 0; }
+}
+@media (max-width: 359px) {
+  .pay-promo__art { width: 100px; margin: -28px -28px -12px 0; }
+}
+
+/* ---- Saved-card rows (Radio Card grammar: indicator left, selected =
+        primary border + selected bg; nested card → radius 12) -------------- */
+.pay-methods { display: flex; flex-direction: column; gap: var(--space-8); }
+.pay-sectionlabel { font: 600 13px/20px var(--font-sans); color: var(--text-main); margin: 0; }
+.pay-cardrow {
+  /* Width of everything before the text column (radio + gap + mark + gap) —
+     named so the narrow-width badge can align under the text without magic
+     numbers drifting out of sync with the box sizes below. */
+  --row-lead: calc(20px + var(--space-12) + 44px + var(--space-12));
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  width: 100%;
+  text-align: left;
+  background: var(--surface-card);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-12) var(--space-16);
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+.pay-cardrow:hover { border-color: var(--border-field-hover); }
+.pay-cardrow:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--surface-page), 0 0 0 4px var(--border-focus);
+}
+.pay-cardrow--on {
+  border-color: var(--action-primary);
+  /* +0.5px via inset shadow → net 1.5px stroke without a layout shift */
+  box-shadow: inset 0 0 0 0.5px var(--action-primary);
+  background: var(--interactive-selected-bg);
+}
+.pay-cardrow--on:focus-visible {
+  box-shadow: inset 0 0 0 0.5px var(--action-primary), 0 0 0 2px var(--surface-page), 0 0 0 4px var(--action-primary);
+}
+.pay-cardrow__radio {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  border: var(--border-width-md) solid var(--border-field);
+  background: var(--surface-card);
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* The radio indicator is shared by the card rows AND the policy cards, so the
+   selected-state rules must name both parents — `.pay-cardrow--on` alone left
+   the policy card's radio empty while the card read as selected. */
+.pay-cardrow--on .pay-cardrow__radio,
+.pay-pcard--on .pay-cardrow__radio { border-color: var(--action-primary); }
+.pay-cardrow--on .pay-cardrow__radio::after,
+.pay-pcard--on .pay-cardrow__radio::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  background: var(--action-primary);
+}
+.pay-cardrow__brand {
+  width: 44px;
+  height: 28px;
+  border: var(--border-width-sm) solid var(--border-divider);
+  border-radius: var(--radius-sm);
+  background: var(--surface-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.pay-cardrow__brand--new { color: var(--icon-muted); }
+/* FILLs the row so the trailing badge is pushed to the right edge — the edge
+   the leading brand mark deliberately left free. */
+.pay-cardrow__col { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; flex: 1; }
+.pay-cardrow__num { font: 500 14px/20px var(--font-sans); color: var(--text-main); }
+.pay-cardrow__exp { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+.pay-cardrow__sub {
+  font: 400 12px/16px var(--font-sans);
+  color: var(--text-muted);
+  /* Bank + card type is an IDENTIFIER: one line, ellipsized if it must be, so
+     every row keeps the same height and the list stays scannable. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* The new-card row's sub-line is a SENTENCE, not an identifier — truncating an
+   explanation mid-word loses meaning, so this one wraps instead. */
+.pay-cardrow__sub--wrap { white-space: normal; overflow: visible; }
+.pay-cardrow__trail { flex: none; }
+
+/* Narrow screens: the campaign badge and the card details cannot share one
+   line (measured at 320 the text column was squeezed to ~66px and the card
+   number broke over three lines). The badge drops to its own line, indented to
+   the text column so the row still reads as one block. The brand mark STAYS —
+   mobile is this portal's primary surface and the aligned column of marks is
+   the whole reason the mark leads. */
+@media (max-width: 419px) {
+  .pay-cardrow { flex-wrap: wrap; }
+  .pay-cardrow__trail {
+    flex-basis: 100%;
+    /* PADDING, not margin: a margin sits outside the flex base, so
+       `flex-basis:100% + margin-left` made the row 88px wider than the page. */
+    box-sizing: border-box;
+    padding-left: var(--row-lead);
+    margin-top: var(--space-4);
+  }
+}
+
+/* Save-card block: a sibling of the new-card row (never nested inside it —
+   see SaveCard's note). The checkbox's left edge lines up with the card rows'
+   radio circles: border + padding of .pay-cardrow. */
+.pay-saverow {
+  padding-left: calc(var(--space-16) + var(--border-width-sm));
+}
+
+/* Card-network marks (brand colours are the sanctioned literals) */
+.pay-brandmark--visa {
+  font: 800 11px/1 var(--font-sans);
+  font-style: italic;
+  letter-spacing: 0.4px;
+  color: #1434cb;
+}
+
+/* ---- CTA + consent + trust ---------------------------------------------- */
+.pay-block { width: 100%; }
+.pay-consent {
+  font: 400 12px/18px var(--font-sans);
+  color: var(--text-muted);
+  text-align: center;
+  margin: calc(-1 * var(--space-8)) 0 0;
+}
+.pay-linkline { text-align: center; }
+.pay-trust {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+  font: 400 12px/16px var(--font-sans);
+  color: var(--text-muted);
+  margin: 0;
+}
+.pay-trust svg { flex: none; }
+
+/* ---- Liberty bank-page stand-in (demo chrome, NOT a GPI design) ---------- */
+.pay-bankframe {
+  border: var(--border-width-lg) dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+}
+.pay-bankframe__tag {
+  display: inline-block;
+  font: 400 11px/16px var(--font-mono);
+  background: var(--color-neutral-800);
+  color: var(--text-inverse);
+  padding: var(--space-4) var(--space-12);
+  border-bottom-right-radius: var(--radius-sm);
+}
+.pay-bankframe__body { padding: var(--space-20); display: flex; flex-direction: column; gap: var(--space-16); }
+.pay-bankframe__note { font: 400 12px/18px var(--font-sans); color: var(--text-muted); margin: 0; }
+.pay-bankframe__logo { font: 700 20px/28px var(--font-sans); color: var(--text-main); margin: 0; }
+.pay-bankframe__rows { margin: 0; display: flex; flex-direction: column; gap: var(--space-8); }
+.pay-bankframe__rows div { display: flex; justify-content: space-between; gap: var(--space-16); }
+.pay-bankframe__rows dt { font: 400 13px/20px var(--font-sans); color: var(--text-muted); }
+.pay-bankframe__rows dd { font: 600 13px/20px var(--font-sans); color: var(--text-main); margin: 0; }
+.pay-bankframe__fields { display: flex; flex-direction: column; gap: var(--space-8); }
+.pay-bankframe__fieldrow { display: flex; gap: var(--space-8); }
+.pay-bankframe__fields input {
+  height: var(--control-md);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding-inline: var(--space-12);
+  font: 400 14px/22px var(--font-sans);
+  background: var(--interactive-disabled-bg);
+  color: var(--text-disabled);
+  min-width: 0;
+  width: 100%;
+}
+.pay-bankframe__actions { display: flex; flex-direction: column; gap: var(--space-8); }
+
+/* ---- Success ------------------------------------------------------------- */
+.pay-done {
+  background: var(--surface-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--elevation-card);
+  padding: var(--space-40);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  text-align: center;
+}
+.pay-done__icon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background: var(--status-success-bg);
+  color: var(--status-success-fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+.pay-done__title { font: 600 20px/28px var(--font-sans); color: var(--text-main); margin: 0; }
+.pay-done__rows {
+  margin: 0;
+  border-top: var(--border-width-sm) solid var(--border-divider);
+  padding-top: var(--space-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  text-align: left;
+}
+.pay-done__rows div { display: flex; justify-content: space-between; gap: var(--space-16); }
+.pay-done__rows dt { font: 400 13px/20px var(--font-sans); color: var(--text-muted); flex: none; }
+.pay-done__rows dd { font: 500 13px/20px var(--font-sans); color: var(--text-main); margin: 0; text-align: right; }
+.pay-done__receipt { font: 400 12px/16px var(--font-sans); color: var(--text-muted); margin: 0; }
+/* The success card centres its text; the alert inside stays a left-aligned block. */
+.pay-done .gpi-alert { text-align: left; }
+
+/* ≤767 the sheet dissolves (user, 2026-09-01): content sits straight on the
+   page to buy back width — same responsive grammar as the topbar (floating
+   pill on desktop ↔ flush band on mobile). Nested blocks keep their own
+   borders/backgrounds, so grouping survives without the outer square. */
+@media (max-width: 767px) {
+  .pay-card,
+  .pay-done {
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+  }
+}

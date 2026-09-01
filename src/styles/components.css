@@ -443,6 +443,39 @@
 }
 .gpi-demobar:hover,
 .gpi-demobar:focus-within { opacity: 1; }
+/* Opt-in (`wrap` prop) for surfaces carrying enough chips to exceed a phone's
+   width — the payment portal has 7. Deliberately a MODIFIER, not a change to
+   the base rule: every existing consumer must keep rendering exactly as it did. */
+.gpi-demobar--wrap {
+  max-width: calc(100vw - 2 * var(--space-16));
+  flex-wrap: wrap;
+  justify-content: center;
+}
+/* Collapsed state of a `collapsible` DemoBar: a small corner chip instead of
+   the full bar, so the design under review stays visible (the payment module's
+   7 chips wrapped into a blob over the CTA on a phone). Own class, NOT a
+   .gpi-demobar modifier — the base rule's fixed/centred positioning would have
+   to be fought rather than inherited. Same dark demo styling so it still
+   cannot be mistaken for product UI. */
+.gpi-demobar-min {
+  position: fixed;
+  right: var(--space-16);
+  bottom: var(--space-16);
+  z-index: 60;
+  border: 0;
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-full);
+  background: var(--color-neutral-900);
+  color: rgba(255, 255, 255, .75);
+  font: 400 11px/16px var(--font-mono);
+  letter-spacing: .04em;
+  box-shadow: var(--elevation-popover);
+  cursor: pointer;
+  opacity: .55;
+  transition: opacity .12s ease;
+}
+.gpi-demobar-min:hover,
+.gpi-demobar-min:focus-visible { opacity: 1; }
 .gpi-demobar__tag {
   padding: 0 var(--space-8);
   font: 400 11px/24px var(--font-mono);

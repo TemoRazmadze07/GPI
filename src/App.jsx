@@ -10,6 +10,7 @@ import MobileApp from './mobile/MobileApp.jsx'
 import AccountsApp from './accounts/AccountsApp.jsx'
 import StudentApp from './student/StudentApp.jsx'
 import DashApp from './dash/DashApp.jsx'
+import PaymentApp from './payment/PaymentApp.jsx'
 import { t } from './i18n/index.js'
 
 /* Tiny hash-router. URLs mirror the Flow Map hierarchy: app → feature → flow.
@@ -56,6 +57,9 @@ function resolve(segs) {
   if (segs[0] === 'mobile') return { view: 'mobile', wizardStep: 0, mobileSection: segs[1] || 'health' }
   if (segs[0] === 'accounts') return { view: 'accounts', wizardStep: 0, accSection: segs[1] || 'home' }
   if (segs[0] === 'student') return { view: 'student', wizardStep: 0 }
+  /* #/pay — payment portal (devpayment.gpih.ge redesign). Link-driven public
+     surface, own shell (Rule 5). */
+  if (segs[0] === 'pay') return { view: 'pay', wizardStep: 0, paySection: segs[1] || 'pay' }
   /* #/dash — the dashboard host. Its own project, deliberately NOT folded into
      the My-Cabinet screens below (see dash/DashApp.jsx). */
   if (segs[0] === 'dash') return { view: 'dash', wizardStep: 0, dashSection: segs.slice(1).join('/') || 'home' }
@@ -83,9 +87,12 @@ function StudyFallback() {
   )
 }
 
-function Flow({ view, wizardStep, rescheduleFrom, editFrom, b2bSection, b2bContract, mobileSection, accSection, guideId, dashSection }) {
+function Flow({ view, wizardStep, rescheduleFrom, editFrom, b2bSection, b2bContract, mobileSection, accSection, guideId, dashSection, paySection }) {
   if (view === 'guidePublic') {
     return <GuidePublicScreen id={guideId} />
+  }
+  if (view === 'pay') {
+    return <PaymentApp section={paySection} />
   }
   if (view === 'dash') {
     return <DashApp section={dashSection} />
@@ -159,12 +166,12 @@ export default function App() {
     }
   }, [segs])
 
-  const { view, wizardStep, b2bSection, mobileSection, accSection, guideId, dashSection } = resolve(segs)
+  const { view, wizardStep, b2bSection, mobileSection, accSection, guideId, dashSection, paySection } = resolve(segs)
   const q = parseHashQuery()
   const rescheduleFrom = q.get('from')
   const editFrom = q.get('edit')
   const b2bContract = q.get('contract')
-  const flowProps = { view, wizardStep, rescheduleFrom, editFrom, b2bSection, b2bContract, mobileSection, accSection, guideId, dashSection }
+  const flowProps = { view, wizardStep, rescheduleFrom, editFrom, b2bSection, b2bContract, mobileSection, accSection, guideId, dashSection, paySection }
 
   if (STUDY) {
     if (view === 'map') {
