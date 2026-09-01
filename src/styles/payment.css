@@ -311,25 +311,34 @@
   z-index: 1;
 }
 /* Artwork = cards + the full gradient glow. Flex sibling, never an absolute
-   overlay (that overlapped the copy at 390 once already). The negative margins
-   bleed the wash off the edges so it reads as the banner's background.
-   The MASK is what keeps every cut smooth (user, 2026-09-01: "gradient is not
-   smooth"): the glow's blur is computed only inside the SVG's filter region,
-   so the image's own edges cut it at visible strength — and any clip (overflow,
-   negative margin) used to leave a hard line. The radial mask fades the image
-   out before its edges while the stops keep the CARDS fully opaque (cards span
-   20–74.5% × 20.5–67.6% of the viewBox; corners sit at ~65% of the ellipse).
-   Margins are sized so the cards themselves are never cropped — only glow
-   bleeds (glow-only zones: 20.5% above, 32.4% below the cards). */
-.pay-promo__art {
+   overlay (that overlapped the copy at 390 once already).
+   TWO rules keep every edge smooth (user, 2026-09-01, twice: "gradient is not
+   smooth" → "visual is still cropped"):
+   ① The image is NEVER clipped — no negative margins that cross an
+     overflow-hidden edge. Any clip cuts the glow at visible strength, because
+     the SVG's blur is computed only inside its filter region, so even the raw
+     image edges carry glow. (An earlier radial mask reached zero on the
+     right/bottom but still cut the TOP and LEFT at ~50–66% — an ellipse cannot
+     reach zero on all four edges without eating the cards.)
+   ② A RECTANGULAR fade: the wrapper carries the vertical gradient mask, the
+     img the horizontal one — multiplied, opacity is zero at every edge with
+     the cards fully solid (cards span 20–74.5% × 20.5–67.6% of the viewBox;
+     the solid stops clear them on each axis independently). */
+.pay-promo__artbox {
+  display: block;
   flex: none;
-  width: 195px;
-  height: auto;
-  margin: -24px -16px -36px 0;
+  width: 210px;
   pointer-events: none;
   user-select: none;
-  -webkit-mask-image: radial-gradient(ellipse 56% 56% at 47% 44%, #000 70%, transparent 95%);
-  mask-image: radial-gradient(ellipse 56% 56% at 47% 44%, #000 70%, transparent 95%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 17%, #000 71%, transparent 95%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 17%, #000 71%, transparent 95%);
+}
+.pay-promo__art {
+  display: block;
+  width: 100%;
+  height: auto;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 16%, #000 78%, transparent 98%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 16%, #000 78%, transparent 98%);
 }
 .pay-promo__title { font: 600 16px/24px var(--font-sans); color: var(--color-indigo-800); margin: 0; }
 .pay-promo__text { font: 400 13px/20px var(--font-sans); color: var(--color-indigo-500); margin: 0; }
@@ -367,14 +376,15 @@
   border-radius: var(--radius-sm);
 }
 
-/* Narrow: the art shrinks but STAYS — the tier rows live below it now, so it
-   only has to coexist with the intro copy. Two steps, because at 320 a 132px
-   image left the copy ~116px = one word per line. */
+/* Narrow (user, 2026-09-01): the art STOPS sharing a row with the copy — the
+   squeezed side-by-side made it tiny (100–132px) and clipped. The block goes
+   VERTICAL: copy full width, then the artwork BELOW it, larger, right-aligned.
+   The negative TOP margin only overlaps the copy (glow behind text, body has
+   z-index 1) — overlap is safe, it is clips that leave hard lines, and this
+   layout has none: the art stays inside the container on every clipped edge. */
 @media (max-width: 419px) {
-  .pay-promo__art { width: 132px; margin: -36px -32px -20px 0; }
-}
-@media (max-width: 359px) {
-  .pay-promo__art { width: 100px; margin: -28px -28px -12px 0; }
+  .pay-promo__top { flex-direction: column; align-items: stretch; }
+  .pay-promo__artbox { width: 250px; max-width: 100%; align-self: flex-end; margin-top: -40px; }
 }
 
 /* ---- Saved-card rows (Radio Card grammar: indicator left, selected =

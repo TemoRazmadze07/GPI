@@ -476,6 +476,34 @@
 }
 .gpi-demobar-min:hover,
 .gpi-demobar-min:focus-visible { opacity: 1; }
+/* Expanded state of a `collapsible` DemoBar: a DOCKED bottom strip, not the
+   floating pill — full-width, fully opaque, one row, chips scroll
+   horizontally. The bottom edge is chrome territory; the canvas stays clear. */
+.gpi-demobar--dock {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  transform: none;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  border-radius: 0;
+  padding: var(--space-8) var(--space-12);
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  opacity: 1;
+  box-shadow: 0 -2px 8px rgba(17, 23, 34, 0.2);
+}
+.gpi-demobar__scroll {
+  display: flex;
+  gap: var(--space-4);
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.gpi-demobar__scroll::-webkit-scrollbar { display: none; }
+.gpi-demobar--dock .gpi-demobar__btn { flex: none; white-space: nowrap; }
 .gpi-demobar__tag {
   padding: 0 var(--space-8);
   font: 400 11px/24px var(--font-mono);

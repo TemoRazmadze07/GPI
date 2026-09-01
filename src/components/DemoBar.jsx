@@ -22,10 +22,14 @@ import { useState } from 'react'
    variant, for "reset"-shaped actions that undo rather than set up.
    `wrap` (opt-in) caps the bar to the viewport and lets chips wrap — for
    surfaces with enough chips to overflow a phone.
-   `collapsible` (opt-in) starts the bar as a tiny corner chip and toggles the
-   full bar on tap — for surfaces where many chips would sit on the design
-   being reviewed (payment: 7 chips over the CTA on a phone). The open state
-   persists in sessionStorage so it survives the flow's route changes.
+   `collapsible` (opt-in) starts the bar as a tiny corner chip; tapping it
+   opens a DOCKED bottom strip — full-width, opaque, one horizontally
+   scrollable row — instead of the floating centred pill. The floating pill
+   wrapped 7 chips into a translucent blob sitting ON the design under review;
+   a docked strip occupies the screen's bottom edge, which is chrome territory,
+   not canvas. The open state persists in sessionStorage so it survives the
+   flow's route changes. Collapsible mode renders its own DOM branch so
+   non-collapsible consumers keep the exact legacy markup.
    Both flags are additive and off by default, so existing consumers render
    byte-identically. */
 const STUDY = new URLSearchParams(window.location.search).has('study')
@@ -40,7 +44,7 @@ export default function DemoBar({ actions = [], wrap = false, collapsible = fals
     setOpen(next)
   }
 
-  if (!open) {
+  if (collapsible && !open) {
     return (
       <button
         type="button"
@@ -51,6 +55,34 @@ export default function DemoBar({ actions = [], wrap = false, collapsible = fals
       >
         demo
       </button>
+    )
+  }
+
+  if (collapsible) {
+    return (
+      <div className="gpi-demobar gpi-demobar--dock" role="group" aria-label="prototype demo controls">
+        <span className="gpi-demobar__tag" aria-hidden="true">demo</span>
+        <div className="gpi-demobar__scroll">
+          {actions.map((a) => (
+            <button
+              key={a.label}
+              type="button"
+              className={`gpi-demobar__btn${a.ghost ? ' gpi-demobar__btn--ghost' : ''}`}
+              onClick={a.onClick}
+            >
+              {a.label}
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          className="gpi-demobar__btn gpi-demobar__btn--ghost"
+          aria-label="hide demo controls"
+          onClick={() => toggle(false)}
+        >
+          ×
+        </button>
+      </div>
     )
   }
 
@@ -71,16 +103,6 @@ export default function DemoBar({ actions = [], wrap = false, collapsible = fals
           {a.label}
         </button>
       ))}
-      {collapsible && (
-        <button
-          type="button"
-          className="gpi-demobar__btn gpi-demobar__btn--ghost"
-          aria-label="hide demo controls"
-          onClick={() => toggle(false)}
-        >
-          ×
-        </button>
-      )}
     </div>
   )
 }

@@ -78,47 +78,52 @@ function VisaPromo({ tier, onTier, amount, compact }) {
     <div
       className={`pay-promo${compact ? ' pay-promo--compact' : ''}${!compact && tier !== 'other' ? ' pay-promo--on' : ''}`}
     >
-      <div className="pay-promo__top">
-        {/* Copy first in the DOM: reading order, and it puts the art right. */}
-        <div className="pay-promo__body">
-          <p className="pay-promo__title">{P.pay.promoTitle}</p>
-          <p className="pay-promo__text">{P.pay.promoBody}</p>
-        </div>
-        <img className="pay-promo__art" src={visaCards} alt="" aria-hidden="true" />
+      {/* Order per the user's 2026-09-01 mock: copy → tier choice → ARTWORK →
+          terms (compact: copy → artwork). The art is a normal full-width block,
+          not a side column — no overflow clipping anywhere. */}
+      <div className="pay-promo__body">
+        <p className="pay-promo__title">{P.pay.promoTitle}</p>
+        <p className="pay-promo__text">{P.pay.promoBody}</p>
       </div>
       {!compact && (
-        <>
-          <div className="pay-promo__choice" role="radiogroup" aria-label={P.pay.promoChoose}>
-            <p className="pay-promo__chooselbl">{P.pay.promoChoose}</p>
-            <Radio
-              name="pay-visa-tier"
-              value="other"
-              checked={tier === 'other'}
-              onChange={onTier}
-              label={<span className="pay-promo__tiername">{P.pay.promoOther}</span>}
-            />
-            <Radio
-              name="pay-visa-tier"
-              value="signature"
-              checked={tier === 'signature'}
-              onChange={onTier}
-              label={tierLabel('VISA Signature', visaPoints('signature', amount))}
-            />
-            <Radio
-              name="pay-visa-tier"
-              value="infinite"
-              checked={tier === 'infinite'}
-              onChange={onTier}
-              label={tierLabel('VISA Infinite', visaPoints('infinite', amount))}
-            />
-          </div>
-          <p className="pay-promo__terms">
-            {P.pay.promoTerms}{' '}
-            <a className="pay-promo__link" href="#/pay" onClick={(e) => e.preventDefault()}>
-              {P.pay.promoTermsLink}
-            </a>
-          </p>
-        </>
+        <div className="pay-promo__choice" role="radiogroup" aria-label={P.pay.promoChoose}>
+          <p className="pay-promo__chooselbl">{P.pay.promoChoose}</p>
+          <Radio
+            name="pay-visa-tier"
+            value="other"
+            checked={tier === 'other'}
+            onChange={onTier}
+            label={<span className="pay-promo__tiername">{P.pay.promoOther}</span>}
+          />
+          <Radio
+            name="pay-visa-tier"
+            value="signature"
+            checked={tier === 'signature'}
+            onChange={onTier}
+            label={tierLabel('VISA Signature', visaPoints('signature', amount))}
+          />
+          <Radio
+            name="pay-visa-tier"
+            value="infinite"
+            checked={tier === 'infinite'}
+            onChange={onTier}
+            label={tierLabel('VISA Infinite', visaPoints('infinite', amount))}
+          />
+        </div>
+      )}
+      {/* Wrapper carries the VERTICAL fade mask, the img the HORIZONTAL one —
+          multiplied they fade all four edges to zero (one ellipse could not
+          cover every edge without eating the cards). */}
+      <span className="pay-promo__artbox" aria-hidden="true">
+        <img className="pay-promo__art" src={visaCards} alt="" />
+      </span>
+      {!compact && (
+        <p className="pay-promo__terms">
+          {P.pay.promoTerms}{' '}
+          <a className="pay-promo__link" href="#/pay" onClick={(e) => e.preventDefault()}>
+            {P.pay.promoTermsLink}
+          </a>
+        </p>
       )}
     </div>
   )
