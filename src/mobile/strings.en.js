@@ -83,6 +83,9 @@ export const en = {
     docOff: 'No doctor',
     insOn: 'Insured',
     insOff: 'Uninsured',
+    /* dark-mode pilot (2026-09-07) — theme chips */
+    themeLight: 'Light',
+    themeDark: 'Dark',
   },
   /* V2 — Curatio tab dashboard + OTP gate for history-class data. */
   dash: {

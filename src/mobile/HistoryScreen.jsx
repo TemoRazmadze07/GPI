@@ -36,7 +36,7 @@ export default function HistoryScreen() {
         </div>
         <div className="mga-body">
           <div className="mga-card mga-lockcard" style={{ textAlign: 'center', padding: 24 }}>
-            <span className="mga-itile" style={{ background: 'var(--mga-lav)', color: 'var(--mga-lav-fg)', margin: '0 auto 8px' }}>
+            <span className="mga-itile" style={{ background: 'var(--mga-tint)', color: 'var(--mga-tint-fg)', margin: '0 auto 8px' }}>
               <Icon name="lock" size={17} />
             </span>
             <div className="mga-meta__val">{M.dash.protectedTitle}</div>

@@ -78,6 +78,9 @@ export const ka = {
     docOff: 'ექიმი არ ჰყავს',
     insOn: 'დაზღვეული',
     insOff: 'დაუზღვეველი',
+    /* dark-mode pilot (2026-09-07) — theme chips */
+    themeLight: 'ნათელი',
+    themeDark: 'მუქი',
   },
   /* V2 — Curatio tab dashboard + OTP gate for history-class data. */
   dash: {

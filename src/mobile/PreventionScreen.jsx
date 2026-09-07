@@ -77,7 +77,7 @@ export default function PreventionScreen() {
             <Icon name="clock" size={17} />
           </span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="mga-meta__val" style={{ color: 'var(--mga-amber-fg)' }}>
+            <div className="mga-meta__val" style={{ color: 'var(--mga-warning-fg)' }}>
               {V2_PREVENTION.reminder.title}
             </div>
             <div className="mga-meta__lbl">{V2_PREVENTION.reminder.body}</div>

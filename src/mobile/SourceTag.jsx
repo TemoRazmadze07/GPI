@@ -25,7 +25,7 @@
      · external — produced elsewhere, GRAY (#5b6078 on #eef0f4, 5.43:1) · building icon
      · referral — ordered by the family doctor, LAVENDER (#3a3d8f on #eef0fb, 8.24:1) · stethoscope
    Both non-token fgs are a step darker than their family token, which fails AA on
-   the tint (--mga-pink-fg 4.16:1, --mga-muted-fg 4.28:1). All measured, not estimated. */
+   the tint (--mga-accent-fg 4.16:1, --mga-muted-fg 4.28:1). All measured, not estimated. */
 
 import Icon from '../lib/Icon.jsx'
 import CuratioMark from '../lib/CuratioMark.jsx'

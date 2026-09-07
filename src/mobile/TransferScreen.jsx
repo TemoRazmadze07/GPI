@@ -89,7 +89,7 @@ export default function TransferScreen() {
             {!done ? (
               <>
                 <div className="mga-sheet__head">
-                  <span className="mga-itile" style={{ background: 'var(--mga-lav)', color: 'var(--mga-lav-fg)' }}>
+                  <span className="mga-itile" style={{ background: 'var(--mga-tint)', color: 'var(--mga-tint-fg)' }}>
                     <Icon name="arrow-right-left" size={17} />
                   </span>
                   <h2 className="mga-sheet__title">{M.transfer.title}</h2>

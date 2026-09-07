@@ -66,7 +66,7 @@ export default function CuratioHubScreen() {
             <span className="mga-strip__txt">
               {M.hub.todayStrip(BOOKING.specialty, BOOKING.timeShort, QUEUE.number)}
             </span>
-            <Icon name="chevron-right" size={16} style={{ color: 'var(--mga-pink-fg)' }} />
+            <Icon name="chevron-right" size={16} style={{ color: 'var(--mga-accent-fg)' }} />
           </button>
         )}
 
@@ -78,7 +78,7 @@ export default function CuratioHubScreen() {
               <div className="mga-meta__val">{DOCTOR.name}</div>
               <div className="mga-meta__lbl">
                 {DOCTOR.role} ·{' '}
-                <span style={{ color: 'var(--mga-green-fg)', fontWeight: 600 }}>{M.hub.online}</span>
+                <span style={{ color: 'var(--mga-success-fg)', fontWeight: 600 }}>{M.hub.online}</span>
               </div>
             </div>
           </div>
@@ -97,22 +97,22 @@ export default function CuratioHubScreen() {
         </section>
 
         <button className="mga-card mga-prow">
-          <span className="mga-itile" style={{ background: 'var(--mga-amber-bg)', color: 'var(--mga-amber-fg)' }}>
+          <span className="mga-itile" style={{ background: 'var(--mga-warning-bg)', color: 'var(--mga-warning-fg)' }}>
             <Icon name="bell" size={17} />
           </span>
           <span className="mga-meta" style={{ flex: 1 }}>
             <span className="mga-meta__val">{M.hub.remindersTitle}</span>
-            <span className="mga-meta__lbl" style={{ color: 'var(--mga-amber-fg)', fontWeight: 600 }}>
+            <span className="mga-meta__lbl" style={{ color: 'var(--mga-warning-fg)', fontWeight: 600 }}>
               {NEXT_REMINDER.text}
             </span>
           </span>
-          <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--mga-pink-fg)', whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--mga-accent-fg)', whiteSpace: 'nowrap' }}>
             {M.hub.manage} ›
           </span>
         </button>
 
         <button className="mga-card mga-prow">
-          <span className="mga-itile" style={{ background: 'var(--mga-green-bg)', color: 'var(--mga-green-fg)' }}>
+          <span className="mga-itile" style={{ background: 'var(--mga-success-bg)', color: 'var(--mga-success-fg)' }}>
             <Icon name="shield-check" size={17} />
           </span>
           <span className="mga-meta" style={{ flex: 1 }}>

@@ -23,59 +23,224 @@
    LIST CARDS = .mga-card--list (v4 / side16; rows carry p12/0). */
 
 .mga-stage {
-  --mga-bg-top: #fdf1f6;
-  --mga-bg-bottom: #eef1fa;
-  --mga-card: #ffffff;
-  --mga-border: #ecedf5;
-  --mga-text: #23246b;
-  --mga-muted: #8a8fa8;
-  --mga-navy: #2e2c6e;
-  --mga-pink: #f5308f;
-  --mga-pink-fg: #d4256f;
-  --mga-pink-soft: #fde7f1;
-  --mga-lav: #eef0fb;
-  --mga-lav-fg: #3a3d8f;
-  --mga-blue: #2563c9;
-  --mga-teal: #0d9488;
-  /* CURATIO's own brand blue, sampled off the supplied logo artwork. It is the
-     PARTNER's identity colour, not one of ours — keep it off everything that is
-     not the Curatio mark. --mga-teal stays what it always was here: the clinical
-     accent (guidance notes, in-network tints), which is a different job. */
-  --mga-curatio: #424F9D;
-  /* Curatio band gradient ends + tint pair (2026-08-26, user-approved look&feel pass).
-     Deep/2 bound the dashboard band; tint/fg are the in-zone accent ground (tiles,
-     srctag, active pills) — fg on tint measures 7.4:1. bg-top swaps the zone's ambient
-     gradient start (GPI pink stays everywhere else); band-light is the interior
-     header wash. All sampled from / derived off the supplied brand artwork. */
-  --mga-curatio-deep: #3a4690;
-  --mga-curatio-2: #4a58ab;
-  --mga-curatio-tint: #e7ecf8;
-  --mga-curatio-fg: #3a4690;
-  --mga-curatio-bg-top: #eef4fb;
-  --mga-curatio-band: #dcebfa;
-  --mga-curatio-edge: #d3dcf1; /* in-network record-card hairline (decorative, Rule 7) */
-  /* The in-network card's left accent, running Curatio's OWN colour sequence —
-     stops sampled cell-by-cell off the logo mosaic (indigo → blue → sky → teal),
-     which is why it reads as their brand and not just „a blue bar". */
-  --mga-curatio-stripe: linear-gradient(180deg, #424f9d 0%, #4290cd 38%, #48b6e8 72%, #50c2c0 100%);
-  --mga-teal-fg: #0b6e63; /* AA text-on-teal-tint (audit 2026-08-04) */
-  --mga-green-bg: #e4f7ec;
-  --mga-green-fg: #1f9d55;
-  /* --green-fg only reaches ~3.1:1 on the tint — fine for the short bold badges it
-     serves, NOT for body text. This is the AA step for sentences on green-bg
-     (4.9:1 measured), same move as --mga-teal-fg. Border mirrors --mga-warn-brd. */
-  --mga-green-text: #17784a;
-  --mga-green-brd: #c9e9d6;
-  --mga-amber-bg: #fef3d8;
-  --mga-amber-fg: #b45309;
-  --mga-red-bg: #fdecec;
-  --mga-red-fg: #c2410c;
-  /* warning SURFACE (card tint + its hairline) — lighter than the badge fill, which
-     is too saturated to sit behind a whole row */
-  --mga-warn-bg: #fff9ef;
-  --mga-warn-brd: #f3dfb6;
-  --mga-queue-bg: #f6f7fd;
+  /* ═══ COLOUR TOKEN ARCHITECTURE (re-tiered 2026-09-07, light values UNCHANGED) ═══
+     TIER 1  --mga-color-<family>-<step>  primitives. Theme-INVARIANT: a primitive is the
+             same pixel in light and dark. Components must NEVER reference these directly.
+     TIER 2  --mga-<role>                 semantic roles, aliasing Tier 1. The ONLY layer a
+             theme re-points; components consume roles only.
+     Hue-named roles were renamed to job-named ones in the same pass (pink→accent,
+     navy→fill-strong, lav→tint, blue→info/focus, teal→clinical, green/amber/red→
+     success/warning/danger, queue-bg→sunken). Values are the sampled production
+     palette (2026-07-23) — still to be trued up against Figma once MCP access is back.
+     Grey drift: the neutral ramp carries several near-duplicate steps (100/110, 150/200)
+     inherited from the sampled hex; consolidating them is a VISUAL change and a
+     separate task. Device chrome (.mga-frame, status bar, demo bar) stays raw — exempt. */
+
+  /* ---- Tier 1 · primitives ---------------------------------------------- */
+  --mga-color-pink-25: #fdf1f6;
+  --mga-color-pink-50: #fde7f1;
+  --mga-color-pink-200: #f8bbda;
+  --mga-color-pink-500: #f5308f; /* brand anchor — NOT AA for text */
+  --mga-color-pink-600: #d4256f; /* AA text step */
+
+  --mga-color-indigo-50: #eef0fb;
+  --mga-color-indigo-100: #e9ecfb;
+  --mga-color-indigo-200: #d8d3e8;
+  --mga-color-indigo-700: #3a3d8f;
+  --mga-color-indigo-800: #2e2c6e;
+  --mga-color-indigo-900: #23246b;
+
+  --mga-color-neutral-0: #ffffff;
+  --mga-color-neutral-25: #fbfbfe;
+  --mga-color-neutral-50: #f6f7fd;
+  --mga-color-neutral-100: #eef1fa;
+  --mga-color-neutral-110: #eef0f4;
+  --mga-color-neutral-150: #ecedf5;
+  --mga-color-neutral-200: #e3e5f0;
+  --mga-color-neutral-250: #d9dcec;
+  --mga-color-neutral-300: #ccd0e8;
+  --mga-color-neutral-400: #9ca0b5;
+  --mga-color-neutral-500: #8a8fa8;
+  --mga-color-neutral-600: #6b7089;
+  --mga-color-neutral-700: #5b6078;
+
+  --mga-color-blue-600: #2563c9;
+
+  --mga-color-teal-50: #e9f5f3;
+  --mga-color-teal-500: #0d9488;
+  --mga-color-teal-700: #0b6e63;
+
+  --mga-color-green-50: #e4f7ec;
+  --mga-color-green-100: #c9e9d6;
+  --mga-color-green-400: #4ade80;
+  --mga-color-green-500: #1f9d55;
+  --mga-color-green-600: #17784a;
+
+  --mga-color-amber-25: #fff9ef;
+  --mga-color-amber-50: #fdf6e4;
+  --mga-color-amber-75: #fef3d8;
+  --mga-color-amber-100: #f3dfb6;
+  --mga-color-amber-500: #b48a1f;
+  --mga-color-amber-600: #b45309;
+
+  --mga-color-red-50: #fdecec;
+  --mga-color-red-400: #e05252;
+  --mga-color-red-500: #c53030;
+  --mga-color-red-600: #c2410c;
+
+  /* CURATIO — the PARTNER's identity family, sampled off the supplied logo artwork.
+     Keep it off everything that is not the Curatio mark / zone. The sky+teal stops
+     come from the logo mosaic (indigo → blue → sky → teal). */
+  --mga-color-curatio-25: #eef4fb;
+  --mga-color-curatio-50: #e7ecf8;
+  --mga-color-curatio-100: #dcebfa;
+  --mga-color-curatio-150: #d3dcf1;
+  --mga-color-curatio-400: #4a58ab;
+  --mga-color-curatio-500: #424F9D;
+  --mga-color-curatio-600: #3a4690;
+  --mga-color-curatio-blue: #4290cd;
+  --mga-color-curatio-sky: #48b6e8;
+  --mga-color-curatio-teal: #50c2c0;
+
+  /* DARK-THEME primitives (2026-09-07). `ink` = the indigo-tinted dark neutral family the
+     dark ground ladder is built from (page → sunken → card → raised → hairlines → text);
+     the app's identity is navy, so its dark is navy-black, not charcoal. Other families
+     gain the light-end steps the dark roles re-point to. Every pair below was
+     contrast-checked against its own ground (see project_dark_mode.md). */
+  --mga-color-ink-950: #0e1024;
+  --mga-color-ink-925: #151936;
+  --mga-color-ink-900: #171b38;
+  --mga-color-ink-850: #181d3c;
+  --mga-color-ink-800: #1c2142;
+  --mga-color-ink-750: #252b52;
+  --mga-color-ink-700: #2b3054;
+  --mga-color-ink-650: #303761;
+  --mga-color-ink-600: #333a66;
+  --mga-color-ink-550: #3a4275;
+  --mga-color-ink-500: #8b93ba; /* inactive nav label — 4.7:1 on card (was #7e86ad = 4.39, failed AA) */
+  --mga-color-ink-300: #a3a9cc;
+  --mga-color-ink-200: #bcc2e2;
+  --mga-color-ink-100: #edeffc;
+  --mga-color-pink-300: #ff8ec0;
+  --mga-color-pink-400: #bb6d9a; /* dark outline step: pink-300 at 70% over ink-800 (4.3:1 on card) */
+  --mga-color-pink-900: #43182f;
+  --mga-color-blue-300: #8ab4f8;
+  --mga-color-teal-200: #7fe0d6;
+  --mga-color-teal-300: #4fd1c5;
+  --mga-color-teal-900: #11332f;
+  --mga-color-green-200: #7be3ad;
+  --mga-color-green-300: #5ed99b;
+  --mga-color-green-800: #245c3c;
+  --mga-color-green-900: #163a26;
+  --mga-color-amber-200: #f0c060;
+  --mga-color-amber-300: #f5b544;
+  --mga-color-amber-800: #5a4415;
+  --mga-color-amber-850: #3a2f10;
+  --mga-color-amber-900: #3d2c09;
+  --mga-color-amber-950: #2a2210;
+  --mga-color-red-200: #ff9a8c;
+  --mga-color-red-300: #ff8a7a;
+  --mga-color-red-350: #e0605a;
+  --mga-color-red-900: #451a16;
+  --mga-color-curatio-200: #8fc6ee;
+  --mga-color-curatio-300: #6fb9e8;
+  --mga-color-curatio-650: #2b3480;
+  --mga-color-curatio-700: #232a6b;
+  --mga-color-curatio-750: #2f3a6e;
+  --mga-color-curatio-800: #1f2a5a;
+  --mga-color-curatio-850: #28305e;
+  --mga-color-curatio-900: #1a2050;
+  --mga-color-curatio-925: #161c3e;
+
+  /* ---- Tier 2 · semantic roles (the layer a theme re-points) --------------- */
+  /* surfaces */
+  --mga-bg-top: var(--mga-color-pink-25);
+  --mga-bg-bottom: var(--mga-color-neutral-100);
+  --mga-card: var(--mga-color-neutral-0);
+  --mga-sunken: var(--mga-color-neutral-50); /* recessed neutral ground (locked buttons, quiet cells) */
+  --mga-sunken-soft: var(--mga-color-neutral-25); /* field / lock-card ground */
+  --mga-tint: var(--mga-color-indigo-50); /* default soft icon-tile ground */
+  --mga-tint-fg: var(--mga-color-indigo-700);
+  --mga-selected-bg: var(--mga-color-indigo-100); /* selected segment ground */
+  --mga-avatar-bg: var(--mga-color-indigo-200);
+  --mga-fill-strong: var(--mga-color-indigo-800); /* solid dark fill: hero, navy button, active chip */
+  --mga-fill-control: var(--mga-color-indigo-800); /* filled ICON button disc — navy in light; a raised grey in dark so it lifts off the card (approved mock) */
+  --mga-on-fill: var(--mga-color-neutral-0); /* text/icons on accent + strong fills and the Curatio band */
+  --mga-raised: var(--mga-color-neutral-0); /* outlined control ground — same as card in light, one step up in dark */
+  --mga-accent-surface: var(--mga-color-neutral-0); /* outlined BRAND control ground — card in light, brand tint in dark */
+
+  /* text */
+  --mga-text: var(--mga-color-indigo-900);
+  --mga-muted: var(--mga-color-neutral-500); /* static secondary text (3.19:1 — not for controls) */
+  --mga-muted-fg: var(--mga-color-neutral-600); /* quiet INTERACTIVE labels (4.9:1) */
+  --mga-nav-idle: var(--mga-color-neutral-400); /* inactive bottom-nav item */
+
+  /* borders */
+  --mga-border: var(--mga-color-neutral-150); /* card hairline */
+  --mga-border-muted: var(--mga-color-neutral-200); /* locked-control hairline */
+  --mga-border-strong: var(--mga-color-neutral-300); /* lock-card outline */
+  --mga-line: var(--mga-color-neutral-250); /* control hairline — was the raw #d9dcec at 6 sites */
+
+  /* brand accent (GPI pink) */
+  --mga-accent: var(--mga-color-pink-500); /* filled controls, avatars, dots */
+  --mga-accent-fg: var(--mga-color-pink-600); /* brand text on a surface */
+  --mga-accent-soft: var(--mga-color-pink-50); /* brand tint ground */
+  --mga-accent-border: var(--mga-color-pink-200); /* brand outline (secondary-brand button, today card) */
+
+  /* informational + focus */
+  --mga-info: var(--mga-color-blue-600);
+  --mga-focus: var(--mga-color-blue-600); /* keyboard focus ring — same value as info today, separate role */
+
+  /* clinical accent (guidance notes, in-network tints) — a different job from Curatio's brand */
+  --mga-clinical: var(--mga-color-teal-500);
+  --mga-clinical-fg: var(--mga-color-teal-700); /* AA text-on-teal-tint (audit 2026-08-04) */
+  --mga-clinical-bg: var(--mga-color-teal-50);
+
+  /* status pairs: -bg badge fill · -fg short bold badge text · -text AA body text */
+  --mga-success-bg: var(--mga-color-green-50);
+  --mga-success-fg: var(--mga-color-green-500); /* ~3.1:1 on the tint — badges only, NOT body text */
+  --mga-success-text: var(--mga-color-green-600); /* AA for sentences on success-bg (4.9:1) */
+  --mga-success-border: var(--mga-color-green-100);
+  --mga-live: var(--mga-color-green-400); /* live-queue pulse on the hero */
+  --mga-warning-bg: var(--mga-color-amber-75);
+  --mga-warning-fg: var(--mga-color-amber-600);
+  --mga-warning-surface: var(--mga-color-amber-25); /* whole-row warning tint — lighter than the badge fill */
+  --mga-warning-surface-border: var(--mga-color-amber-100);
+  --mga-appointment-bg: var(--mga-color-amber-50); /* upcoming-booking (stethoscope) tile */
+  --mga-appointment-fg: var(--mga-color-amber-500);
+  --mga-danger-bg: var(--mga-color-red-50);
+  --mga-danger-fg: var(--mga-color-red-600); /* expiry / overdue badge */
+  --mga-danger-border: var(--mga-color-red-400); /* invalid field */
+  --mga-danger-text: var(--mga-color-red-500); /* inline error message */
+  --mga-neutral-bg: var(--mga-color-neutral-110); /* external-source tag */
+  --mga-neutral-fg: var(--mga-color-neutral-700);
+
+  /* Curatio co-brand zone (2026-08-26, user-approved look&feel pass) */
+  --mga-curatio: var(--mga-color-curatio-500);
+  --mga-curatio-ink: var(--mga-color-curatio-500); /* Curatio identity as a FOREGROUND (tile glyph, seg label) — dark leads with their sky stop */
+  --mga-curatio-mid: var(--mga-color-curatio-500); /* band gradient mid-stop — split from --mga-curatio so the fill can stay put while the ink moves */
+  --mga-curatio-deep: var(--mga-color-curatio-600);
+  --mga-curatio-2: var(--mga-color-curatio-400);
+  --mga-curatio-tint: var(--mga-color-curatio-50); /* in-zone accent ground (tiles, srctag, active pills); fg on tint = 7.4:1 */
+  --mga-curatio-fg: var(--mga-color-curatio-600);
+  --mga-curatio-bg-top: var(--mga-color-curatio-25); /* zone ambient gradient start */
+  --mga-curatio-band: var(--mga-color-curatio-100); /* interior header wash */
+  --mga-curatio-edge: var(--mga-color-curatio-150); /* in-network record-card hairline (decorative, Rule 7) */
+  --mga-curatio-stripe: linear-gradient(180deg, var(--mga-color-curatio-500) 0%, var(--mga-color-curatio-blue) 38%, var(--mga-color-curatio-sky) 72%, var(--mga-color-curatio-teal) 100%);
+
+  /* elevation + overlay (indigo-based, never coloured shadows) */
+  /* Product marks (auto/health) are two-tone PNGs — brand blue #2923ff plus a pale
+     #afbde1 CHECK (auto) / HEART (health) sitting ON the blue. On a dark ground the blue
+     goes dim, but flattening the art to white erases the check and heart with it, so dark
+     inverts LIGHTNESS instead of painting a silhouette: the mark turns white and its inner
+     detail becomes a dark knockout. Light = none (the art is already correct on white). */
+  --mga-prodimg-filter: none;
   --mga-shadow: 0 2px 12px rgba(41, 37, 98, 0.07);
+  --mga-shadow-panel: 0 8px 28px rgba(41, 37, 98, 0.16); /* person-select panel */
+  --mga-shadow-sheet: 0 -12px 40px rgba(23, 22, 60, 0.25); /* bottom sheet */
+  --mga-scrim: rgba(23, 22, 60, 0.45); /* sheet backdrop */
+
+  /* ---- shape ------------------------------------------------------------ */
   --mga-r-card: 16px;
   --mga-r-tile: 12px;
   --mga-r-pill: 999px;
@@ -87,15 +252,6 @@
   --mga-control-sm: 32px;
   --mga-control-md: 40px;
   --mga-control-lg: 48px;
-
-  /* Control hairline — was the raw #d9dcec repeated at 6 sites. */
-  --mga-line: #d9dcec;
-
-  /* Quiet foreground for INTERACTIVE labels. --mga-muted (#8a8fa8) is 3.19:1 and is
-     fine for static secondary text but fails AA on a control, so controls take this
-     4.9:1 grey instead (user, 2026-08-19: two greys, don't darken the static one —
-     Rule 7 warns against over-correcting into a sterile look). */
-  --mga-muted-fg: #6b7089;
 
   /* Spacing hierarchy (4px base): xs4 in-row gaps · sm8 label-field ·
      md12 card-to-card + in-card rows · lg16 card padding · xl20 screen side
@@ -116,6 +272,90 @@
   font-family: 'Noto Sans Georgian', 'DM Sans', sans-serif;
   color: var(--mga-text);
 }
+
+/* ═══ DARK THEME — re-points Tier 2 roles ONLY. No component rule below this block
+   knows which theme it is in. Switched by `data-theme="dark"` on the stage
+   (`?theme=dark` in the hash — see nav.js isDark). Values = the palette approved
+   2026-09-07 (mock in chat 2026-09-04), each pair checked against its own ground.
+   Design notes: dark is a RE-INDEX, not an inversion — the accent FILL stays a
+   saturated pink (drops one step so white text passes AA), accent TEXT jumps to
+   pink/300; elevation flips from shadow to a surface ladder (page < sunken < card <
+   raised) with hairlines doing the work; tinted grounds lift barely off the card, so
+   their meaning rides on a hue border + the foreground; the Curatio band deepens
+   (it was already dark — on a dark page it lost figure/ground) and Curatio's identity
+   moves to the sky end of its own logo sequence, because its indigo is 2:1 on dark. */
+.mga-stage[data-theme='dark'] {
+  color-scheme: dark;
+
+  --mga-bg-top: var(--mga-color-ink-900);
+  --mga-bg-bottom: var(--mga-color-ink-950);
+  --mga-card: var(--mga-color-ink-800);
+  --mga-sunken: var(--mga-color-ink-925);
+  --mga-sunken-soft: var(--mga-color-ink-850);
+  --mga-raised: var(--mga-color-ink-750);
+  --mga-tint: var(--mga-color-curatio-850);
+  --mga-tint-fg: var(--mga-color-blue-300);
+  --mga-selected-bg: var(--mga-color-ink-650);
+  --mga-avatar-bg: var(--mga-color-ink-550);
+  --mga-fill-strong: var(--mga-color-curatio-650);
+  --mga-fill-control: var(--mga-color-ink-750);
+
+  --mga-text: var(--mga-color-ink-100);
+  --mga-muted: var(--mga-color-ink-300);
+  --mga-muted-fg: var(--mga-color-ink-200);
+  --mga-nav-idle: var(--mga-color-ink-500);
+
+  --mga-border: var(--mga-color-ink-700);
+  --mga-border-muted: var(--mga-color-ink-650);
+  --mga-border-strong: var(--mga-color-ink-550);
+  --mga-line: var(--mga-color-ink-550);
+
+  --mga-accent: var(--mga-color-pink-600);
+  --mga-accent-fg: var(--mga-color-pink-300);
+  --mga-accent-soft: var(--mga-color-pink-900);
+  --mga-accent-border: var(--mga-color-pink-400);
+  --mga-accent-surface: var(--mga-color-ink-800); /* OUTLINE, not a fill — the pink-900 tint read as a danger button (user, 2026-09-07); mirrors light's white+hairline */
+
+  --mga-info: var(--mga-color-blue-300);
+  --mga-focus: var(--mga-color-blue-300);
+
+  --mga-clinical: var(--mga-color-teal-300);
+  --mga-clinical-fg: var(--mga-color-teal-200);
+  --mga-clinical-bg: var(--mga-color-teal-900);
+
+  --mga-success-bg: var(--mga-color-green-900);
+  --mga-success-fg: var(--mga-color-green-300);
+  --mga-success-text: var(--mga-color-green-200);
+  --mga-success-border: var(--mga-color-green-800);
+  --mga-warning-bg: var(--mga-color-amber-900);
+  --mga-warning-fg: var(--mga-color-amber-300);
+  --mga-warning-surface: var(--mga-color-amber-950);
+  --mga-warning-surface-border: var(--mga-color-amber-800);
+  --mga-appointment-bg: var(--mga-color-amber-850);
+  --mga-appointment-fg: var(--mga-color-amber-200);
+  --mga-danger-bg: var(--mga-color-red-900);
+  --mga-danger-fg: var(--mga-color-red-300);
+  --mga-danger-border: var(--mga-color-red-350);
+  --mga-danger-text: var(--mga-color-red-200);
+  --mga-neutral-bg: var(--mga-color-ink-750);
+  --mga-neutral-fg: var(--mga-color-ink-200);
+
+  --mga-curatio-ink: var(--mga-color-curatio-300);
+  --mga-curatio-deep: var(--mga-color-curatio-900);
+  --mga-curatio-mid: var(--mga-color-curatio-700);
+  --mga-curatio-2: var(--mga-color-curatio-650);
+  --mga-curatio-tint: var(--mga-color-curatio-850);
+  --mga-curatio-fg: var(--mga-color-curatio-200);
+  --mga-curatio-bg-top: var(--mga-color-curatio-925);
+  --mga-curatio-band: var(--mga-color-curatio-800);
+  --mga-curatio-edge: var(--mga-color-curatio-750);
+
+  --mga-prodimg-filter: grayscale(1) invert(1) brightness(1.3);
+  --mga-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  --mga-shadow-panel: 0 8px 28px rgba(0, 0, 0, 0.5);
+  --mga-shadow-sheet: 0 -12px 40px rgba(0, 0, 0, 0.55);
+  --mga-scrim: rgba(5, 7, 20, 0.65);
+}
 .mga-stage *,
 .mga-stage *::before,
 .mga-stage *::after {
@@ -130,7 +370,7 @@
   cursor: pointer;
 }
 .mga-stage :focus-visible {
-  outline: 2px solid var(--mga-blue);
+  outline: 2px solid var(--mga-focus);
   outline-offset: 2px;
 }
 
@@ -256,7 +496,7 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: #d8d3e8;
+  background: var(--mga-avatar-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -314,14 +554,14 @@
   color: var(--mga-muted-fg);
 }
 .mga-stage .mga-iconbtn--fill {
-  background: var(--mga-navy);
+  background: var(--mga-fill-control);
   border-color: transparent;
-  color: var(--mga-card);
+  color: var(--mga-on-fill);
 }
 .mga-stage .mga-iconbtn--tint {
-  background: var(--mga-lav);
+  background: var(--mga-tint);
   border-color: transparent;
-  color: var(--mga-lav-fg);
+  color: var(--mga-tint-fg);
 }
 .mga-stage .mga-iconbtn--raised {
   box-shadow: var(--mga-shadow);
@@ -339,7 +579,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--mga-pink);
+  background: var(--mga-accent);
 }
 .mga-dot--sm {
   width: 6px;
@@ -349,7 +589,7 @@
   border: 1.5px solid var(--mga-card);
 }
 .mga-dot--alert {
-  background: var(--mga-red-fg); /* expiry/overdue, not generic "new" */
+  background: var(--mga-danger-fg); /* expiry/overdue, not generic "new" */
 }
 /* A dot carries no text. Where one REPLACES a label (the history card's „N ვადა"),
    the label moves here so it is still announced. */
@@ -422,7 +662,7 @@
   white-space: nowrap;
 }
 .mga-stage .mga-seg__item--on {
-  background: #e9ecfb;
+  background: var(--mga-selected-bg);
   color: var(--mga-text);
   font-weight: 700;
 }
@@ -457,7 +697,7 @@
   text-align: left;
 }
 .mga-prow__cross {
-  color: var(--mga-blue);
+  color: var(--mga-info);
   display: flex;
   flex-shrink: 0;
 }
@@ -537,28 +777,28 @@
 
 /* ── Emphasis ── */
 .mga-stage .mga-btn--primary {
-  background: var(--mga-pink);
-  color: var(--mga-card);
+  background: var(--mga-accent);
+  color: var(--mga-on-fill);
 }
 /* Retained from the production app's loyalty/referral CTAs. NB this is a solid
    navy, whereas the WEB system's Secondary is deliberately OUTLINED indigo "to
    keep pink Primary dominant" (2026-06-28). The deviation is intentional here:
    the mobile module's mandate is to mirror the current production app. */
 .mga-stage .mga-btn--navy {
-  background: var(--mga-navy);
-  color: var(--mga-card);
+  background: var(--mga-fill-strong);
+  color: var(--mga-on-fill);
 }
 .mga-stage .mga-btn--secondary {
-  background: var(--mga-card);
+  background: var(--mga-raised);
   border-color: var(--mga-line);
   color: var(--mga-text);
 }
 /* The PROMOTED action inside a card (e.g. „ჩაეწერე ექიმთან კლინიკაში"), where a
    second solid pink would compete with the screen-level primary. */
 .mga-stage .mga-btn--secondary-brand {
-  background: var(--mga-card);
-  border-color: #f8bbda;
-  color: var(--mga-pink-fg);
+  background: var(--mga-accent-surface);
+  border-color: var(--mga-accent-border);
+  color: var(--mga-accent-fg);
 }
 .mga-stage .mga-btn--tertiary {
   background: none;
@@ -572,7 +812,7 @@
   border-style: dashed;
   border-color: var(--mga-line);
   border-radius: var(--mga-r-tile);
-  color: var(--mga-pink-fg);
+  color: var(--mga-accent-fg);
 }
 
 /* ── Width ── */
@@ -597,8 +837,8 @@
    the sheet that explains what cover buys. --mga-muted-fg is 4.9:1 rather than a
    true faded state: an unreadable button would be a worse answer than a plain one. */
 .mga-stage .mga-btn--locked {
-  background: var(--mga-queue-bg);
-  border-color: #e3e5f0;
+  background: var(--mga-sunken);
+  border-color: var(--mga-border-muted);
   color: var(--mga-muted-fg);
 }
 .mga-stage .mga-btn--off {
@@ -619,7 +859,7 @@
   white-space: nowrap;
   font-size: 12px;
   font-weight: 700;
-  color: var(--mga-pink-fg);
+  color: var(--mga-accent-fg);
   /* WCAG 2.2 target-size: a bare text link measures ~14px. */
   min-height: 28px;
 }
@@ -677,8 +917,8 @@
   width: 44px;
   height: 44px;
   border-radius: 14px;
-  background: var(--mga-lav);
-  color: var(--mga-lav-fg);
+  background: var(--mga-tint);
+  color: var(--mga-tint-fg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -688,7 +928,7 @@
   position: absolute;
   top: -4px;
   right: -4px;
-  background: var(--mga-pink);
+  background: var(--mga-accent);
   color: #fff;
   font-size: 9px;
   font-weight: 700;
@@ -704,8 +944,8 @@
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  background: var(--mga-lav);
-  color: var(--mga-lav-fg);
+  background: var(--mga-tint);
+  color: var(--mga-tint-fg);
   border: 1.5px solid var(--mga-card);
   display: flex;
   align-items: center;
@@ -746,20 +986,20 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: var(--mga-lav);
-  color: var(--mga-lav-fg);
+  background: var(--mga-tint);
+  color: var(--mga-tint-fg);
 }
 .mga-itile--gold {
-  background: #fdf6e4;
-  color: #b48a1f;
+  background: var(--mga-appointment-bg);
+  color: var(--mga-appointment-fg);
 }
 .mga-itile--teal {
-  background: #e9f5f3;
-  color: var(--mga-teal);
+  background: var(--mga-clinical-bg);
+  color: var(--mga-clinical);
 }
 .mga-itile--red {
-  background: var(--mga-red-bg);
-  color: var(--mga-red-fg);
+  background: var(--mga-danger-bg);
+  color: var(--mga-danger-fg);
 }
 .mga-meta {
   display: flex;
@@ -838,20 +1078,20 @@
   white-space: nowrap;
 }
 .mga-badge--green {
-  background: var(--mga-green-bg);
-  color: var(--mga-green-fg);
+  background: var(--mga-success-bg);
+  color: var(--mga-success-fg);
 }
 .mga-badge--amber {
-  background: var(--mga-amber-bg);
-  color: var(--mga-amber-fg);
+  background: var(--mga-warning-bg);
+  color: var(--mga-warning-fg);
 }
 .mga-badge--pink {
-  background: var(--mga-pink-soft);
-  color: var(--mga-pink-fg);
+  background: var(--mga-accent-soft);
+  color: var(--mga-accent-fg);
 }
 .mga-badge--lav {
-  background: var(--mga-lav);
-  color: var(--mga-lav-fg);
+  background: var(--mga-tint);
+  color: var(--mga-tint-fg);
 }
 /* #7 polish (2026-08-18, user: „a lot of visual noise") — „ნორმა" is the EXPECTED
    result. Filling it green put a coloured pill on nearly every row and drowned out
@@ -861,7 +1101,7 @@
   background: transparent;
   /* Deliberately NOT --mga-muted: this is the result reading, not a date, so it
      holds AA on white (4.9:1) while staying colourless. */
-  color: #6b7089;
+  color: var(--mga-muted-fg);
   /* No fill → no box: the inherited 2/8 pill padding read as a phantom left indent
      wherever this badge opens a meta line (user, 2026-08-20). Text now sits flush;
      the right margin + the line's 4px gap keep an 8px breath before the date. */
@@ -921,12 +1161,12 @@
 .mga-chronic__exp {
   font-size: 11px;
   font-weight: 600;
-  color: var(--mga-amber-fg);
+  color: var(--mga-warning-fg);
 }
 
 /* Live queue strip (visit day, F-01) */
 .mga-queue {
-  background: var(--mga-queue-bg);
+  background: var(--mga-sunken);
   border-radius: var(--mga-r-tile);
   padding: var(--mga-sp-md) 12px;
   margin: 10px 0;
@@ -946,7 +1186,7 @@
   padding: 0;
 }
 .mga-queue__cell + .mga-queue__cell {
-  border-left: 0.5px solid #e2e4f0;
+  border-left: 0.5px solid var(--mga-border);
 }
 .mga-queue__lbl {
   font-size: 10px;
@@ -964,11 +1204,11 @@
 .mga-queue__live {
   font-size: 10px;
   font-weight: 600;
-  color: var(--mga-green-fg);
+  color: var(--mga-success-fg);
   margin-top: 6px;
 }
 .mga-stage .mga-today-card {
-  border: 1px solid #f8bbda;
+  border: 1px solid var(--mga-accent-border);
 }
 
 /* Floating call button */
@@ -994,7 +1234,7 @@
   align-items: center;
   gap: 2px;
   font-size: 10px;
-  color: #9ca0b5;
+  color: var(--mga-nav-idle);
 }
 .mga-stage .mga-nav__item--on {
   color: var(--mga-text);
@@ -1033,7 +1273,7 @@
   height: 26px;
   border-radius: 8px;
   background: var(--mga-curatio);
-  color: #fff;
+  color: var(--mga-on-fill);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1068,9 +1308,9 @@
   white-space: nowrap;
 }
 .mga-stage .mga-chip--on {
-  background: var(--mga-navy);
-  border-color: var(--mga-navy);
-  color: #fff;
+  background: var(--mga-fill-strong);
+  border-color: var(--mga-fill-strong);
+  color: var(--mga-on-fill);
 }
 .mga-stage .mga-chip--flex {
   flex: 1;
@@ -1141,12 +1381,12 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--mga-card);
   box-shadow: 0 1px 3px rgba(41, 37, 98, 0.25);
   transition: transform 0.15s;
 }
 .mga-stage .mga-swbtn--on {
-  background: var(--mga-pink);
+  background: var(--mga-accent);
 }
 .mga-stage .mga-swbtn--on::after {
   transform: translateX(16px);
@@ -1154,8 +1394,8 @@
 
 /* Hub */
 .mga-stage .mga-strip {
-  background: var(--mga-pink-soft);
-  border-color: #f8bbda;
+  background: var(--mga-accent-soft);
+  border-color: var(--mga-accent-border);
   width: 100%;
   text-align: left;
 }
@@ -1165,15 +1405,15 @@
   font-weight: 700;
 }
 .mga-strip__bdg {
-  background: #fff;
-  color: var(--mga-pink-fg);
+  background: var(--mga-card);
+  color: var(--mga-accent-fg);
 }
 .mga-doc__ava {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--mga-pink);
-  color: #fff;
+  background: var(--mga-accent);
+  color: var(--mga-on-fill);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1245,7 +1485,7 @@
 .mga-hitem__note {
   font-size: 11px;
   font-weight: 600;
-  color: var(--mga-amber-fg);
+  color: var(--mga-warning-fg);
 }
 
 /* Product image marks (provided B2B iconography, reference/product-illustrations) */
@@ -1253,6 +1493,7 @@
   height: 16px;
   width: auto;
   display: block;
+  filter: var(--mga-prodimg-filter);
 }
 .mga-prodimg--row {
   height: 22px;
@@ -1289,7 +1530,7 @@
 .mga-seg__cur {
   width: 16px;
   height: 16px;
-  color: var(--mga-curatio);
+  color: var(--mga-curatio-ink);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1300,7 +1541,7 @@
 .mga-strip__link {
   font-size: 12px;
   font-weight: 700;
-  color: var(--mga-pink-fg);
+  color: var(--mga-accent-fg);
   white-space: nowrap;
 }
 
@@ -1313,7 +1554,7 @@
 }
 .mga-locksect__icon {
   display: flex;
-  color: var(--mga-lav-fg);
+  color: var(--mga-tint-fg);
 }
 .mga-locksect__title {
   font-size: 13px;
@@ -1332,9 +1573,9 @@
 
 /* Locked cards: visible but inert-looking, lock badge instead of chevron */
 .mga-stage .mga-lockcard {
-  background: #fbfbfe;
+  background: var(--mga-sunken-soft);
   border-style: dashed;
-  border-color: #ccd0e8;
+  border-color: var(--mga-border-strong);
   box-shadow: none;
 }
 
@@ -1352,14 +1593,14 @@
 .mga-stage .mga-sheetwrap__scrim {
   position: absolute;
   inset: 0;
-  background: rgba(23, 22, 60, 0.45);
+  background: var(--mga-scrim);
 }
 .mga-sheet {
   position: relative;
   background: var(--mga-card);
   border-radius: 24px 24px 0 0;
   padding: var(--mga-sp-sm) var(--mga-sp-xl) var(--mga-sp-2xl);
-  box-shadow: 0 -12px 40px rgba(23, 22, 60, 0.25);
+  box-shadow: var(--mga-shadow-sheet);
 }
 .mga-sheet__grab {
   width: 36px;
@@ -1396,7 +1637,7 @@
   height: 56px;
   border: 1.5px solid var(--mga-line);
   border-radius: 14px;
-  background: #fbfbfe;
+  background: var(--mga-sunken-soft);
   text-align: center;
   font-size: 20px;
   font-weight: 700;
@@ -1405,8 +1646,8 @@
 }
 .mga-otp input:focus {
   outline: none;
-  border-color: var(--mga-pink);
-  box-shadow: 0 0 0 3px var(--mga-pink-soft);
+  border-color: var(--mga-accent);
+  box-shadow: 0 0 0 3px var(--mga-accent-soft);
 }
 .mga-sheet__demo {
   text-align: center;
@@ -1468,8 +1709,8 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: var(--mga-lav);
-  color: var(--mga-lav-fg);
+  background: var(--mga-tint);
+  color: var(--mga-tint-fg);
   font-size: 13px;
   font-weight: 700;
   display: flex;
@@ -1529,7 +1770,7 @@
   /* Card radius, not tile: a pill trigger over a 12px popup reads mismatched.
      The usual pairing is pill triggers, card surfaces. */
   border-radius: var(--mga-r-card);
-  box-shadow: 0 8px 28px rgba(41, 37, 98, 0.16);
+  box-shadow: var(--mga-shadow-panel);
   overflow: hidden;
 }
 .mga-stage .mga-pselect__row {
@@ -1549,13 +1790,13 @@
   border-top: 0.5px solid var(--mga-border);
 }
 .mga-stage .mga-pselect__row--on {
-  background: var(--mga-queue-bg);
+  background: var(--mga-sunken);
 }
 .mga-pselect__tag {
   font-size: 10px;
   font-weight: 700;
-  color: var(--mga-pink-fg);
-  background: var(--mga-pink-soft);
+  color: var(--mga-accent-fg);
+  background: var(--mga-accent-soft);
   border-radius: 20px;
   padding: 2px 8px;
   line-height: 14px;
@@ -1573,22 +1814,22 @@
   flex-shrink: 0;
 }
 .mga-pselect__radio--on {
-  border-color: var(--mga-pink);
+  border-color: var(--mga-accent);
 }
 .mga-pselect__radiodot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--mga-pink);
+  background: var(--mga-accent);
 }
 
 /* Today-visit hero (navy card, solid CTA) */
 .mga-hero {
-  background: var(--mga-navy);
+  background: var(--mga-fill-strong);
   border-radius: var(--mga-r-card);
   padding: var(--mga-sp-lg);
   margin-bottom: var(--mga-sp-md);
-  color: #fff;
+  color: var(--mga-on-fill);
 }
 .mga-hero__kicker {
   font-size: 10px;
@@ -1630,7 +1871,7 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #4ade80;
+  background: var(--mga-live);
   animation: mga-pulse 2s infinite;
 }
 @keyframes mga-pulse {
@@ -1666,12 +1907,12 @@
 
 /* Badge tones missing until now */
 .mga-badge--red {
-  background: var(--mga-red-bg);
-  color: var(--mga-red-fg);
+  background: var(--mga-danger-bg);
+  color: var(--mga-danger-fg);
 }
 .mga-badge--teal {
-  background: #e9f5f3;
-  color: var(--mga-teal);
+  background: var(--mga-clinical-bg);
+  color: var(--mga-clinical);
 }
 
 
@@ -1682,7 +1923,7 @@
   margin-top: 1px;
 }
 .mga-stage .mga-card.mga-qpk--on {
-  border: 2px solid var(--mga-pink);
+  border: 2px solid var(--mga-accent);
 }
 .mga-qpk__row {
   display: flex;
@@ -1699,7 +1940,7 @@
   margin-bottom: 4px;
 }
 .mga-qpk__kicker--on {
-  color: var(--mga-pink-fg);
+  color: var(--mga-accent-fg);
 }
 .mga-qpk__proc {
   font-size: 13px; /* row-title tier — the TIME is this card's display element */
@@ -1753,7 +1994,7 @@
 .mga-docd__online {
   font-size: 11px;
   font-weight: 700;
-  color: var(--mga-green-fg);
+  color: var(--mga-success-fg);
   margin-top: 4px;
 }
 /* The basic-info block is the shared .mga-kv table now — the 2×2 tinted grid
@@ -1811,7 +2052,7 @@
   color: var(--mga-text);
 }
 .mga-ins__list svg {
-  color: var(--mga-green-fg);
+  color: var(--mga-success-fg);
   flex-shrink: 0;
 }
 
@@ -1866,13 +2107,13 @@
 /* produced outside Curatio: GRAY (user, 2026-08-20 — "not ours"; warm tints stay
    reserved for status). 5.43:1 measured; --mga-muted-fg reaches only 4.28:1 here. */
 .mga-srctag--external {
-  background: #eef0f4;
-  color: #5b6078;
+  background: var(--mga-neutral-bg);
+  color: var(--mga-neutral-fg);
 }
 /* ordered by the family doctor: lavender — 8.24:1 */
 .mga-srctag--referral {
-  background: var(--mga-lav);
-  color: var(--mga-lav-fg);
+  background: var(--mga-tint);
+  color: var(--mga-tint-fg);
 }
 
 /* Row meta line: status + date (+ the share marker on records the patient added);
@@ -1947,7 +2188,7 @@
   color: var(--mga-muted);
 }
 .mga-stage .mga-upl__inp--err {
-  border-color: #e05252;
+  border-color: var(--mga-danger-border);
 }
 .mga-stage .mga-upl__sel {
   display: flex;
@@ -1965,7 +2206,7 @@
   margin-top: 4px;
   font-size: 10px;
   font-weight: 600;
-  color: #c53030;
+  color: var(--mga-danger-text);
 }
 /* Toggle on the LEFT, text to its right (global rule 2026-08-17; audit A2 — this
    row predated the rule with the switch pinned right). Top-aligned so the control
@@ -1974,7 +2215,7 @@
   display: flex;
   align-items: flex-start;
   gap: var(--mga-sp-md);
-  background: var(--mga-queue-bg);
+  background: var(--mga-sunken);
   border-radius: var(--mga-r-tile);
   padding: 10px 12px;
   margin-bottom: var(--mga-sp-lg);
@@ -2004,8 +2245,8 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: var(--mga-lav);
-  color: var(--mga-lav-fg);
+  background: var(--mga-tint);
+  color: var(--mga-tint-fg);
   font-size: 14px;
   font-weight: 700;
   display: flex;
@@ -2026,14 +2267,14 @@
   color: var(--mga-text);
 }
 .mga-trf__target {
-  background: var(--mga-queue-bg);
+  background: var(--mga-sunken);
   border-radius: var(--mga-r-tile);
   padding: 10px 12px;
   margin-bottom: 10px;
 }
 .mga-trf__includes {
-  background: var(--mga-lav);
-  color: var(--mga-lav-fg);
+  background: var(--mga-tint);
+  color: var(--mga-tint-fg);
   border-radius: var(--mga-r-tile);
   padding: 10px 12px;
   font-size: 11px;
@@ -2053,8 +2294,8 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: var(--mga-green-bg);
-  color: var(--mga-green-fg);
+  background: var(--mga-success-bg);
+  color: var(--mga-success-fg);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2200,13 +2441,13 @@
    simply a warn-tinted card — the old full-bleed row device (audit B3) and its
    specificity/separator workarounds went with the list rows. */
 .mga-stage .mga-card--warn {
-  background: var(--mga-warn-bg);
-  border-color: var(--mga-warn-brd);
+  background: var(--mga-warning-surface);
+  border-color: var(--mga-warning-surface-border);
 }
 .mga-h2__exp {
   font-size: 10px;
   font-weight: 700;
-  color: var(--mga-amber-fg);
+  color: var(--mga-warning-fg);
   margin-top: 2px;
 }
 /* THE note component (user, 2026-08-18: „this info box is something out of our design
@@ -2218,7 +2459,7 @@
   display: flex;
   align-items: flex-start;
   gap: var(--mga-sp-xs);
-  background: var(--mga-queue-bg);
+  background: var(--mga-sunken);
   color: var(--mga-muted);
   border-radius: 8px;
   padding: 6px 8px;
@@ -2232,12 +2473,12 @@
   margin-top: 1px;
 }
 .mga-note--teal {
-  background: #e9f5f3;
-  color: var(--mga-teal-fg);
+  background: var(--mga-clinical-bg);
+  color: var(--mga-clinical-fg);
 }
 .mga-note--amber {
-  background: var(--mga-amber-bg);
-  color: var(--mga-amber-fg);
+  background: var(--mga-warning-bg);
+  color: var(--mga-warning-fg);
 }
 .mga-h2__summary {
   font-size: 11px;
@@ -2259,18 +2500,18 @@
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  background: var(--mga-green-bg);
-  border: 0.5px solid var(--mga-green-brd);
+  background: var(--mga-success-bg);
+  border: 0.5px solid var(--mga-success-border);
   border-radius: var(--mga-r-tile);
   padding: 10px 12px;
   font-size: 10px;
-  color: var(--mga-green-text);
+  color: var(--mga-success-text);
   line-height: 1.5;
   margin-top: var(--mga-sp-xs);
 }
 .mga-confid svg {
   flex-shrink: 0;
-  color: var(--mga-green-fg);
+  color: var(--mga-success-fg);
   margin-top: 1px;
 }
 
@@ -2303,7 +2544,7 @@
   border-bottom: none;
 }
 .mga-stage .mga-fopt--on {
-  color: var(--mga-pink-fg);
+  color: var(--mga-accent-fg);
 }
 
 /* A7 — prevention screen (reminder banner + row status notes) */
@@ -2311,7 +2552,7 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  background: var(--mga-amber-bg);
+  background: var(--mga-warning-bg);
   border-radius: var(--mga-r-card);
   padding: 16px;
   margin-bottom: var(--mga-sp-md);
@@ -2324,10 +2565,10 @@
 /* A missed screening is a WARNING, not an alarm (same call as the expiring med) —
    red stays reserved for genuinely critical states. */
 .mga-prv__note--red {
-  color: var(--mga-amber-fg);
+  color: var(--mga-warning-fg);
 }
 .mga-prv__note--amber {
-  color: var(--mga-amber-fg);
+  color: var(--mga-warning-fg);
 }
 
 /* List card (audit B2/B8): vertical 4 (rows carry their own 12) + side 16 — ONE
@@ -2346,9 +2587,9 @@
 
 /* ── #1 (stakeholder comments 2026-08-18) — no-doctor empty card ── */
 .mga-doc__ava--empty {
-  background: var(--mga-lav);
-  border: 1.5px dashed var(--mga-lav-fg);
-  color: var(--mga-lav-fg);
+  background: var(--mga-tint);
+  border: 1.5px dashed var(--mga-tint-fg);
+  color: var(--mga-tint-fg);
 }
 /* The populated card separates its info row from the CTA with .mga-doc__next
    (8 + line + 8 = 38px). The empty variant has no such line, so the CTA would
@@ -2512,7 +2753,7 @@
   font-size: 10px;
   font-weight: 600;
   color: var(--mga-text);
-  background: var(--mga-queue-bg);
+  background: var(--mga-sunken);
   border-radius: var(--mga-r-pill);
   padding: 2px 8px;
   line-height: 14px; /* meta-pill spec → h18 (audit C3) */
@@ -2527,15 +2768,15 @@
    `.mga-stage .mga-card` (0,2,0), so this card rendered WHITE — the confirmed-arrival
    state looked identical to the pre-arrival one. Found by audit 2026-08-18. */
 .mga-stage .mga-arr--done {
-  background: var(--mga-green-bg);
+  background: var(--mga-success-bg);
 }
 .mga-arr__ico--ok {
-  background: #fff;
-  color: var(--mga-green-fg);
+  background: var(--mga-card);
+  color: var(--mga-success-fg);
 }
 .mga-arr__next {
   margin-top: var(--mga-sp-md);
-  background: #fff;
+  background: var(--mga-card);
   border-radius: var(--mga-r-tile);
   padding: 10px 12px;
   font-size: 12px;
@@ -2634,7 +2875,7 @@
   left: 0;
   right: 0;
   height: 242px;
-  background: linear-gradient(168deg, var(--mga-curatio-deep) 0%, var(--mga-curatio) 60%, var(--mga-curatio-2) 100%);
+  background: linear-gradient(168deg, var(--mga-curatio-deep) 0%, var(--mga-curatio-mid) 60%, var(--mga-curatio-2) 100%);
   pointer-events: none;
 }
 .mga-screen--curdash::after {
@@ -2653,34 +2894,34 @@
 /* chrome on the band goes white. Status bars + battery key off --mga-text, so one
    variable recolours the whole status bar without touching global text. */
 .mga-screen--curdash .mga-status {
-  --mga-text: #ffffff;
-  color: #fff;
+  --mga-text: var(--mga-on-fill);
+  color: var(--mga-on-fill);
 }
 .mga-screen--curdash .mga-hello__hi {
   color: rgba(255, 255, 255, 0.8); /* .65 measured 4.0:1 on the band — lifted */
 }
 .mga-screen--curdash .mga-hello__name {
-  color: #fff;
+  color: var(--mga-on-fill);
 }
 .mga-screen--curdash .mga-top .mga-iconbtn {
   background: rgba(255, 255, 255, 0.16);
-  color: #fff;
+  color: var(--mga-on-fill);
 }
 .mga-screen--curdash .mga-top .mga-pts {
   background: rgba(255, 255, 255, 0.16);
   border-color: transparent;
-  color: #fff;
+  color: var(--mga-on-fill);
 }
 .mga-screen--curdash .mga-ava {
   background: rgba(255, 255, 255, 0.22);
-  color: #fff;
+  color: var(--mga-on-fill);
 }
 
 /* in-zone accent: the default (lavender) icon tile turns Curatio. The :not guard
    keeps every semantic tile variant (--teal/--red/--amber…) exactly as it was. */
 .mga-screen--curatio .mga-itile:not([class*='itile--']) {
   background: var(--mga-curatio-tint);
-  color: var(--mga-curatio);
+  color: var(--mga-curatio-ink);
 }
 /* …and the active pill of in-zone segmented rows follows the same tint */
 .mga-screen--curatio .mga-seg__item--on {
@@ -2734,8 +2975,8 @@
 .mga-screen--curatio .mga-thero {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(160deg, var(--mga-curatio-deep) 0%, var(--mga-curatio) 65%, var(--mga-curatio-2) 100%);
-  color: #fff;
+  background: linear-gradient(160deg, var(--mga-curatio-deep) 0%, var(--mga-curatio-mid) 65%, var(--mga-curatio-2) 100%);
+  color: var(--mga-on-fill);
   --mga-muted: rgba(255, 255, 255, 0.78);
 }
 /* The perforation strip along the hero's bottom edge is GONE (user, 2026-08-26:

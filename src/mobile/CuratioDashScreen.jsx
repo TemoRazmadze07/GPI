@@ -116,7 +116,7 @@ export default function CuratioDashScreen() {
                   {ONLINE_STATUS_ENABLED && (
                     <>
                       {' · '}
-                      <span style={{ color: 'var(--mga-green-fg)', fontWeight: 600 }}>{M.hub.online}</span>
+                      <span style={{ color: 'var(--mga-success-fg)', fontWeight: 600 }}>{M.hub.online}</span>
                     </>
                   )}
                 </div>

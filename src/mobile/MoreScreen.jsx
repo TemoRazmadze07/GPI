@@ -21,8 +21,8 @@ const ROWS = [
   {
     id: 'curatio',
     icon: 'cross',
-    bg: 'var(--mga-pink-soft)',
-    fg: 'var(--mga-pink-fg)',
+    bg: 'var(--mga-accent-soft)',
+    fg: 'var(--mga-accent-fg)',
     live: true,
   },
   { id: 'profile', icon: 'user' },

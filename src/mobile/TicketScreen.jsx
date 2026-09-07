@@ -97,7 +97,7 @@ export default function TicketScreen() {
         {arrivedAt === null ? (
           <section className="mga-card" aria-label={M.ticket.arriveTitle}>
             <div className="mga-irow" style={{ padding: 0 }}>
-              <span className="mga-itile" style={{ background: 'var(--mga-pink-soft)', color: 'var(--mga-pink-fg)' }}>
+              <span className="mga-itile" style={{ background: 'var(--mga-accent-soft)', color: 'var(--mga-accent-fg)' }}>
                 <Icon name="map-pin" size={17} />
               </span>
               <div className="mga-meta" style={{ flex: 1 }}>

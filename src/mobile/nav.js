@@ -50,6 +50,13 @@ export function fromParam() {
   return hashQuery().get('from')
 }
 
+/* DARK THEME (2026-09-07, dark-mode pilot). `?theme=dark` flips the stage's
+   data-theme attribute, which re-points every Tier 2 colour role in mga.css.
+   Sticky like the other demo states so a reviewer can walk the whole module dark. */
+export function isDark() {
+  return hashQuery().get('theme') === 'dark'
+}
+
 export function go(
   section,
   {
@@ -60,10 +67,12 @@ export function go(
     p = null,
     sec = null,
     from = fromParam(),
+    theme = isDark(),
   } = {}
 ) {
   const q = []
   if (day) q.push('day=visit')
+  if (theme) q.push('theme=dark')
   if (!v2) q.push('v=1') /* only the archive needs marking now */
   if (!doc) q.push('doc=0')
   if (!ins) q.push('ins=0')

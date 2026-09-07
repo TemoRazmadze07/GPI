@@ -12,7 +12,7 @@
 import Icon from '../lib/Icon.jsx'
 import { M } from './strings.js'
 import { lang, setLang } from '../i18n/index.js'
-import { isVisitDay, isV2, hasDoctor, isInsured, go } from './nav.js'
+import { isVisitDay, isV2, hasDoctor, isInsured, isDark, go } from './nav.js'
 import { clearPickedDoctor, clearArrived } from './data.js'
 import HealthHomeScreen from './HealthHomeScreen.jsx'
 import CuratioHubScreen from './CuratioHubScreen.jsx'
@@ -126,9 +126,13 @@ export default function MobileApp({ section = 'health' }) {
   }
   /* #14 — insured / uninsured is a whole-module state, not a per-screen one. */
   const setIns = (on) => go(sect, { ins: on })
+  /* Dark-mode pilot (2026-09-07): the theme is a whole-module state like insured/
+     uninsured — it rides the hash so every screen a reviewer opens stays dark. */
+  const dark = isDark()
+  const setTheme = (on) => go(sect, { theme: on })
 
   return (
-    <div className="mga-stage">
+    <div className="mga-stage" data-theme={dark ? 'dark' : undefined}>
       {!IS_STUDY && (
         <div className="mga-demo" role="group" aria-label="Demo state">
           <button
@@ -185,6 +189,21 @@ export default function MobileApp({ section = 'health' }) {
               defeats. `lang` on each button so a screen reader changes voice.
               setLang() persists the choice and reloads (../i18n/index.js); the hash
               survives, so the reviewer stays on the screen they were reading. */}
+          <span className="mga-demo__sep" aria-hidden="true" />
+          <button
+            className={'mga-demo__chip' + (!dark ? ' mga-demo__chip--on' : '')}
+            aria-pressed={!dark}
+            onClick={() => setTheme(false)}
+          >
+            {M.demo.themeLight}
+          </button>
+          <button
+            className={'mga-demo__chip' + (dark ? ' mga-demo__chip--on' : '')}
+            aria-pressed={dark}
+            onClick={() => setTheme(true)}
+          >
+            {M.demo.themeDark}
+          </button>
           <span className="mga-demo__sep" aria-hidden="true" />
           {/* Its own labelled group inside „Demo state": the two chips are endonyms, so
               a screen reader announcing them alone gives no clue what the choice IS. */}

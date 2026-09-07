@@ -90,7 +90,7 @@ export function OtpSheet({ onSuccess, onClose }) {
       <div className="mga-sheet">
         <div className="mga-sheet__grab" aria-hidden="true" />
         <div className="mga-sheet__head">
-          <span className="mga-itile" style={{ background: 'var(--mga-lav)', color: 'var(--mga-lav-fg)' }}>
+          <span className="mga-itile" style={{ background: 'var(--mga-tint)', color: 'var(--mga-tint-fg)' }}>
             <Icon name="lock" size={17} />
           </span>
           <h2 className="mga-sheet__title">{M.otp.title}</h2>

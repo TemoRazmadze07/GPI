@@ -12,7 +12,7 @@ import { M } from './strings.js'
 function LockedCard({ icon, title, hint, onRequest }) {
   return (
     <button className="mga-card mga-prow mga-lockcard" onClick={onRequest}>
-      <span className="mga-itile" style={{ background: 'var(--mga-lav)', color: 'var(--mga-lav-fg)' }}>
+      <span className="mga-itile" style={{ background: 'var(--mga-tint)', color: 'var(--mga-tint-fg)' }}>
         <Icon name={icon} size={17} />
       </span>
       <span className="mga-meta" style={{ flex: 1 }}>
