@@ -1374,14 +1374,18 @@
   margin-inline: auto;
 }
 .dash-visa__card { display: flex; flex-direction: column; gap: var(--space-16); }
-.dash-visa__hero { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-12); }
-/* Same anatomy as the payment portal's receipt icon (.pay-done__icon) — one
-   success mark across surfaces, no shared class so the modules stay separate. */
+/* One line (user, 2026-09-09): a 56px mark stacked over the title spent a whole
+   band of the card on three words. Row, vertically centred, on the 48px tile the
+   CtaBanner uses — the same success mark this page shows in its eligible state.
+   (It keeps the circle of the payment portal's .pay-done__icon; only this page's
+   layout and size changed.) */
+.dash-visa__hero { display: flex; align-items: center; gap: var(--space-12); }
 .dash-visa__icon {
   display: grid;
   place-items: center;
-  width: 56px;
-  height: 56px;
+  flex: none;
+  width: 48px;
+  height: 48px;
   border-radius: var(--radius-full);
   background: var(--status-success-bg);
   color: var(--status-success-fg);

@@ -62,7 +62,7 @@ function ReceiptCard({ pay }) {
     <Card className="dash-visa__card" aria-labelledby="dash-visa-success">
       <div className="dash-visa__hero">
         <span className="dash-visa__icon" aria-hidden="true">
-          <Icon name="check" size={28} />
+          <Icon name="check" size={24} />
         </span>
         <h3 className="dash-visa__h3" id="dash-visa-success">
           {V.success.title}
