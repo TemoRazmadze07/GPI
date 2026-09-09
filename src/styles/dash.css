@@ -1373,7 +1373,7 @@
   max-width: 640px;
   margin-inline: auto;
 }
-.dash-visa__card { display: flex; flex-direction: column; gap: var(--space-16); }
+.dash-visa__card { display: flex; flex-direction: column; gap: var(--space-24); }
 /* One line (user, 2026-09-09): a 56px mark stacked over the title spent a whole
    band of the card on three words. Row, vertically centred, on the 48px tile the
    CtaBanner uses — the same success mark this page shows in its eligible state.
@@ -1441,7 +1441,7 @@
 /* The amount is the offer, not metadata — indigo, never competing with the pink CTA. */
 .dash-visa__benefits strong { font-weight: 500; color: var(--color-indigo-500); white-space: nowrap; }
 
-.dash-visa__form { display: flex; flex-direction: column; gap: var(--space-16); }
+.dash-visa__form { display: flex; flex-direction: column; gap: var(--space-24); }
 .dash-visa__steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-24); }
 .dash-visa__step { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: var(--space-12); align-items: start; }
 .dash-visa__num {
@@ -1509,23 +1509,24 @@
 /* Steps still to do read as PENDING (warning tone), not as brand accents. */
 .dash-visa__num--pending { background: var(--status-warning-bg); color: var(--status-warning-fg); }
 /* ---- v2.1 (user: "very noisy"): no numbered steps. The warning carries the
-   instruction; the field label carries an info trigger (tooltip on hover/focus,
-   the how-to modal on click); the consent is a plain checkbox. --------------- */
-.dash-visa__info {
-  display: inline-flex;
+   instruction; the consent is a plain checkbox.
+   v2.4 (user, 2026-09-09): the label's icon-only info trigger (.dash-visa__info)
+   and its tooltip are gone — the help is a labelled tertiary Button beside the
+   input, so the sentence is on screen instead of one hover away. ------------- */
+/* A wallet number is a short token; a 592px input promised a paragraph. The
+   input hugs 260 and the button takes the space it left, at the input's own
+   control-md height. They wrap to two lines below ~460 of card width. */
+.dash-visa__walletrow {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  width: 24px; /* target floor, inline in a 16px label line */
-  height: 24px;
-  margin: -4px 0 -4px var(--space-4);
-  padding: 0;
-  border: 0;
-  border-radius: var(--radius-full);
-  background: none;
-  color: var(--icon-default);
-  cursor: pointer;
-  vertical-align: middle;
+  gap: var(--space-12);
 }
-.dash-visa__info:hover { background: var(--interactive-hover-bg); }
-.dash-visa__info:focus-visible { outline: var(--focus-ring-width) solid var(--border-focus); outline-offset: var(--focus-ring-offset); }
+.dash-visa__walletrow .gpi-input { flex: 0 1 260px; min-width: 0; }
+.dash-visa__walletrow .gpi-btn { flex: none; }
+/* Once the row wraps there is nothing to sit beside, and a 260 input stranded in
+   a 295 column just looks short — take the full width and let the button follow. */
+@media (max-width: 640px) {
+  .dash-visa__walletrow .gpi-input { flex: 1 1 100%; }
+}
 .dash-visa__consent { display: flex; flex-direction: column; gap: var(--space-4); }

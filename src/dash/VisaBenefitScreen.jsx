@@ -7,7 +7,6 @@ import DemoBar from '../components/DemoBar.jsx'
 import Field from '../components/Field.jsx'
 import InlineAlert from '../components/InlineAlert.jsx'
 import Modal from '../components/Modal.jsx'
-import Tooltip from '../components/Tooltip.jsx'
 import { Button } from '../components/Button.jsx'
 import Icon from '../lib/Icon.jsx'
 import { VisaMark } from './marks.jsx'
@@ -36,6 +35,11 @@ import { VISA_PAYMENT } from './data.js'
    consent"), the field label carries an info trigger (Tooltip on hover/focus,
    the how-to Modal on click), the consent is a plain Checkbox, and the
    purchase strip became the shared CtaBanner — the banner the designs use.
+
+   v2.4 (user, 2026-09-09): the card breathes at 24, the wallet input hugs a
+   short-token measure instead of the full 592, and the how-to help left the
+   label for a labelled tertiary Button on the input's right — same control-md
+   height. The icon-only trigger and its Tooltip are gone with it.
 
    v2.3 (user, 2026-09-09: "hide stepper"): the Stepper tracker is gone too.
    It restated what the banner and the warning already say — paid ✓, eligible ✓,
@@ -146,35 +150,31 @@ function ClaimForm({ onDone, onHelp }) {
 
   return (
     <form className="dash-visa__form" onSubmit={submit} noValidate>
-      {/* `required` is drawn by hand so the asterisk sits on the text, before
-          the info trigger (Field would append it after the whole label). */}
-      <Field
-        label={
-          <>
-            {V.claim.walletLabel}
-            <span className="gpi-field__req">*</span>
-            <Tooltip label={V.claim.howTo} focusable={false}>
-              <button type="button" className="dash-visa__info" aria-label={V.claim.howTo} onClick={onHelp}>
-                <Icon name="info" size={16} />
-              </button>
-            </Tooltip>
-          </>
-        }
-        errorMsg={errors.wallet}
-      >
-        <input
-          className={`gpi-input${errors.wallet ? ' is-error' : ''}`}
-          value={wallet}
-          placeholder={V.claim.walletPh}
-          inputMode="numeric"
-          autoComplete="off"
-          aria-label={V.claim.walletLabel}
-          aria-invalid={errors.wallet ? true : undefined}
-          onChange={(e) => {
-            setWallet(e.target.value)
-            if (errors.wallet) setErrors(({ wallet: _w, ...rest }) => rest)
-          }}
-        />
+      <Field label={V.claim.walletLabel} required errorMsg={errors.wallet}>
+        {/* The help sits BESIDE the input, not on the label: a labelled tertiary
+            button at the input's own control-md height says out loud what the
+            icon-only trigger needed a tooltip to say. */}
+        <div className="dash-visa__walletrow">
+          <input
+            className={`gpi-input${errors.wallet ? ' is-error' : ''}`}
+            value={wallet}
+            placeholder={V.claim.walletPh}
+            inputMode="numeric"
+            autoComplete="off"
+            aria-label={V.claim.walletLabel}
+            aria-invalid={errors.wallet ? true : undefined}
+            onChange={(e) => {
+              setWallet(e.target.value)
+              if (errors.wallet) setErrors(({ wallet: _w, ...rest }) => rest)
+            }}
+          />
+          {/* secondary, not tertiary: a transparent tertiary at rest reads as a
+              caption stranded beside the input. The outline says "control",
+              and indigo leaves the pink primary below unchallenged. */}
+          <Button type="button" variant="secondary" onClick={onHelp}>
+            {V.claim.howTo}
+          </Button>
+        </div>
       </Field>
       <div className="dash-visa__consent">
         <Checkbox
