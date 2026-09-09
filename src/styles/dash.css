@@ -1515,15 +1515,17 @@
    (an outlined Button there read as clunky), so the sentence is on screen
    instead of one hover away. ------------------------------------------------ */
 /* A wallet number is a short token; a 592px input promised a paragraph. The
-   input hugs 260 and the link sits centred on its 40px, overriding the page's
-   own align-self: flex-start for links. Wraps below ~440 of card width. */
+   input hugs 192 (user trimmed 260 by a quarter, 2026-09-09) — still ~30px of
+   slack past the „შეიყვანე ნომერი" placeholder — and the link sits centred on
+   its 40px, overriding the page's own align-self: flex-start for links.
+   Wraps below ~370 of card width. */
 .dash-visa__walletrow {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-12);
 }
-.dash-visa__walletrow .gpi-input { flex: 0 1 260px; min-width: 0; }
+.dash-visa__walletrow .gpi-input { flex: 0 1 192px; min-width: 0; }
 .dash-visa__walletrow .gpi-link { flex: none; align-self: center; }
 /* Once the row wraps there is nothing to sit beside, and a 260 input stranded in
    a 295 column just looks short — take the full width and let the link follow. */
