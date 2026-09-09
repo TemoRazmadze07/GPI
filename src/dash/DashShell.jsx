@@ -110,9 +110,19 @@ function useNavOverflow(count) {
     }
     read()
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(read)
+    /* A LATE font swap (Noto Sans Georgian arriving after first layout) widens the
+       items without resizing the container, so the ResizeObserver never fires and
+       the cached fallback-font widths say „everything fits" — measured 2026-09-07
+       as 10 items + 327px of page overflow on a fresh 1280 load. `fonts.ready` can
+       already be resolved at that point, so listen for the swap itself. */
+    const onFonts = () => read()
+    if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', onFonts)
     const ro = new ResizeObserver(measure)
     ro.observe(inner)
-    return () => ro.disconnect()
+    return () => {
+      ro.disconnect()
+      if (document.fonts && document.fonts.removeEventListener) document.fonts.removeEventListener('loadingdone', onFonts)
+    }
   }, [count, measure])
 
   return { innerRef, visible, measured: !!widths.current }

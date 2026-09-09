@@ -55,9 +55,9 @@ export const P = {
     promoBody: 'გადაიხადე VISA ბარათით და მიიღე დამატებითი ბენეფიტები ყველა გადახდაზე',
     /* Tier choice (user's mock, 2026-09-01). Sub-labels show the computed
        POINT AMOUNT — never the percentage (explicit campaign requirement). */
-    promoChoose: 'აირჩიეთ რომელი ბარათით გადაიხდით',
-    promoOther: 'სხვა ბარათი',
-    promoTierDesc: (pts) => `+${pts} ბრუნოს ქულა ან ბენეფიტ-პაკეტი`,
+    /* States the tier the customer committed to on the phone. ⚠️ NOT part of
+       the Visa-cleared banner copy — needs GPI/Visa sign-off before it ships. */
+    promoTier: (tier) => `დადასტურებულია — გადაიხდი ${tier} ბარათით`,
     promoTerms: 'აქციის სრული დეტალები',
     promoTermsLink: 'იხილეთ ბმულზე',
     /* No longer claims the card WILL be saved — saving is now an explicit,

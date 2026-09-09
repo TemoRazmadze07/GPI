@@ -4,7 +4,7 @@ import Icon from '../lib/Icon.jsx'
    the Figma Text Input field styling (md, neutral/400 border). */
 export default function SearchField({ value, onChange, placeholder }) {
   return (
-    <div className="gpi-search">
+    <label className="gpi-search">
       <Icon name="search" size={16} />
       <input
         type="text"
@@ -13,6 +13,6 @@ export default function SearchField({ value, onChange, placeholder }) {
         onChange={(e) => onChange(e.target.value)}
         aria-label={placeholder}
       />
-    </div>
+    </label>
   )
 }

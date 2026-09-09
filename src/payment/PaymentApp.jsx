@@ -6,7 +6,7 @@ import PaymentScreen from './PaymentScreen.jsx'
 import BankStubScreen from './BankStubScreen.jsx'
 import SuccessScreen from './SuccessScreen.jsx'
 import DemoBar from '../components/DemoBar.jsx'
-import { SEED_CARDS, setCards } from './data.js'
+import { SEED_CARDS, setCards, getCommitTier, setCommitTier, TIER_CYCLE } from './data.js'
 
 /* PaymentApp — devpayment.gpih.ge redesign (Rule 5 surface, prefix `pay-`).
 
@@ -50,6 +50,16 @@ export default function PaymentApp({ section }) {
     window.location.reload()
   }
 
+  /* The call-centre commitment has no UI of its own (it is taken on the phone),
+     so the demo needs a way to show all three states. Label reflects the CURRENT
+     value; clicking cycles and reloads, same idiom as the card chips. */
+  const commit = getCommitTier()
+  const cycleCommit = () => {
+    setCommitTier(TIER_CYCLE[(TIER_CYCLE.indexOf(commit) + 1) % TIER_CYCLE.length])
+    window.location.hash = '#/pay'
+    window.location.reload()
+  }
+
   return (
     <PayShell>
       <Screen />
@@ -66,6 +76,7 @@ export default function PaymentApp({ section }) {
           })),
           { label: 'returning', onClick: setDemoCards(SEED_CARDS) },
           { label: 'new', onClick: setDemoCards([]) },
+          { label: `visa: ${commit}`, onClick: cycleCommit },
         ]}
       />
     </PayShell>

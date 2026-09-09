@@ -178,7 +178,14 @@
   color: var(--color-pink-600);
   flex-shrink: 0;
 }
-.gpi-banner__text h2 {
+.gpi-banner--success .gpi-banner__icon {
+  background: var(--status-success-bg);
+  color: var(--status-success-fg);
+}
+/* No action → the lead is the whole banner, so a one-line subtitle stays one line. */
+.gpi-banner__lead { flex: 1 1 auto; min-width: 0; }
+.gpi-banner__text h2,
+.gpi-banner__text h3 {
   margin: 0 0 var(--space-4);
   color: var(--text-main);
 }
@@ -1111,13 +1118,53 @@
   color: var(--text-muted);
   white-space: nowrap;
 }
-.gpi-seg--sm .gpi-seg__item { padding: var(--space-4) var(--space-8); font-size: 13px; border-radius: var(--radius-full); }
+/* min-height 24 (2026-09-04): 4px padding + 13px type measured 21px — under
+   the WCAG 2.2 target floor (Rule 7). The track grows to 28. */
+.gpi-seg--sm .gpi-seg__item { min-height: 24px; padding: var(--space-4) var(--space-8); font-size: 13px; border-radius: var(--radius-full); }
 .gpi-seg__item.is-active { background: var(--action-primary); color: var(--text-inverse); }
 /* Indigo variant — Step-2 booking-type tabs (design 105:9278): rounded-full white
    bordered track w/ card shadow, segments rounded-full, regular weight, selected = indigo #292562. */
 .gpi-seg--indigo { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: var(--radius-full); padding: var(--space-4); box-shadow: var(--elevation-card); }
 .gpi-seg--indigo .gpi-seg__item { border-radius: var(--radius-full); padding: var(--space-8) var(--space-16); font: 400 14px/22px var(--font-sans); color: var(--text-muted); }
 .gpi-seg--indigo .gpi-seg__item.is-active { background: var(--action-secondary); color: var(--text-inverse); }
+/* Soft variant (2026-09-04) — the WEB twin of the mobile product switcher
+   (`.mga-seg`, health / auto / კურაციო). Same grammar on both platforms:
+   a white hairline-bordered track, and the selected tab is a PALE INDIGO pill
+   rather than a solid brand fill — these tabs switch a view, they are not the
+   page's primary action, so a filled pink pill overstated them.
+   Segments are CONTENT-SIZED, not equal thirds — the reason is the mobile one
+   (mga.css): Georgian section names differ a lot in length, and equal thirds
+   leave the longest label sitting inside the pill's curve. */
+.gpi-seg--soft {
+  background: var(--surface-card);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-full);
+  padding: var(--space-4);
+  gap: var(--space-4);
+  /* When three Georgian labels outgrow the track (a narrow rail, ~<600px), the
+     row SCROLLS rather than shrinking its tabs — shrinking clipped the third
+     tab's text and left the control unreachable at 390. This is the fallback
+     mga.css already names for the mobile twin: scrollable tabs, not smaller
+     type. Scrollbar hidden; the row still scrolls by touch, wheel and keyboard. */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.gpi-seg--soft::-webkit-scrollbar { display: none; }
+.gpi-seg--soft .gpi-seg__item {
+  /* grow to share slack when there is room, NEVER shrink below the label. */
+  flex: 1 0 auto;
+  min-height: var(--control-xs);
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-full);
+  font: 600 13px/18px var(--font-sans);
+  color: var(--text-muted);
+}
+.gpi-seg--soft .gpi-seg__item:hover { background: var(--interactive-hover-bg); }
+.gpi-seg--soft .gpi-seg__item.is-active {
+  background: var(--color-indigo-50);
+  color: var(--color-indigo-800);
+  font-weight: 700;
+}
 .gpi-seg__item.is-disabled { color: var(--text-disabled, #aab0bf); cursor: not-allowed; }
 .gpi-seg__item.is-disabled:hover { background: transparent; }
 
@@ -1176,8 +1223,21 @@
   color: var(--text-main);
 }
 .gpi-fsel__opt:hover { background: var(--interactive-hover-bg); }
-.gpi-fsel__opt.is-sel { background: var(--interactive-selected-bg); color: var(--text-brand); }
-.gpi-fsel__opt svg { color: var(--text-brand); }
+.gpi-fsel__opt.is-sel { background: var(--interactive-selected-bg); color: var(--interactive-selected-fg); }
+.gpi-fsel__opt svg { color: var(--interactive-selected-fg); }
+/* Rich rows (lead + sub — the person selector). The trigger grows past the md
+   control so a 34px avatar (the mobile size) and two text lines fit: the 20+16 text block + 8·2 + border = 54; 8px inset on the avatar side
+   mirrors the mobile PersonSelect ("inset into the cap"), control radius stays
+   the locked desktop 12 — the pill is a mobile-module rule, not a system one. */
+.gpi-fsel__btn--rich { height: auto; min-height: 52px; padding: var(--space-8) var(--space-12) var(--space-8) var(--space-8); }
+.gpi-fsel__opt--rich { padding: var(--space-8) var(--space-12) var(--space-8) var(--space-8); }
+.gpi-fsel__btn > .gpi-fsel__lead, .gpi-fsel__lead { flex: 0 0 auto; display: flex; }
+.gpi-fsel__btn > .gpi-fsel__meta, .gpi-fsel__meta { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; text-align: left; }
+.gpi-fsel__meta > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gpi-fsel__label { font: 500 14px/20px var(--font-sans); }
+.gpi-fsel__sub { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+/* No opacity: pink at 80% on the tint measured ~3.4:1 (audit A6). */
+.gpi-fsel__opt.is-sel .gpi-fsel__sub { color: var(--interactive-selected-fg); }
 
 /* ---- Booking workspace --------------------------------------------------- */
 .gpi-bw { margin-top: var(--space-12); }
@@ -1608,7 +1668,11 @@
 }
 
 .gpi-link { display: inline-flex; align-items: center; gap: 4px; padding: 0; border: none; background: none;
-  font: 500 13px/1.5 var(--font-sans); color: var(--color-link-600); cursor: pointer; }
+  font: 500 13px/1.5 var(--font-sans); color: var(--color-link-600); cursor: pointer;
+  /* WCAG 2.2 target size (rule 2026-08-10): a standalone text action in a row of
+     controls is NOT the inline-link exemption — 13/1.5 measured 20px, so the box
+     is floored at 24 without touching the type. */
+  min-height: 24px; }
 .gpi-link:hover { text-decoration: underline; }
 .gpi-link svg { flex: 0 0 auto; }
 /* Confirm dialog content */
@@ -1793,7 +1857,7 @@
 .gpi-chip.is-selected {
   background: var(--interactive-selected-bg);
   border-color: var(--action-primary);
-  color: var(--color-pink-700);
+  color: var(--interactive-selected-fg);
   font-weight: 500; /* Label weight */
 }
 .gpi-chip.is-selected:hover { background: var(--interactive-selected-bg); }
@@ -1977,7 +2041,7 @@
 .gpi-email__hint { margin: 0; font: 400 13px/20px var(--font-sans); color: var(--text-muted); }
 .gpi-email__tabs { display: flex; gap: var(--space-8); }
 .gpi-email__tab { padding: var(--space-4) var(--space-12); border: 1px solid var(--border-field); border-radius: var(--radius-full); background: var(--surface-card); font: 500 13px/20px var(--font-sans); color: var(--text-main); cursor: pointer; }
-.gpi-email__tab.is-active { border-color: var(--action-primary); background: var(--interactive-selected-bg); color: var(--text-brand); }
+.gpi-email__tab.is-active { border-color: var(--action-primary); background: var(--interactive-selected-bg); color: var(--interactive-selected-fg); }
 .gpi-email { border: 1px solid #dadce0; border-radius: 8px; overflow: hidden; background: #fff; font-family: Roboto, Arial, var(--font-sans); }
 .gpi-email__subject { padding: 14px 16px 6px; font: 400 20px/26px Roboto, Arial, sans-serif; color: #202124; }
 .gpi-email__label { margin-left: 6px; padding: 1px 8px; border: 1px solid #dadce0; border-radius: 4px; font: 400 11px/16px Roboto, Arial, sans-serif; color: #5f6368; vertical-align: middle; }
@@ -2139,7 +2203,7 @@
   cursor: pointer;
 }
 .gpi-fpop__cat:hover { background: var(--interactive-hover-bg); }
-.gpi-fpop__cat.is-active { background: var(--interactive-selected-bg); color: var(--color-pink-700); font-weight: 500; }
+.gpi-fpop__cat.is-active { background: var(--interactive-selected-bg); color: var(--interactive-selected-fg); font-weight: 500; }
 .gpi-fpop__cat:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--surface-page), 0 0 0 4px var(--action-primary); }
 .gpi-fpop__pane { flex: 1; padding: var(--space-16); min-width: 0; }
 .gpi-fpop__multisearch { margin-bottom: var(--space-12); }
@@ -2714,3 +2778,117 @@
 @media (prefers-reduced-motion: reduce) {
   .gpi-rating__star { transition: none; }
 }
+
+/* ---- Person switch (web twin of mobile PersonSelect, 2026-09-04) ----------
+   Scope selector: avatar + name + chevron. Sits on a title row, so it is
+   sized like inline text with a 32px control box (WCAG 2.2 target ≥ 24). */
+.gpi-pswitch { position: relative; display: inline-flex; min-width: 0; }
+/* App parity (2026-09-07, user: „similar style like in app"). The mobile
+   .mga-pselect__btn is a raised pill; this trigger was floating bare on the page
+   tint with no surface at all, which is what made it read as unstyled next to the
+   app. Translated to WEB tokens, not mga vars (Rule 5 — same anatomy, our system):
+   card surface + hairline + card elevation on a full pill.
+   The app's two documented inset rules, re-derived for our 40px geometry:
+     · the avatar's LEFT inset EQUALS its vertical inset (4px), so it sits inset
+       into the round cap instead of pushed off-centre;
+     · the right padding puts the 16px chevron's CENTRE on the cap radius
+       (12 + 8 = 20px) — that is what makes a chevron read as centred in a round end.
+   Both land on the spacing scale, so nothing here is an off-scale optical nudge.
+   NAME ONLY — no policy/OCIN line (user, 2026-09-07; the avatar disambiguates). */
+.gpi-pswitch__btn {
+  display: inline-flex;
+  align-items: center;
+  /* SIZE-MATCHED TO THE OPTION ROWS (user, 2026-09-07). The trigger and the rows
+     are the same object in two states, so they now share one geometry outright —
+     gap 12, padding 8/16/8/8, avatar 32 — which resolves both to 50px and makes
+     the two inset rules produce identical numbers on each:
+       · avatar left inset == vertical inset (9px, incl. the 1px border);
+       · the 16px trailing glyph's centre at 1 + 16 + 8 = 25 = the cap radius (50/2).
+     It was 42px on 4/12/4/4, visibly shorter than the 50px rows it opens onto.
+     min-width matches the panel's floor so the two edges line up; the panel is then
+     pinned to this button's MEASURED width in PersonSwitch.jsx, so a long name keeps
+     them locked instead of drifting apart again. */
+  gap: var(--space-12);
+  min-height: var(--control-md);
+  padding: var(--space-8) var(--space-16) var(--space-8) var(--space-8);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-full);
+  background: var(--surface-card);
+  box-shadow: var(--elevation-card);
+  color: var(--color-indigo-800);
+  font: 500 14px/20px var(--font-sans);
+  cursor: pointer;
+  min-width: 260px;
+}
+.gpi-pswitch__btn:hover { background: var(--interactive-hover-bg); }
+/* Open state matches every other web listbox trigger (.gpi-fsel__btn.is-open).
+   Keyed off aria-expanded, which the component already sets — no extra class. */
+.gpi-pswitch__btn[aria-expanded="true"] { border-color: var(--border-focus); }
+.gpi-pswitch__btn:focus-visible { outline: 2px solid var(--border-focus, var(--action-primary)); outline-offset: 2px; }
+.gpi-pswitch__btn > svg { color: var(--icon-muted); flex: 0 0 auto; }
+.gpi-pswitch__ava { position: relative; display: inline-flex; flex: 0 0 auto; }
+/* Alert dot: pink/600 = the action colour, ringed in the card surface so it
+   reads on top of a photo. */
+.gpi-pswitch__dot {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--action-primary);
+  box-shadow: 0 0 0 1.5px var(--surface-card);
+}
+/* Grows to fill, exactly like .gpi-pswitch__rowname does in the panel — without it
+   the chevron trails the NAME instead of the button's right cap, and the moment the
+   button got a min-width wider than its text it drifted inward (measured 56px from
+   the right edge against the rows' 25). min-width:0 keeps the ellipsis working. */
+.gpi-pswitch__name { flex: 1 1 auto; min-width: 0; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* the actmenu base pins right:0 — with a LEFT anchor that would stretch the panel */
+.gpi-pswitch__panel {
+  right: auto;
+  min-width: 260px;
+  /* Rows are separate cards now, so they need air between them (2026-09-07). */
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  /* A container must not be squarer than what it holds: the actmenu's 12px against
+     25px pill rows left the corners fighting the contents. 24 is the scale step that
+     envelopes them (concentric radius wants outer ≈ inner + padding). Scoped to this
+     panel — plain action menus keep their 12. */
+  border-radius: var(--radius-2xl);
+}
+/* Options = ROUNDED CARDS (user, 2026-09-07: „not aligned with the style").
+   The actmenu's default 8px inset tile read as square next to a fully-round
+   trigger. Rather than invent a radius, these adopt `.dash-lrow` — the module's
+   Figma-derived pill row (fully rounded · card surface · hairline), already used
+   by the Curatio rail rows and the benefit rows (Rule 1).
+   The asymmetric padding satisfies BOTH of this component's inset rules at once
+   on a 48px row (cap radius 24):
+     · avatar LEFT inset == vertical inset (8px) — the disc sits evenly in the cap;
+     · the 16px trailing mark's CENTRE lands at 16 + 8 = 24 from the right edge,
+       i.e. exactly on the cap radius — the same rule the trigger's chevron follows. */
+.gpi-pswitch__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-8) var(--space-16) var(--space-8) var(--space-8);
+  /* TRANSPARENT, never `border: 0` (user, 2026-09-07: default card without stroke).
+     The selected row still draws a stroke, so the border box has to exist on every
+     row — dropping it would make the unselected rows 48px against the selected 50
+     and shift their avatar inset from 9 to 8, undoing the geometry the trigger and
+     rows were just matched on. */
+  border: var(--border-width-sm) solid transparent;
+  border-radius: var(--radius-full);
+}
+/* Selected = STROKE + check only (user: the pink fill „is too much"). --action-primary
+   on white is 4.52:1, comfortably past the 3:1 WCAG asks of a non-text indicator, and
+   selection is also carried programmatically by aria-selected. Hover keeps the
+   actmenu's own fill, so the rows still respond to the pointer. */
+.gpi-pswitch__row.is-on {
+  border-color: var(--action-primary);
+}
+.gpi-pswitch__row > svg { color: var(--text-brand); margin-left: auto; }
+.gpi-pswitch__row .gpi-badge { margin-left: auto; }
+/* Same type as the trigger's name (audit B5): one object, two states, one weight. */
+.gpi-pswitch__rowname { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 500 14px/20px var(--font-sans); }

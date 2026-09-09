@@ -160,6 +160,11 @@
 
   --interactive-hover-bg: #eef0f4;
   --interactive-selected-bg: var(--color-pink-25); /* softened from pink/50 → pink/25 (system-wide) */
+  /* Text/icon ON the selected tint (audit 2026-09-07 A6). text/brand (pink/600) measures
+     4.18:1 on pink/25 — under AA — so selected text steps ONE shade to pink/700 (5.15:1),
+     the pairing badge/brand and .gpi-chip.is-selected already use.
+     TODO: port `interactive/selected-fg` to the Figma foundation. */
+  --interactive-selected-fg: var(--color-pink-700);
   --interactive-pressed-bg: var(--color-neutral-200); /* Figma: interactive/pressed-bg */
   --interactive-disabled-bg: #eef0f4;
 

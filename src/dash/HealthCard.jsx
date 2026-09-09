@@ -61,7 +61,7 @@ function BookingsRail({ items, onViewAll }) {
           trailing={
             <>
               <span className="dash-lrow__fact">{b.person}</span>
-              <Badge color="success" size="sm">{D.status[b.status]}</Badge>
+              <Badge color="success" size="md">{D.status[b.status]}</Badge>
             </>
           }
         />
@@ -117,9 +117,9 @@ function ReferralsRail({ items, onViewAll }) {
           }
           trailing={
             <>
-              {r.chronic && <Badge color="brand" size="sm">{D.cur.hist.chronic}</Badge>}
+              {r.chronic && <Badge color="brand" size="md">{D.cur.hist.chronic}</Badge>}
               <span className="dash-lrow__fact">{r.no}</span>
-              <Badge color="warning" size="sm">{D.status[r.status]}</Badge>
+              <Badge color="warning" size="md">{D.status[r.status]}</Badge>
             </>
           }
           /* No row-level onClick: the expiring row carries a REAL interactive

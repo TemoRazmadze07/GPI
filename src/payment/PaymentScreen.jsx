@@ -3,10 +3,9 @@ import Icon from '../lib/Icon.jsx'
 import { Button } from '../components/Button.jsx'
 import Badge from '../components/Badge.jsx'
 import Checkbox from '../components/Checkbox.jsx'
-import Radio from '../components/Radio.jsx'
 import InlineAlert from '../components/InlineAlert.jsx'
 import { P } from './strings.js'
-import { getPolicy, getCards, getVisaTier, setVisaTier, visaPoints, fmt, hashQuery } from './data.js'
+import { getPolicy, getCards, getCommitTier, setVisaTier, VISA_TIERS, fmt, hashQuery } from './data.js'
 import { AppleMark, GPayMark, VisaMark, McMark } from './marks.jsx'
 import visaCards from '../assets/visa-cards.svg'
 
@@ -55,62 +54,36 @@ function CardRow({ checked, onSelect, children }) {
    The artwork is extracted from the export and its card textures downscaled
    (17.5 MB → 616 KB); production should re-export it properly optimised.
    ⚠️ Campaign creative normally needs Visa's sign-off before it ships. */
-/* Tier choice (user's mock, 2026-09-01): the yes/no checkbox became a 3-way
-   radio — სხვა ბარათი (default) / VISA Signature / VISA Infinite — because the
-   campaign is per-TIER (Signature 6% / Infinite 7% of the paid premium) and
-   the requirement is to show each tier's computed POINT AMOUNT, never the %.
-   A side effect worth keeping: „სხვა ბარათი" honestly covers non-premium Visas
-   too, which the old blanket "pay with VISA" checkbox over-promised.
-   Layout: intro copy beside the artwork, radios FULL-WIDTH below — tier rows
-   carry a points sub-line, and on a phone they cannot share a row with art. */
+/* The banner is now purely a statement, never a control (user, 2026-09-08, in
+   two steps): first the 3-way tier radio went — card entry happens on Liberty's
+   hosted page, so a self-declared "I'll pay with Signature" bound nothing — then
+   the read-only Signature/Infinite amounts went too, because by this point the
+   user HAS chosen a card in the rows below, and a two-tier comparison is noise
+   next to a decision already made.
+   `tier` (GPI, 2026-09-08): consent is taken at the CALL CENTRE — the customer
+   tells an agent which Visa tier they will pay with — so the tier arrives with
+   the session and the banner simply states it back: „დადასტურებულია — გადაიხდი
+   Visa Signature ბარათით". NO card number: the commitment is to a card TYPE,
+   not to a specific card, and printing digits would claim a precision the
+   commitment does not have. No commitment on file → the generic pitch.
+   Both states show it — a first-time payer can have called the centre too; the
+   commitment has nothing to do with whether a card is saved here.
+   Layout (user's 2nd mock, 2026-09-01): one column at every width — copy, then
+   the artwork full-width, then terms (compact: copy → artwork). */
 /* `compact` (user, 2026-09-01): the RETURNING user gets the same banner but
    informational only — intro copy + artwork, no tier radios, no terms line.
    The card choice already happens in the saved-card rows below, so the banner
    just explains why the Visa row carries its badge. */
-function VisaPromo({ tier, onTier, amount, compact }) {
-  const tierLabel = (name, pts) => (
-    <span className="pay-promo__tier">
-      <span className="pay-promo__tiername">{name}</span>
-      <span className="pay-promo__tierpts pay-num">{P.pay.promoTierDesc(pts)}</span>
-    </span>
-  )
+function VisaPromo({ tier, compact }) {
   return (
-    <div
-      className={`pay-promo${compact ? ' pay-promo--compact' : ''}${!compact && tier !== 'other' ? ' pay-promo--on' : ''}`}
-    >
-      {/* Order per the user's 2026-09-01 mock: copy → tier choice → ARTWORK →
-          terms (compact: copy → artwork). The art is a normal full-width block,
-          not a side column — no overflow clipping anywhere. */}
+    <div className={`pay-promo${compact ? ' pay-promo--compact' : ''}`}>
+      {/* Order per the user's 2026-09-01 mock: copy → ARTWORK → terms (compact:
+          copy → artwork). The art is a normal full-width block, not a side
+          column — no overflow clipping anywhere. */}
       <div className="pay-promo__body">
         <p className="pay-promo__title">{P.pay.promoTitle}</p>
-        <p className="pay-promo__text">{P.pay.promoBody}</p>
+        <p className="pay-promo__text">{tier ? P.pay.promoTier(tier) : P.pay.promoBody}</p>
       </div>
-      {!compact && (
-        <div className="pay-promo__choice" role="radiogroup" aria-label={P.pay.promoChoose}>
-          <p className="pay-promo__chooselbl">{P.pay.promoChoose}</p>
-          <Radio
-            name="pay-visa-tier"
-            value="other"
-            checked={tier === 'other'}
-            onChange={onTier}
-            label={<span className="pay-promo__tiername">{P.pay.promoOther}</span>}
-          />
-          <Radio
-            name="pay-visa-tier"
-            value="signature"
-            checked={tier === 'signature'}
-            onChange={onTier}
-            label={tierLabel('VISA Signature', visaPoints('signature', amount))}
-          />
-          <Radio
-            name="pay-visa-tier"
-            value="infinite"
-            checked={tier === 'infinite'}
-            onChange={onTier}
-            label={tierLabel('VISA Infinite', visaPoints('infinite', amount))}
-          />
-        </div>
-      )}
       {/* Wrapper carries the VERTICAL fade mask, the img the HORIZONTAL one —
           multiplied they fade all four edges to zero (one ellipse could not
           cover every edge without eating the cards). */}
@@ -155,26 +128,18 @@ export default function PaymentScreen() {
   const [cards, setCardsState] = useState(getCards)
   const [selected, setSelected] = useState(() => getCards()[0]?.id || 'new')
   const [save, setSave] = useState(false)
-  const [visaTier, setVisaTierState] = useState(getVisaTier)
   const linked = hashQuery().get('linked') === '1'
   const returning = cards.length > 0
   const POLICY = getPolicy()
+  /* null when there is no commitment on file — see VisaPromo. */
+  const commitTier = VISA_TIERS[getCommitTier()] || null
 
-  const chooseTier = (t) => {
-    setVisaTierState(t)
-    setVisaTier(t)
-  }
-
-  /* The returning state shows the banner WITHOUT the tier radios (user,
-     2026-09-01), so no campaign promise is taken here — clear any tier left
-     over from an earlier new-user run, else the receipt would settle a choice
-     this screen never offered. */
+  /* No screen takes a campaign opt-in any more (2026-09-08), so nothing may be
+     settled on the receipt — clear any tier left in the session by an older
+     run, else it would settle a promise this flow never asked for. */
   useEffect(() => {
-    if (returning) {
-      setVisaTierState('other')
-      setVisaTier('other')
-    }
-  }, [returning])
+    setVisaTier('other')
+  }, [])
 
   const payWallet = (wallet) => {
     window.location.hash = '#/pay/done?m=' + wallet
@@ -238,13 +203,10 @@ export default function PaymentScreen() {
         {P.pay.orCard}
       </div>
 
-      {/* New user: full banner with the tier choice. Returning: same banner,
-          informational only — the saved-card rows below carry the choice. */}
-      {returning ? (
-        <VisaPromo compact />
-      ) : (
-        <VisaPromo tier={visaTier} onTier={chooseTier} amount={POLICY.due} />
-      )}
+      {/* Same message in both states — the commitment came from the phone call,
+          not from anything on this screen. Returning gets it compact because
+          the card rows below carry the rest of the choice. */}
+      {returning ? <VisaPromo compact tier={commitTier} /> : <VisaPromo tier={commitTier} />}
 
       {returning ? (
         <div className="pay-methods" role="radiogroup" aria-label={P.pay.methodsLabel}>

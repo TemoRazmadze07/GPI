@@ -9,6 +9,11 @@ import Icon from '../lib/Icon.jsx'
    bare "ყველა" side by side name nothing — but baking the prefix into option
    labels made the OPEN menu read "კლინიკა: კურაციო" per row. Options stay
    plain; the trigger alone gets the context. */
+/* `lead` / `sub` on an option (additive, 2026-09-04): a rich row — a leading
+   node (an Avatar) and a secondary line (a policy №) under the label, on the
+   trigger AND in the menu. Ports the mobile PersonSelect anatomy (avatar · name
+   + OCIN) onto the desktop Select instead of forking a second dropdown; options
+   without them render exactly as before. */
 export default function Select({ value, placeholder, options, onChange, disabled = false, error = false, className = '', ariaLabel, renderValue }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
@@ -28,12 +33,22 @@ export default function Select({ value, placeholder, options, onChange, disabled
   }, [open])
 
   const selected = options.find((o) => o.value === value)
+  const rich = options.some((o) => o.lead || o.sub)
+  const Row = ({ o, label }) => (
+    <>
+      {o.lead && <span className="gpi-fsel__lead" aria-hidden="true">{o.lead}</span>}
+      <span className="gpi-fsel__meta">
+        <span className="gpi-fsel__label">{label}</span>
+        {o.sub && <span className="gpi-fsel__sub">{o.sub}</span>}
+      </span>
+    </>
+  )
 
   return (
     <div className={`gpi-fsel${className ? ` ${className}` : ''}`} ref={ref}>
       <button
         type="button"
-        className={`gpi-fsel__btn ${open ? 'is-open' : ''} ${disabled ? 'is-disabled' : ''} ${error ? 'is-error' : ''}`}
+        className={`gpi-fsel__btn ${rich ? 'gpi-fsel__btn--rich' : ''} ${open ? 'is-open' : ''} ${disabled ? 'is-disabled' : ''} ${error ? 'is-error' : ''}`}
         onClick={() => { if (!disabled) setOpen((o) => !o) }}
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -41,9 +56,13 @@ export default function Select({ value, placeholder, options, onChange, disabled
         aria-disabled={disabled || undefined}
         disabled={disabled}
       >
-        <span className={selected ? '' : 'gpi-fsel__ph'}>
-          {selected ? (renderValue ? renderValue(selected) : selected.label) : placeholder}
-        </span>
+        {selected && rich ? (
+          <Row o={selected} label={renderValue ? renderValue(selected) : selected.label} />
+        ) : (
+          <span className={selected ? '' : 'gpi-fsel__ph'}>
+            {selected ? (renderValue ? renderValue(selected) : selected.label) : placeholder}
+          </span>
+        )}
         <Icon name={disabled ? 'lock' : 'chevron-down'} size={16} />
       </button>
       {open && !disabled && (
@@ -54,7 +73,7 @@ export default function Select({ value, placeholder, options, onChange, disabled
               role="option"
               aria-selected={o.value === value}
               aria-disabled={o.disabled || undefined}
-              className={`gpi-fsel__opt ${o.value === value ? 'is-sel' : ''} ${o.disabled ? 'is-disabled' : ''}`}
+              className={`gpi-fsel__opt ${rich ? 'gpi-fsel__opt--rich' : ''} ${o.value === value ? 'is-sel' : ''} ${o.disabled ? 'is-disabled' : ''}`}
               title={o.disabled ? o.disabledReason : undefined}
               onClick={() => {
                 if (o.disabled) return
@@ -62,7 +81,7 @@ export default function Select({ value, placeholder, options, onChange, disabled
                 setOpen(false)
               }}
             >
-              {o.label}
+              {rich ? <Row o={o} label={o.label} /> : o.label}
               {o.value === value && <Icon name="check" size={16} />}
             </button>
           ))}

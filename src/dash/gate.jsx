@@ -7,7 +7,9 @@ import { D } from './strings.js'
 /* OTP gate for the web Curatio protected zone — the mobile module's gate
    (mobile/otp.jsx) ported to the desktop surface: same rules, different shell.
    · One code unlocks the SESSION (sessionStorage); locks return when the tab
-     closes or via the explicit „ჩაკეტვა" action.
+     closes. The explicit „ჩაკეტვა" action was DROPPED from the product on
+     2026-09-04 (user: session expiry is enough) — `relock` survives only for the
+     DemoBar, so the locked state stays demonstrable.
    · Deep links never bypass — the history route gates in place.
    · Its own storage key, NOT mobile's `mgaOtpUnlocked`: the platforms are
      separate contexts (Rule 5) and a shared key would let one demo unlock the

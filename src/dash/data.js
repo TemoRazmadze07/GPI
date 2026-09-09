@@ -86,19 +86,24 @@ export const BOOKINGS = [
     person: L('გიორგი გიორგაძე', 'Giorgi Giorgadze'),
     status: 'ongoing',
   },
+  /* b2/b3 are DIFFERENT doctors on LATER dates — they used to be three verbatim
+     copies of b1 (the design shot's own filler), which read as a duplication bug
+     the moment two of them sat in one box. Names/roles are taken from the booking
+     flow's real roster (data/booking.js d9, d6), not invented, so a reviewer who
+     opens the wizard meets the same people. */
   {
     id: 'b2',
-    doctor: L('ნინო ნინოშვილი', 'Nino Ninoshvili'),
-    photo: face('photo-1559839734-2b71ea197ec2'),
-    when: L('12 ნოე, 2025 · 11:30 — 12:00', '12 Nov, 2025 · 11:30 — 12:00'),
+    doctor: L('ზურაბ მაისურაძე', 'Zurab Maisuradze'),
+    photo: face('photo-1612349317150-e413f6a5b16d'),
+    when: L('18 ნოე, 2025 · 14:00 — 14:30', '18 Nov, 2025 · 14:00 — 14:30'),
     person: L('გიორგი გიორგაძე', 'Giorgi Giorgadze'),
     status: 'ongoing',
   },
   {
     id: 'b3',
-    doctor: L('ნინო ნინოშვილი', 'Nino Ninoshvili'),
-    photo: face('photo-1559839734-2b71ea197ec2'),
-    when: L('12 ნოე, 2025 · 11:30 — 12:00', '12 Nov, 2025 · 11:30 — 12:00'),
+    doctor: L('თამარ კიკნაძე', 'Tamar Kiknadze'),
+    photo: face('photo-1594824476967-48c8b964273f'),
+    when: L('26 ნოე, 2025 · 09:15 — 09:45', '26 Nov, 2025 · 09:15 — 09:45'),
     person: L('გიორგი გიორგაძე', 'Giorgi Giorgadze'),
     status: 'ongoing',
   },
@@ -168,3 +173,20 @@ export const BRUNO = [
     tier: 'starter',
   },
 ]
+
+/* ---- Post-payment Visa benefit page (#/dash/visa-benefit) ----------------
+   The transaction the page settles. DEMO values: the amount is the campaign
+   memory's worked example (228.84 ₾ × Signature 6% = 13.73 points). The rate
+   itself lives with the campaign in payment/data.js (VISA_RATES) and is NOT
+   imported here, so the dashboard stays splittable from the payment portal
+   (Rule 5). Tier names stay in Latin — brand, not UI copy. */
+export const VISA_PAYMENT = {
+  policy: 'AUTO ACTIVE',
+  no: 'OMI 406786/26',
+  plate: 'AA-612-BB',
+  amount: '228.84 ₾',
+  method: 'Visa Signature •••• 7712',
+  date: L('8 სექ 2026', '8 Sep 2026'),
+  tierLabel: 'Visa Signature',
+  points: '13.73',
+}

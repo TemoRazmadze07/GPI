@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import Icon from '../lib/Icon.jsx'
 import { t } from '../i18n/index.js'
 
@@ -7,15 +7,34 @@ import { t } from '../i18n/index.js'
    the × or pressing Escape all dismiss via onClose. Reused by DoctorBioModal and
    ConfirmDialog so every dialog shares one frame. */
 export default function Modal({ title, onClose, closeLabel, children, footer, className }) {
+  const boxRef = useRef(null)
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose()
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [onClose])
+  /* Initial focus + restore (audit 2026-09-07 E1): a dialog that leaves focus on the
+     page behind it is invisible to a keyboard user. A child that focused itself
+     (OtpInput's autoFocus) wins; otherwise the first text control or button in the
+     body, else the ×. On close, focus goes back to whatever opened the dialog. */
+  useEffect(() => {
+    const opener = document.activeElement
+    const box = boxRef.current
+    if (box && !box.contains(document.activeElement)) {
+      const first =
+        box.querySelector(
+          '.gpi-modal__body input:not([type="hidden"]):not([type="file"]):not([disabled]), .gpi-modal__body textarea, .gpi-modal__body select, .gpi-modal__body button:not([disabled]), .gpi-modal__body [tabindex]:not([tabindex="-1"])',
+        ) || box.querySelector('.gpi-modal__close')
+      first?.focus()
+    }
+    return () => {
+      if (opener && document.contains(opener) && typeof opener.focus === 'function') opener.focus()
+    }
+  }, [])
 
   return (
     <div className="gpi-modal-overlay" onClick={onClose}>
-      <div className={`gpi-modal${className ? ` ${className}` : ''}`} role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
+      <div ref={boxRef} className={`gpi-modal${className ? ` ${className}` : ''}`} role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
         <div className="gpi-modal__hd">
           <h3 className="gpi-modal__title">{title}</h3>
           <button className="gpi-modal__close" onClick={onClose} aria-label={closeLabel || t.actions.close}>

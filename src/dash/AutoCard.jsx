@@ -25,7 +25,7 @@ function BenefitRow({ item }) {
         </span>
       }
       title={item.label}
-      titleBadge={item.free ? <Badge color="success" size="sm">{D.benefit.free}</Badge> : null}
+      titleBadge={item.free ? <Badge color="success" size="md">{D.benefit.free}</Badge> : null}
       trailing={
         <>
           {item.value && <span className="dash-lrow__fact">{D.benefit[item.value]}</span>}

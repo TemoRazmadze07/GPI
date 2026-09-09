@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import Avatar from '../components/Avatar.jsx'
 import Badge from '../components/Badge.jsx'
 import Breadcrumbs from '../components/Breadcrumbs.jsx'
 import DataTable from '../components/DataTable.jsx'
@@ -11,10 +12,11 @@ import Select from '../components/Select.jsx'
 import Switch from '../components/Switch.jsx'
 import { Button } from '../components/Button.jsx'
 import Icon from '../lib/Icon.jsx'
+import { ASSETS } from '../lib/assets.js'
 import SourceMark from './SourceMark.jsx'
 import { useGate } from './gate.jsx'
 import { D } from './strings.js'
-import { PERSONS, DOCTOR, ANALYSES, MEDS, VISITS, forPerson } from './curatioData.js'
+import { PERSONS, DOCTOR, ANALYSES, MEDS, VISITS, forPerson, getAttachments, addAttachment, dateWithYear } from './curatioData.js'
 
 /* #/dash/curatio/history?sec= — F-02/F-03 on the surface they were made for.
    One page, three sections (the LEFT RAIL is the hub — desktop needs no hub
@@ -27,7 +29,7 @@ import { PERSONS, DOCTOR, ANALYSES, MEDS, VISITS, forPerson } from './curatioDat
    is the mobile 2-step (file → metadata) as one modal. NO CHARTS — MVP1 is
    PDF-only, and that rule survives the platform move. */
 
-const PAGE = 8
+const PAGE = 10 /* user 2026-09-08: paginate past 10 records */
 
 const go = (hash) => () => {
   window.location.hash = hash
@@ -46,11 +48,17 @@ function StatusBadge({ s }) {
   return <Badge color={tone} size="sm">{D.cur.hist.statuses[s]}</Badge>
 }
 
-function UploadModal({ onClose, onAdd, personId }) {
+/* The section-level „დოკუმენტის ატვირთვა" (file a NEW record) was REMOVED
+   2026-09-04 at the user's request. What replaced it is mobile's pattern (user,
+   2026-08-26: „document upload for each card"): a paperclip on EVERY record that
+   hangs a supporting document off that record. Same 2-step shape as the old
+   modal — file, then name/clinic + the share consent — minus the category, which
+   the record already decides. The `uploaded` status/badge stays for data that may
+   still carry it. */
+function AttachModal({ record, onClose, onAdd }) {
   const [file, setFile] = useState(null)
   const [name, setName] = useState('')
   const [clinic, setClinic] = useState('')
-  const [cat, setCat] = useState(null)
   const [share, setShare] = useState(true)
   const [errs, setErrs] = useState({})
 
@@ -58,29 +66,30 @@ function UploadModal({ onClose, onAdd, personId }) {
     const e = {}
     if (!file) e.file = D.cur.upl.errFile
     if (!name.trim()) e.name = D.cur.upl.errName
-    if (!cat) e.cat = D.cur.upl.errCat
     setErrs(e)
     if (Object.keys(e).length) return
-    onAdd({ sec: cat, name: name.trim(), clinic: clinic.trim(), personId })
+    onAdd({ title: name.trim(), clinic: clinic.trim(), shared: share })
     onClose()
   }
 
   return (
     <Modal
-      title={D.cur.upl.title}
+      title={D.cur.upl.attachTitle}
       onClose={onClose}
       className="dash-uplmodal"
       footer={
         <>
           <Button variant="tertiary" size="md" onClick={onClose}>{D.cur.upl.cancel}</Button>
-          <Button variant="primary" size="md" onClick={submit}>{D.cur.upl.submit}</Button>
+          <Button variant="primary" size="md" onClick={submit}>{D.cur.upl.attach}</Button>
         </>
       }
     >
-      <Field label={D.cur.upl.title} errorMsg={errs.file} wide>
+      <p className="dash-upl__rec">{D.cur.upl.attachTo(record.name)}</p>
+      <Field label={D.cur.upl.title} wide>
         <FileDropzone
-          onFile={(f) => setFile(f)}
+          onFile={(f) => { setFile(f); if (errs.file) setErrs((x) => ({ ...x, file: undefined })) }}
           state={file ? 'done' : 'idle'}
+          error={errs.file}
           file={file}
           accept=".pdf,.jpg,.jpeg,.png"
           acceptMime="application/pdf,image/jpeg,image/png"
@@ -95,32 +104,11 @@ function UploadModal({ onClose, onAdd, personId }) {
       </Field>
       <div className="dash-upl__grid">
         <Field label={D.cur.upl.name} required errorMsg={errs.name}>
-          <input
-            className="gpi-input"
-            value={name}
-            placeholder={D.cur.upl.namePh}
-            onChange={(e) => setName(e.target.value)}
-          />
+          {/* Red text + red border, and the error clears the moment the field is edited (rule 2026-07-06; audit A3). */}
+          <input className={`gpi-input${errs.name ? ' is-error' : ''}`} aria-invalid={errs.name ? true : undefined} value={name} placeholder={D.cur.upl.namePh} onChange={(e) => { setName(e.target.value); if (errs.name) setErrs((x) => ({ ...x, name: undefined })) }} />
         </Field>
         <Field label={D.cur.upl.clinic}>
-          <input
-            className="gpi-input"
-            value={clinic}
-            placeholder={D.cur.upl.clinicPh}
-            onChange={(e) => setClinic(e.target.value)}
-          />
-        </Field>
-        <Field label={D.cur.upl.cat} required errorMsg={errs.cat}>
-          <Select
-            value={cat}
-            placeholder={D.cur.upl.catPick}
-            onChange={setCat}
-            options={[
-              { value: 'analyses', label: D.cur.hist.sections.analyses },
-              { value: 'meds', label: D.cur.hist.sections.meds },
-              { value: 'visits', label: D.cur.hist.sections.visits },
-            ]}
-          />
+          <input className="gpi-input" value={clinic} placeholder={D.cur.upl.clinicPh} onChange={(e) => setClinic(e.target.value)} />
         </Field>
       </div>
       <div className="dash-upl__consent">
@@ -136,17 +124,21 @@ function UploadModal({ onClose, onAdd, personId }) {
   )
 }
 
-export default function CuratioHistory() {
+/* embedded (2026-09-04, v2 section page): no crumbs/title of its own, person
+   scope comes from the host page, section links stay on the host route. */
+export default function CuratioHistory({ embedded = false, personId: personProp = null, route = '#/dash/curatio/history' }) {
   const gate = useGate()
   const sec = currentSec()
-  const [personId, setPersonId] = useState('g')
+  const [personState, setPersonId] = useState('g')
+  const personId = personProp ?? personState
   const [period, setPeriod] = useState('all')
   const [cat, setCat] = useState('all')
   const [clinic, setClinic] = useState('all')
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
-  const [upl, setUpl] = useState(false)
-  const [added, setAdded] = useState([])
+  /* Per-record attach: which record the modal is for, and the attached docs. */
+  const [attachTo, setAttachTo] = useState(null)
+  const [attachments, setAttachments] = useState(getAttachments)
 
   const crumbs = (
     <Breadcrumbs
@@ -160,11 +152,8 @@ export default function CuratioHistory() {
   )
 
   const base = { analyses: ANALYSES, meds: MEDS, visits: VISITS }[sec]
-  const uploads = added.filter((r) => r.sec === sec && r.p === personId)
   const rows = useMemo(() => {
-    /* Uploads first: they are stamped „დღეს" — the list reads newest-down, so
-       appending them would file today's document behind last February's. */
-    let r = uploads.concat(forPerson(base, personId))
+    let r = forPerson(base, personId)
     if (period !== 'all') {
       const cap = { m3: 3, m6: 6, y1: 12 }[period]
       r = r.filter((x) => (x.monthsAgo ?? 0) < cap)
@@ -176,7 +165,7 @@ export default function CuratioHistory() {
       r = r.filter((x) => `${x.name} ${x.clinic || ''} ${x.doctor || ''}`.toLowerCase().includes(q))
     }
     return r
-  }, [base, personId, period, cat, clinic, search, sec, added])
+  }, [base, personId, period, cat, clinic, search, sec])
 
   /* Locked: the page renders its chrome but NO records — deep links gate in
      place. This return sits BELOW every hook: an early return above the
@@ -185,10 +174,20 @@ export default function CuratioHistory() {
   if (!gate.unlocked) {
     return (
       <>
-        <header className="dash-pagehead">{crumbs}</header>
+        {!embedded && <header className="dash-pagehead">{crumbs}</header>}
+        {/* Aligned with the dashboard card's gated rail (user, 2026-09-08): the SAME
+            padlock illustration and the same body copy — it was meant to replace the
+            lock glyph in both states on 09-04 and only ever landed on the card.
+            The title renders ONLY standalone: embedded, the „სამედიცინო ისტორია"
+            section head sits directly above and is the heading (the card's rail head
+            plays exactly that part) — a second title under it was the h2-in-h3 the
+            audit's A5 had to patch. Standalone there is no head, so the card keeps
+            its own h2 and the page keeps a heading.
+            The CTA stays a primary Button, unlike the card's text link: here it is
+            the page's only action, not one line in a preview rail. */}
         <section className="gpi-card dash-histlock">
-          <Icon name="lock" size={32} />
-          <h2 className="dash-rsec__title">{D.cur.otp.title}</h2>
+          <img className="dash-lockillus" src={ASSETS.curatioLocked} alt="" />
+          {!embedded && <h2 className="dash-rsec__title">{D.cur.otp.title}</h2>}
           <p>{D.cur.recent.lockedBody}</p>
           <Button variant="primary" size="md" onClick={gate.request}>{D.cur.recent.enter}</Button>
         </section>
@@ -202,23 +201,80 @@ export default function CuratioHistory() {
   const slice = rows.slice((cur - 1) * PAGE, cur * PAGE)
 
   const clinicCell = (r) => <SourceMark src={r.src} label={r.clinic} />
-  const pdf = (label) => (
-    <button type="button" className="gpi-link dash-link" onClick={() => {}}>
+  /* Download is the paperclip's twin (user, 2026-09-04): icon-only ghost, the
+     document type („PDF" / „ფორმა 100") kept in the tooltip + accessible name. */
+  const pdf = (label, recName) => (
+    <button
+      type="button"
+      className="gpi-iconbtn gpi-iconbtn--neutral gpi-iconbtn--ghost dash-hist__attach"
+      aria-label={recName ? `${label} — ${recName}` : label}
+      title={label}
+      onClick={() => {}}
+    >
       <Icon name="download" size={16} />
-      {label}
     </button>
   )
+  /* Icon-only, so the label names the ACTION AND THE RECORD — the only thing that
+     makes a column of identical paperclips usable on a screen reader (mobile rule). */
+  const attachBtn = (r) => (
+    <button
+      type="button"
+      className="gpi-iconbtn gpi-iconbtn--neutral gpi-iconbtn--ghost dash-hist__attach"
+      aria-label={`${D.cur.upl.attach} — ${r.name}`}
+      title={D.cur.upl.attach}
+      onClick={() => setAttachTo(r)}
+    >
+      <Icon name="paperclip" size={16} />
+    </button>
+  )
+  const actions = (r, dl) => (
+    <span className="dash-hist__rowactions">
+      {dl}
+      {attachBtn(r)}
+    </span>
+  )
+  /* Attached docs list FIRST under the record (proof the upload landed — a file
+     that vanishes reads as a failure), same as the mobile card foot. */
+  const attachedDocs = (r) => {
+    const docs = attachments[r.id] || []
+    if (!docs.length) return null
+    return (
+      <span className="dash-attach">
+        {docs.map((d, i) => (
+          <span key={d.title + i} className="dash-attach__row">
+            <Icon name="paperclip" size={12} />
+            <span className="dash-attach__name">{d.title}</span>
+            {d.clinic && <span className="dash-attach__clinic">{d.clinic}</span>}
+          </span>
+        ))}
+      </span>
+    )
+  }
 
+  /* Column order (user 2026-09-08): the RECORD NAME leads — it is what the row is
+     about and what you scan for; the date is context, so it follows. Same order in
+     all three sections, or the same table would read differently per tab (Rule 1).
+     The date carries the year now, derived in curatioData — see dateWithYear. */
+  const dateCol = { key: 'date', header: D.cur.hist.cols.date, width: '108px', render: (r) => dateWithYear(r) }
   const columns = {
     analyses: [
-      { key: 'date', header: D.cur.hist.cols.date, width: '70px', render: (r) => r.date },
-      { key: 'name', header: D.cur.hist.cols.name, rowHeader: true, render: (r) => r.name },
+      {
+        key: 'name', header: D.cur.hist.cols.name, rowHeader: true,
+        render: (r) => (
+          <span className="dash-medcell">
+            <span>{r.name}</span>
+            {attachedDocs(r)}
+          </span>
+        ),
+      },
+      dateCol,
       { key: 'clinic', header: D.cur.hist.cols.clinic, width: '172px', render: clinicCell },
-      { key: 'status', header: D.cur.hist.cols.status, width: '104px', render: (r) => <StatusBadge s={r.status} /> },
-      { key: 'pdf', header: '', width: '84px', align: 'right', render: () => pdf('PDF') },
+      /* ⚠️ The სტატუსი column (norm/warn/crit) was REMOVED at the user's request
+         2026-09-08. The result signal is no longer surfaced anywhere in this table
+         — flagged in chat; StatusBadge is still used by the meds expiry cell. */
+      { key: 'pdf', header: '', width: '84px', align: 'right', render: (r) => actions(r, pdf('PDF', r.name)) },
     ],
     meds: [
-      { key: 'date', header: D.cur.hist.cols.date, width: '70px', render: (r) => r.date },
       {
         key: 'name', header: D.cur.hist.cols.med, rowHeader: true,
         render: (r) => (
@@ -228,9 +284,11 @@ export default function CuratioHistory() {
               {r.ref} · {r.doctor}
               {r.chronic && <Badge color="brand" size="sm">{D.cur.hist.chronic}</Badge>}
             </span>
+            {attachedDocs(r)}
           </span>
         ),
       },
+      dateCol,
       {
         key: 'expiry', header: D.cur.hist.cols.expiry, width: '196px',
         render: (r) =>
@@ -247,26 +305,27 @@ export default function CuratioHistory() {
             <Badge color="success" size="sm">{D.cur.hist.active}</Badge>
           ),
       },
-      { key: 'pdf', header: '', width: '84px', align: 'right', render: () => pdf('PDF') },
+      { key: 'pdf', header: '', width: '84px', align: 'right', render: (r) => actions(r, pdf('PDF', r.name)) },
     ],
     visits: [
-      { key: 'date', header: D.cur.hist.cols.date, width: '70px', render: (r) => r.date },
       {
         key: 'name', header: D.cur.hist.cols.visit, rowHeader: true,
         render: (r) => (
           <span className="dash-medcell">
             <span className="dash-visitname">
-              <Icon name={r.kind === 'remote' ? 'video' : 'building-2'} size={16} />
+              <Icon name={r.kind === 'remote' ? 'phone' : 'building-2'} size={16} />
               {r.name}
             </span>
             <span className="dash-medcell__meta">{r.doctor}</span>
+            {attachedDocs(r)}
           </span>
         ),
       },
+      dateCol,
       { key: 'clinic', header: D.cur.hist.cols.clinic, width: '172px', render: clinicCell },
       {
-        key: 'pdf', header: '', width: '112px', align: 'right',
-        render: (r) => (r.form100 ? pdf(D.cur.hist.form100) : <span className="dash-cell-muted">—</span>),
+        key: 'pdf', header: '', width: '84px', align: 'right',
+        render: (r) => actions(r, r.form100 ? pdf(D.cur.hist.form100, r.name) : <span className="dash-cell-muted">—</span>),
       },
     ],
   }[sec]
@@ -279,26 +338,25 @@ export default function CuratioHistory() {
 
   return (
     <>
-      <header className="dash-pagehead">
-        {crumbs}
-        <div className="dash-sechead">
-          <h2 className="dash-sechead__title">{D.cur.hist.title}</h2>
-          <button type="button" className="gpi-link dash-link dash-link--quiet" onClick={gate.relock}>
-            <Icon name="lock" size={16} />
-            {D.cur.lock}
-          </button>
-        </div>
-      </header>
+      {!embedded && (
+        <header className="dash-pagehead">
+          {crumbs}
+          <div className="dash-sechead">
+            <h2 className="dash-sechead__title">{D.cur.hist.title}</h2>
+          </div>
+        </header>
+      )}
 
       <div className="dash-hist">
         <aside className="dash-hist__rail">
-          <Select
-            value={personId}
-            onChange={(v) => { setPersonId(v); setPage(1) }}
-            ariaLabel={D.cur.person}
-            options={PERSONS.map((p) => ({ value: p.id, label: `${p.name} · ${p.ocin}` }))}
-            renderValue={(o) => o.label.split(' · ')[0]}
-          />
+          {!embedded && (
+            <Select
+              value={personId}
+              onChange={(v) => { setPersonId(v); setPage(1) }}
+              ariaLabel={D.cur.person}
+              options={PERSONS.map((p) => ({ value: p.id, label: p.name, sub: p.ocin, lead: <Avatar src={p.photo} name={p.name} size={34} /> }))}
+            />
+          )}
           <nav className="gpi-card dash-hist__nav" aria-label={D.cur.hist.title}>
             {secList.map((s) => (
               <button
@@ -306,19 +364,19 @@ export default function CuratioHistory() {
                 type="button"
                 className={`dash-hist__navitem${s.id === sec ? ' is-active' : ''}`}
                 aria-current={s.id === sec ? 'page' : undefined}
-                onClick={() => { setPage(1); setCat('all'); window.location.hash = `#/dash/curatio/history?sec=${s.id}` }}
+                onClick={() => { setPage(1); setCat('all'); window.location.hash = `${route}${route.includes('?') ? '&' : '?'}sec=${s.id}` }}
               >
                 <span>{s.label}</span>
                 <span className="dash-hist__count">{s.count}</span>
               </button>
             ))}
           </nav>
-          <Button variant="secondary" size="md" leadingIcon="upload" className="dash-hist__action" onClick={() => setUpl(true)}>
-            {D.cur.upl.title}
-          </Button>
-          <Button variant="tertiary" size="md" leadingIcon="arrow-right-left" className="dash-hist__action">
-            {D.cur.hist.transfer}
-          </Button>
+          {/* Embedded on v2 the doctor box already carries this action — one home per action (audit B4). */}
+          {!embedded && (
+            <Button variant="tertiary" size="md" leadingIcon="arrow-right-left" className="dash-hist__action">
+              {D.cur.hist.transfer}
+            </Button>
+          )}
         </aside>
 
         <div className="dash-hist__main">
@@ -362,22 +420,14 @@ export default function CuratioHistory() {
         </div>
       </div>
 
-      {upl && (
-        <UploadModal
-          personId={personId}
-          onClose={() => setUpl(false)}
-          onAdd={({ sec: s, name, clinic: cl }) =>
-            setAdded((a) => [
-              {
-                id: `up${a.length + 1}`, p: personId, sec: s,
-                date: D.cur.hist.today,
-                monthsAgo: 0, name, cat: 'blood', kind: 'inclinic', doctor: '',
-                clinic: cl || (D.cur.hist.clinics.external), src: 'external',
-                status: 'uploaded', expiryDays: null, chronic: false, form100: false,
-              },
-              ...a,
-            ])
-          }
+      {attachTo && (
+        <AttachModal
+          record={attachTo}
+          onClose={() => setAttachTo(null)}
+          onAdd={(doc) => {
+            addAttachment(attachTo.id, doc)
+            setAttachments(getAttachments())
+          }}
         />
       )}
       {gate.modal}

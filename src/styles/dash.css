@@ -179,6 +179,34 @@
   gap: var(--space-12);
 }
 .dash-pagehead .dash-sechead { margin-bottom: 0; }
+/* --- Page head, reworked 2026-09-08 (user: „change the page title and the huge
+   spacing between the title and the content. It is not clear") ---------------
+   1. The page title was the 15px UPPERCASE section-LABEL style (audit B9, then
+      deferred): beside a 50px person pill it read as a caption, not as the name of
+      the page. Internal pages now use the card-title ramp, 20/700. The DASHBOARD's
+      own section heads keep the label style the design specifies — hence the
+      `.dash-pagehead` scope, not a change to `.dash-sechead__title` itself. */
+.dash-pagehead .dash-sechead__title {
+  font: 700 20px/28px var(--font-sans);
+  text-transform: none;
+  letter-spacing: normal;
+}
+/* 2. Title + person switcher are ONE left-aligned group. The pill is the title's
+      scope („whose Curatio is this"), not an unrelated right-hand control, and the
+      whole page is left-aligned — pushing it to the far edge made the header read
+      as two separate things. `space-between` → `flex-start`. */
+.dash-pagehead .dash-sechead { justify-content: flex-start; }
+/* 3. `.dash-main__inner` is a flex column with a 40px CARD gap, and the page head
+      was inheriting it: 40 under the head plus ~15 of slack from the 50px pill
+      inflating the row = 55px between title and content. A head is not a card — it
+      belongs to what follows. A negative margin is how a single flex gap gets
+      overridden; this reads as „24, not 40". */
+.dash-main__inner > .dash-pagehead { margin-bottom: calc(var(--space-24) - var(--space-40)); }
+/* Crumbs sit directly on --dash-page-bg (#f1f5fb), where text/muted measures 4.42:1 —
+   under AA (it passes on the foundation's surface/page). neutral/600 = 7.07, the same
+   call .dash-doc__gate makes on the sunken ground (audit 2026-09-07 A7). */
+.dash-shell .gpi-crumbs a:not(:hover),
+.dash-shell .gpi-crumbs .gpi-crumbs__current { color: var(--color-neutral-600); } /* (0,3,0) beats `.gpi-crumbs span:not(.gpi-crumbs__sep)` */
 
 .dash-sechead {
   display: flex;
@@ -213,6 +241,7 @@
      the booking flow's inline links are untouched. */
   min-height: var(--control-xs);
   font-size: 14px;
+  line-height: 20px; /* the body rhythm, not .gpi-link's 21 (audit C3) */
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -523,8 +552,19 @@
   justify-content: space-between;
   gap: var(--space-16);
 }
-.dash-rsec__title { margin: 0; color: var(--color-indigo-800); font: 700 17px/22px var(--font-sans); }
+/* Rail section head — aligned to the Figma dashboard (user, 2026-09-04): the
+   title is a light 20px heading, not a bold 17, and „ყველა" is a 16px link that
+   stays underlined. Measured off the design shot at ~1.33× (MCP still blocked). */
+.dash-rsec__title { margin: 0; color: var(--color-indigo-800); font: 400 20px/26px var(--font-sans); }
+.dash-rsec__head .gpi-link { font-size: 16px; text-decoration: underline; }
 .dash-rsec__body { display: flex; flex-direction: column; gap: var(--space-12); }
+/* Rail toolbar: the section switch sits full-width on the tinted rail, so the
+   track is the white card surface with a hairline — the sunken grey track
+   disappears against --surface-page. */
+/* The rail's section tabs use the shared soft variant (mobile-switcher
+   parity); it owns the track + segment styling, so only the width is local. */
+.dash-rsec__tools .gpi-seg { width: 100%; }
+.dash-ccard__none { margin: 0; color: var(--text-muted); font: 400 14px/22px var(--font-sans); }
 .dash-rsec__empty {
   margin: 0;
   padding: var(--space-24);
@@ -539,12 +579,19 @@
   align-items: center;
   gap: var(--space-12);
   width: 100%;
-  padding: var(--space-12) var(--space-16);
+  /* Pill rows (Figma dashboard, 2026-09-04): fully rounded, 8px vertical
+     padding around the 40px lead → 56px tall, matching the design. */
+  padding: var(--space-8) var(--space-16);
+  /* LEFT inset equals the vertical inset (user, 2026-09-04) so the round lead
+     disc sits evenly inside the pill's end cap — 16px left made it look pushed
+     in against an 8px top/bottom. Only rows that HAVE a disc: a text-only row
+     would start its title 8px from a curved edge. */
   border: var(--border-width-sm) solid var(--border-default);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-full);
   background: var(--surface-card);
   text-align: left;
 }
+.dash-lrow:has(> .dash-lrow__lead) { padding-left: var(--space-8); }
 .dash-lrow--btn { cursor: pointer; transition: border-color 0.12s ease, background 0.12s ease; }
 .dash-lrow--btn:hover { border-color: var(--border-strong); background: var(--color-neutral-50); }
 .dash-lrow__lead { flex: 0 0 auto; display: inline-flex; }
@@ -666,6 +713,9 @@
   .dash-pcard__main,
   .dash-pcard__rail { padding: var(--space-20); }
   .dash-chead { flex-direction: column; align-items: flex-start; gap: var(--space-8); }
+  /* The row basis (260px) turns into HEIGHT once the head is a column — measured
+     288–294px heads with a 26–90px title row on every product card (audit 2026-09-07 A2). */
+  .dash-chead__main { flex-basis: auto; }
 }
 
 /* Phone widths are NOT this product's job — the consumer phone experience is the
@@ -704,32 +754,21 @@
   --dash-curatio: #424f9d;
   --dash-curatio-tint: #e7ecf8;
   --dash-curatio-fg: #3a4690;
+  /* E-ticket hero (2026-09-08) — the mobile ticket's brand recipe on web tokens:
+     gradient deep → mid → 2 (curatio-600 / -500 / -400 in mga.css) and the live
+     pulse (green-400, mobile's --mga-live). TODO port with brand/curatio/* to Figma. */
+  --dash-curatio-deep: #3a4690;
+  --dash-curatio-2: #4a58ab;
+  --dash-curatio-live: var(--color-green-400);
 }
 .dash-pcard--curatio { --dash-rail: var(--dash-curatio); }
 
 /* ---- The dashboard card ---------------------------------------------------
-   ANATOMY MATCHES THE POLICY CARDS. It used to be one padded box with an inset
-   grey panel floating inside it, which read as a different species next to the
-   health/auto cards — those split edge-to-edge into a white main column and a
-   tinted rail that runs the full height of the card. This card now does the
-   same: `.dash-pcard` supplies the grid + the coloured top rail, and only the
-   HEAD spans both columns, because the card has one title, not two. */
-.dash-ccard {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-rows: auto 1fr;
-  padding: 0;
-}
-.dash-ccard__head {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-16);
-  flex-wrap: wrap;
-  padding: var(--space-24) var(--space-32);
-  border-bottom: var(--border-width-sm) solid var(--border-divider);
-}
+   ANATOMY = THE POLICY CARDS, literally: it renders through ProductCard, so the
+   grid, the coloured top rail, the white main column and the tinted list rail
+   are the same rules the health/auto cards use. Nothing spans both columns —
+   the head sits in the main column like every other product head (user,
+   2026-09-04: the full-width header band read as a third species). */
 .dash-ccard__brand {
   display: inline-flex;
   align-items: center;
@@ -743,35 +782,36 @@
   height: var(--avatar-md);
   border-radius: var(--radius-md);
   background: var(--dash-curatio);
-  color: #ffffff; /* white-on-blue IS Curatio's lockup (locked, 2026-08-26) */
+  color: var(--text-inverse); /* white-on-blue IS Curatio's lockup (locked, 2026-08-26) */
 }
+/* The card's actions take the head's trailing slot (where the policy cards put
+   their payment note) and wrap under the name when the column gets tight. */
 .dash-ccard__actions {
   display: inline-flex;
   align-items: center;
   gap: var(--space-16);
+  flex: 0 0 auto;
+  min-height: 26px; /* baseline-align with the 26px title line */
 }
-/* The tiles column: the card's main, on white, matching .dash-pcard__main. */
-.dash-ccard__tiles {
-  margin-top: 0;
-  /* Centred, not top-aligned: three tiles are shorter than the rail's rows, and
-     start-alignment left a block of dead space under them while the rail ran
-     full. Centring balances the two columns without inventing filler content. */
-  align-content: center;
-  padding: var(--space-32);
-}
+/* One link spec beside a 20px title: the rail head already pairs its 20px title
+   with the 16px underlined link — the card head does the same (audit B2). */
+.dash-ccard__actions .dash-link { font-size: 16px; }
+/* The ticket slot inside the card's main column (compact hero on visit day, the
+   next booking otherwise) — permanent since 2026-09-08. */
+.dash-ccard__ticket { display: flex; flex-direction: column; gap: var(--space-12); margin-top: var(--space-24); }
+.dash-tkt__none { margin: 0; font: 400 14px/20px var(--font-sans); color: var(--text-muted); }
+/* Three tiles are shorter than the rail's rows: the tile block takes the spare
+   height and centres in it, so the column does not end in a slab of dead space. */
+.dash-ccard__tiles { flex: 1; align-content: center; }
+/* A tile with no action (a „მალე" feature): same shape, quieter, and it must
+   not offer a pointer or a hover it cannot honour. */
+.dash-tile--static { cursor: default; }
+.dash-tile--static:hover { border-color: var(--border-default); background: var(--surface-card); }
+.dash-tile--static .dash-tile__label { color: var(--text-muted); }
 .dash-tile__sub { color: var(--text-muted); font: 400 12px/16px var(--font-sans); text-align: center; }
 .dash-tile__disc--curatio { background: var(--dash-curatio-tint); color: var(--dash-curatio-fg); }
 
-/* The rail: same tint, same hairline, same padding as .dash-pcard__rail, so
-   the three cards share one silhouette instead of three. */
-.dash-ccard__recent {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-12);
-  padding: var(--space-32);
-  background: var(--surface-page);
-  border-left: var(--border-width-sm) solid var(--border-divider);
-}
+/* The locked records preview (lives in the ProductCard rail). */
 .dash-ccard__locked {
   display: flex;
   flex-direction: column;
@@ -784,48 +824,137 @@
 }
 .dash-ccard__locked p { margin: 0; }
 .dash-ccard__locked svg { color: var(--icon-muted); }
+/* Locked-state illustration (user-supplied padlock art, brand pink + neutral dots).
+   Same 180px floor as .gpi-empty__illus so the two empty states read as one family.
+   SHARED by both gated states — the card's records rail and the section page's history
+   shelf (renamed from .dash-ccard__illus 2026-09-08, when the section finally got it:
+   one class, because it is literally the same object in two places). */
+.dash-lockillus { width: 200px; max-width: 100%; height: auto; display: block; margin-bottom: var(--space-4); }
 
 /* The quiet variant: an action that undoes rather than opens (ჩაკეტვა). */
 .dash-link--quiet { color: var(--text-muted); display: inline-flex; align-items: center; gap: var(--space-4); }
 /* Inline meta-line action: rides a 20px sub line, so the standalone link's
    24px floor is met by the ROW around it, not the link's own box. */
-.dash-link--inline { min-height: 0; font-size: 12px; }
+/* 24px target (Rule 7) without growing the 18px meta line: the box is 24, the
+   negative block margin gives 6px back to the line (audit E2). */
+.dash-link--inline { min-height: var(--control-xs); margin-block: -3px; font-size: 12px; }
 
 /* ---- Visit-day strip (F-01 web scope: read-only, points at the phone) ------ */
 /* Inside the card grid the strip spans both columns and squares off, so it
    reads as a band of the card rather than a floating pill. Standalone (the
    section page) it keeps its rounded card shape. */
-.dash-cvisit--full {
-  grid-column: 1 / -1;
-  border-radius: 0;
-}
-.dash-cvisit {
+/* ── E-TICKET HERO („boarding pass", 2026-09-08) — the mobile ticket hero's skin on
+   the mobile dash hero's anatomy (see CuratioTicket.jsx). Curatio gradient + the
+   mosaic mark as a white corner watermark: the one place the web zone goes full
+   brand on a card, because the ticket is Curatio's artifact. Rule 5: same recipe,
+   WEB tokens — never mga vars. White-on-navy: the lightest alpha used for text is
+   .78, which measures ≥5:1 on --dash-curatio-deep. ── */
+.dash-tkt {
+  position: relative;
+  overflow: hidden;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-16);
-  flex-wrap: wrap;
-  padding: var(--space-16) var(--space-20);
-  border-radius: var(--radius-lg);
-  background: var(--dash-curatio);
-  color: #ffffff;
+  padding: var(--space-24);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(160deg, var(--dash-curatio-deep) 0%, var(--dash-curatio) 65%, var(--dash-curatio-2) 100%);
+  color: var(--text-inverse);
 }
-.dash-cvisit__main {
+.dash-tkt::after {
+  content: '';
+  position: absolute;
+  top: -28px;
+  right: -36px;
+  width: 168px;
+  height: 168px;
+  background: url('../assets/curatio-mark.svg') no-repeat center / contain;
+  filter: brightness(0) invert(1); /* the asset is flat brand blue; the band wants it white */
+  opacity: 0.12;
+  pointer-events: none;
+}
+.dash-tkt__main {
+  position: relative; /* above the watermark */
+  z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  font: 400 14px/20px var(--font-sans);
+  gap: var(--space-4);
   min-width: 0;
 }
-.dash-cvisit__main strong { font-weight: 700; }
-.dash-cvisit__phone {
+.dash-tkt__kicker {
+  font: 700 12px/16px var(--font-sans);
+  letter-spacing: 0.07em;
+  text-transform: uppercase; /* no-op in Mkhedruli, shapes the en locale — as on mobile */
+  color: rgba(255, 255, 255, 0.78);
+  margin-bottom: var(--space-4);
+}
+.dash-tkt__title { font: 700 16px/24px var(--font-sans); }
+.dash-tkt__place { font: 400 14px/20px var(--font-sans); color: rgba(255, 255, 255, 0.85); }
+.dash-tkt__live {
   display: inline-flex;
   align-items: center;
   gap: var(--space-8);
+  margin-top: var(--space-4);
+  font: 600 13px/18px var(--font-sans);
+}
+.dash-tkt__pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--dash-curatio-live);
+  animation: dash-pulse 2s infinite;
+}
+@keyframes dash-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dash-tkt__pulse { animation: none; }
+}
+.dash-tkt__phone {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  margin-top: var(--space-8);
   font: 500 13px/18px var(--font-sans);
   color: rgba(255, 255, 255, 0.92);
-  white-space: nowrap;
 }
+.dash-tkt__when {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+.dash-tkt__whenlbl { font: 400 12px/16px var(--font-sans); color: rgba(255, 255, 255, 0.78); }
+.dash-tkt__time { font: 800 32px/36px var(--font-sans); letter-spacing: -0.01em; }
+/* Compact (dashboard card): tighter, smaller figure — a summary, not the artifact. */
+.dash-tkt--compact { padding: var(--space-16) var(--space-20); }
+.dash-tkt--compact .dash-tkt__time { font-size: 26px; line-height: 30px; }
+.dash-tkt--compact::after { width: 130px; height: 130px; top: -22px; right: -30px; }
+/* Stats strip — the mobile ticket's 3 cells, led by the ticket number. A <dl>:
+   each cell is a term + its value. */
+.dash-tkt__stats {
+  display: flex;
+  margin: 0;
+  padding: var(--space-16) var(--space-24);
+  border-bottom: var(--border-width-sm) solid var(--border-default);
+  text-align: center;
+}
+.dash-tkt__cell {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+.dash-tkt__cell + .dash-tkt__cell { border-left: var(--border-width-sm) solid var(--border-default); }
+.dash-tkt__cell dt { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+.dash-tkt__cell dd { margin: 0; font: 700 16px/24px var(--font-sans); color: var(--text-main); }
+.dash-tkt__cell dd.dash-tkt__num { color: var(--dash-curatio-fg); letter-spacing: 0.02em; }
 
 /* ---- Section (#/dash/curatio) --------------------------------------------- */
 /* The shared Select stretches to its container (form default); as a HEADER
@@ -875,8 +1004,6 @@
 
 .dash-lrow__disc--curatio { background: var(--dash-curatio-tint); color: var(--dash-curatio-fg); }
 
-.dash-rem { display: flex; flex-direction: column; gap: var(--space-12); }
-.dash-rem__note { margin: 0; color: var(--text-muted); font: 400 12px/16px var(--font-sans); }
 
 /* ---- OTP modal -------------------------------------------------------------
    A code entry is a CENTRED, FOCUSED MOMENT — one axis for the sent line, the
@@ -904,7 +1031,7 @@
 .dash-otpmodal .gpi-modal__ft { justify-content: center; }
 .dash-otp__body { margin: 0; color: var(--text-main); font: 400 14px/22px var(--font-sans); }
 .dash-otp__resend { margin: 0; color: var(--text-muted); font: 400 13px/18px var(--font-sans); }
-.dash-otp__demo { margin: 0; color: var(--text-disabled); font: 400 12px/16px var(--font-sans); }
+.dash-otp__demo { margin: 0; color: var(--text-muted); font: 400 12px/16px var(--font-sans); }
 
 /* ---- History (#/dash/curatio/history) -------------------------------------- */
 .dash-histlock {
@@ -912,13 +1039,14 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-12);
-  padding: var(--space-64) var(--space-24);
+  /* 64 was sized for a 32px lock GLYPH — with the 200px illustration the card ran
+     to ~430px of mostly air. 40 keeps it generous without the void (2026-09-08). */
+  padding: var(--space-40) var(--space-24);
   text-align: center;
   color: var(--text-muted);
   font: 400 14px/20px var(--font-sans);
 }
 .dash-histlock p { margin: 0; }
-.dash-histlock svg { color: var(--icon-muted); }
 
 .dash-hist {
   display: grid;
@@ -946,9 +1074,9 @@
   cursor: pointer;
 }
 .dash-hist__navitem:hover { background: var(--interactive-hover-bg); }
-.dash-hist__navitem.is-active { background: var(--interactive-selected-bg); color: var(--text-brand); }
+.dash-hist__navitem.is-active { background: var(--interactive-selected-bg); color: var(--interactive-selected-fg); } /* 5.15:1 on the tint (audit A6) */
 .dash-hist__count { color: var(--text-muted); font-weight: 400; }
-.dash-hist__navitem.is-active .dash-hist__count { color: var(--text-brand); }
+.dash-hist__navitem.is-active .dash-hist__count { color: var(--interactive-selected-fg); }
 .dash-hist__action { width: 100%; }
 
 .dash-hist__main { display: flex; flex-direction: column; gap: var(--space-16); min-width: 0; }
@@ -972,7 +1100,7 @@
 }
 .dash-visitname { display: inline-flex; align-items: center; gap: var(--space-8); }
 .dash-visitname svg { color: var(--icon-muted); flex: 0 0 auto; }
-.dash-cell-muted { color: var(--text-disabled); }
+.dash-cell-muted { color: var(--text-muted); } /* a meaning-bearing dash, not a disabled control (audit C4) */
 
 .dash-srcmark { display: inline-flex; align-items: center; gap: var(--space-8); min-width: 0; }
 .dash-srcmark--curatio { color: var(--dash-curatio-fg); font-weight: 500; }
@@ -986,6 +1114,30 @@
   gap: var(--space-16);
 }
 .dash-upl__consent { padding-top: var(--space-4); }
+/* Which record the attach modal is for — a quiet line under the title. */
+.dash-upl__rec { margin: 0; color: var(--text-muted); font: 400 13px/18px var(--font-sans); }
+
+/* ---- Per-record attach (web twin of mobile's card paperclip, 2026-09-04) ----
+   The row's utilities sit together, right-aligned: the download link and the
+   icon-only paperclip. Icon buttons in a table row are the 32px ghost size —
+   over the 24px target floor without inflating the 58px row. */
+.dash-hist__rowactions { display: inline-flex; align-items: center; justify-content: flex-end; gap: var(--space-4); }
+.dash-hist__attach { width: var(--control-sm); height: var(--control-sm); color: var(--text-muted); }
+.dash-hist__attach:hover { color: var(--color-indigo-800); }
+/* Attached documents under the record: proof first, small and muted, one line
+   per file — the mobile card foot, translated into a table cell. */
+.dash-attach { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-2); }
+.dash-attach__row {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  color: var(--text-muted);
+  font: 400 12px/16px var(--font-sans);
+  min-width: 0;
+}
+.dash-attach__row svg { flex: 0 0 auto; color: var(--dash-curatio-fg); }
+.dash-attach__name { color: var(--color-indigo-800); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dash-attach__clinic::before { content: '· '; }
 
 /* ---- Focus for the new controls ------------------------------------------- */
 .dash-hist__navitem:focus-visible,
@@ -1000,16 +1152,18 @@
    content min-widths can still push it a few px past its card and trip the
    pinned-edge scroll shadow. Below the comfortable width the card gives its own
    padding back rather than letting the table scroll inside it. */
+/* Rail rows below the designed ~1900: the md badge + fact no longer fit beside
+   a name in a 640px rail, and the name (the thing being read) was the part that
+   broke. Let the TRAILING block wrap onto two lines instead, right-aligned. */
+@media (max-width: 1600px) {
+  .dash-lrow__text { flex: 1 1 55%; }
+  .dash-lrow__trail { flex: 0 1 auto; flex-wrap: wrap; justify-content: flex-end; row-gap: var(--space-4); }
+}
 @media (max-width: 1320px) {
   .dash-hist__table { padding: var(--space-16); }
 }
 
 @media (max-width: 1180px) {
-  .dash-ccard { grid-template-columns: minmax(0, 1fr); }
-  .dash-ccard__recent {
-    border-left: none;
-    border-top: var(--border-width-sm) solid var(--border-divider);
-  }
   .dash-cur__cols { grid-template-columns: minmax(0, 1fr); }
   .dash-hist { grid-template-columns: minmax(0, 1fr); }
   .dash-hist__rail { flex-direction: row; flex-wrap: wrap; align-items: stretch; }
@@ -1017,8 +1171,357 @@
   .dash-hist__action { width: auto; }
 }
 @media (max-width: 860px) {
-  .dash-ccard__head,
-  .dash-ccard__tiles,
-  .dash-ccard__recent { padding: var(--space-20); }
   .dash-upl__grid { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* ---- Section v2 (#/dash/curatio) --------------------------------------------
+   ONE COLUMN (user, 2026-09-08): ticket → doctor → history. The former two-box
+   row (`grid 1fr 1fr` + `align-items: stretch`) forced both boxes to the taller
+   one's height, and the lighter box — which one FLIPPED with width and state —
+   showed the difference as a hole. Stacked, every row is exactly its own height,
+   and the "absorb the slack" rules that fought that grid are gone with it.
+   Rows share the `.dash-doc` card grammar (white, card elevation, radius-xl). */
+.dash-cur2__stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+  margin-bottom: var(--space-32);
+}
+.dash-cur2__box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  min-width: 0;
+  padding: var(--space-24);
+  background: var(--surface-card);
+  box-shadow: var(--elevation-card);
+  border-radius: var(--radius-xl);
+}
+/* Line 2 — the doctor as a full-width row: avatar · label/name/meta · actions on
+   the right. `.dash-doc` gives the card; the row centres its three parts. */
+.dash-cur2__doc { align-items: center; }
+.dash-doc__actions {
+  flex: 0 0 auto;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+/* Line 1 on an ordinary day — the box head + up to three upcoming bookings side
+   by side. One booking on one line stretched a 350px pill across 1720px; three
+   real rows fill the width, and wrap 3 → 2 → 1 as it shrinks. 320 is the floor a
+   row needs for avatar · name · date · badge without the title wrapping. */
+.dash-cur2__box--slim { padding: var(--space-16) var(--space-24) var(--space-20); }
+.dash-cur2__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-12);
+}
+/* Centring is now ONLY for the empty state, where there is genuinely nothing to
+   fill the stretched height with. The booking state used to centre too (audit B6),
+   which put 64px of air above AND below a single row and read as broken; it now
+   carries two rows + „ყველა N" and sits top-aligned, so its label lines up with
+   the doctor box's name. */
+.dash-cur2__box:has(.dash-cur2__empty) { justify-content: center; }
+/* Label + view-all on one line — the RailSection head grammar, so the link costs
+   no height and stays where the eye already looks for it. */
+.dash-cur2__boxhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+.dash-cur2__boxhead .dash-link { white-space: nowrap; }
+.dash-cur2__label {
+  color: var(--text-muted);
+  font: 500 12px/16px var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+/* Visit day: hero → stats → check-in, stacked in the box. The hero takes the box's
+   top corners (its bottom edge meets the white stats strip, so it squares off —
+   audit B7) and any spare height, so the pair of boxes stays level. */
+.dash-cur2__box--ticket { padding: 0; gap: 0; }
+.dash-cur2__box--ticket .dash-tkt { flex: 1; border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
+/* ── Arrival check-in („მე მოვედი", F-01 / mobile comment #5, 2026-09-07) ──────
+   Sits UNDER the blue strip on the box's own white surface: the strip is the
+   ticket (what/when/where), this is the one thing you DO with it. The strip keeps
+   flex:1 so the pair of boxes stays level and this block takes only its own height. */
+.dash-arr {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-16) var(--space-24);
+}
+.dash-arr__text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.dash-arr__text strong { font: 500 14px/20px var(--font-sans); color: var(--text-main); }
+.dash-arr__text span { font: 400 13px/18px var(--font-sans); color: var(--text-muted); }
+.dash-arr > .gpi-btn { flex: 0 0 auto; }
+/* Too early: a muted LINE, not a disabled button — a dead control explains nothing,
+   while this names the time the window opens and points at the phone, which has no
+   such gate. Same reasoning as the „მალე" prevention tile. */
+.dash-arr--early {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font: 400 13px/18px var(--font-sans);
+  color: var(--text-muted);
+}
+.dash-arr--early > svg { flex: 0 0 auto; color: var(--icon-muted); }
+/* Confirmed: stays on screen rather than collapsing — it is the patient's proof
+   AND their next instruction (mobile #5 makes the same call). */
+.dash-arr__ico {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+}
+/* Open: the map-pin on the brand tint — the mobile check-in card's tile (accent-soft
+   + accent-fg), same pair the pink action tile uses here. Done: the success disc. */
+.dash-arr__ico--pin { background: var(--color-pink-50); color: var(--action-primary); }
+.dash-arr__ico--ok { background: var(--status-success-bg); color: var(--status-success-fg); }
+.dash-arr--done .gpi-badge { flex: 0 0 auto; }
+/* Nothing booked: an invitation, centred in the same slot. */
+.dash-cur2__empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+  text-align: center;
+  color: var(--text-muted);
+  font: 400 14px/20px var(--font-sans);
+}
+.dash-cur2__empty svg { color: var(--icon-muted); }
+.dash-cur2__empty strong { color: var(--color-indigo-800); font-weight: 600; }
+.dash-cur2__empty .gpi-btn { margin-top: var(--space-4); }
+/* The history section head sits under the row like any page section head. */
+.dash-cur2__histhead { margin-bottom: var(--space-16); }
+
+/* ---- <=640: the web dashboard's phone fallback (audit 2026-09-07) ----------
+   Not an agreed responsive spec — the mobile app is the phone surface — but the
+   fallback must not break the locked rules. */
+@media (max-width: 640px) {
+  /* A1: the doctor box stacks (avatar above text) so the buttons get the full
+     width — the ka remote-consultation label is 277px and escaped a 246px column
+     at 390. Buttons become a full-width column; a label never wraps. */
+  .dash-cur2__box.dash-doc { flex-direction: column; }
+  .dash-doc__btns { flex-direction: column; align-items: stretch; }
+  .dash-doc__btns .gpi-btn { width: 100%; }
+  /* One-column v2: the doctor row wraps its actions under the text, Book full
+     width; the slim booking row stacks label / row / link. */
+  .dash-cur2__doc { flex-wrap: wrap; }
+  .dash-cur2__doc .dash-doc__actions { flex: 1 1 100%; margin-left: 0; }
+  .dash-cur2__doc .dash-doc__actions > .gpi-btn { flex: 1 1 auto; }
+  /* The booking grid cannot honour a 320px floor in a 326px column: one-up. */
+  .dash-cur2__grid { grid-template-columns: minmax(0, 1fr); }
+  /* A4, the mobile reading of the title/badge rule (2026-08-18): the title owns
+     the full row; facts + badge drop to their own line under it, aligned to the
+     text. Desktop keeps the design's right rail until the user decides. */
+  .dash-lrow { flex-wrap: wrap; }
+  .dash-lrow__trail { order: 10; flex: 1 1 100%; justify-content: flex-start; margin-left: 0; }
+  .dash-lrow:has(> .dash-lrow__lead) .dash-lrow__trail { padding-left: 52px; } /* lead 40 + gap 12 */
+  /* Check-in: the box's single action goes full width; the confirmation badge
+     drops under the text (disc 32 + gap 12). */
+  .dash-arr { flex-wrap: wrap; }
+  .dash-arr > .gpi-btn { flex: 1 1 100%; }
+  .dash-arr--done .gpi-badge { margin-left: 44px; }
+  /* Same rule for the meta rows (doctor / second opinion / assistant): the action
+     drops under the text instead of squeezing the title to three lines. */
+  .dash-mrow { flex-wrap: wrap; }
+  .dash-mrow__text { flex: 1 1 100%; min-width: 0; }
+  .dash-mrow__action { flex: 1 1 100%; }
+  /* Rail heads: the „ყველა N" link is a control — it never breaks inside itself;
+     the head wraps and the link drops under the title instead (button-label rule). */
+  .dash-rsec__head { flex-wrap: wrap; }
+  .dash-rsec__head .gpi-link { white-space: nowrap; }
+  /* D3: filters stack full-width instead of a ragged column of content-sized triggers. */
+  .dash-hist__filters .gpi-fsel { flex: 1 1 100%; min-width: 0; }
+  /* E-ticket: the time block drops under the text; the 4 stats cells go 2×2. */
+  .dash-tkt { flex-wrap: wrap; }
+  .dash-tkt__when { align-items: flex-start; text-align: left; }
+  .dash-tkt__stats { flex-wrap: wrap; row-gap: var(--space-12); }
+  .dash-tkt__cell { flex: 1 1 45%; }
+  .dash-tkt__cell:nth-child(3) { border-left: 0; }
+}
+@media (max-width: 360px) {
+  /* Button-label rule, fix order 2 (2026-07-06): when the widest label still
+     does not fit, keep the text and drop the icon — never a second line. */
+  .dash-cur2__box.dash-doc { padding: var(--space-16); }
+  .dash-doc__btns .gpi-btn > svg { display: none; }
+  .dash-cur2__doc { padding: var(--space-16); }
+  .dash-doc__actions .gpi-btn > svg { display: none; }
+  /* The 260px person pill is wider than a 248px column: let the name ellipsize
+     instead (the panel pins to the trigger's measured width, so they stay matched). */
+  .gpi-pswitch__btn { min-width: 0; max-width: 100%; }
+}
+
+/* ---- Post-payment Visa benefit page (#/dash/visa-benefit, 2026-09-08) -------
+   One centred column of cards: receipt → offer → 2-step claim (→ done). A
+   single-purpose page, so it does not stretch across the fluid dashboard
+   canvas — 640 keeps the form's line length and the CTA width sane. Every
+   surface is the shared .gpi-card; this block is composition only. */
+.dash-visa {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+  width: 100%;
+  max-width: 640px;
+  margin-inline: auto;
+}
+.dash-visa__card { display: flex; flex-direction: column; gap: var(--space-16); }
+.dash-visa__hero { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-12); }
+/* Same anatomy as the payment portal's receipt icon (.pay-done__icon) — one
+   success mark across surfaces, no shared class so the modules stay separate. */
+.dash-visa__icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background: var(--status-success-bg);
+  color: var(--status-success-fg);
+}
+.dash-visa__h3 { margin: 0; font: 600 20px/28px var(--font-sans); color: var(--color-indigo-800); }
+.dash-visa__p { margin: 0; font: 400 14px/22px var(--font-sans); color: var(--text-muted); }
+.dash-visa__note { margin: 0; font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+.dash-visa__listtitle { font: 600 13px/20px var(--font-sans); color: var(--text-main); }
+
+.dash-visa__rows {
+  margin: 0;
+  border-top: var(--border-width-sm) solid var(--border-divider);
+  padding-top: var(--space-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+.dash-visa__rows div { display: flex; justify-content: space-between; gap: var(--space-16); }
+.dash-visa__rows dt { font: 400 13px/20px var(--font-sans); color: var(--text-muted); flex: none; }
+.dash-visa__rows dd { font: 500 13px/20px var(--font-sans); color: var(--text-main); margin: 0; text-align: right; }
+
+.dash-visa__offerhead { display: flex; align-items: center; gap: var(--space-12); flex-wrap: wrap; }
+/* Partner mark on a neutral chip: the host owns the surface, the partner's
+   colour sits inside it (same rule as the payment banner's Visa chip). */
+.dash-visamark {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 var(--space-12);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  font: 800 12px/1 var(--font-sans);
+  font-style: italic;
+  letter-spacing: 0.4px;
+  color: #1434cb; /* brand-locked, see marks.jsx */
+}
+
+/* Benefit rows = inset tiles inside a 16 card → radius/md (card ladder). */
+.dash-visa__benefits { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-8); }
+.dash-visa__benefits li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  font: 400 14px/20px var(--font-sans);
+  color: var(--text-main);
+}
+.dash-visa__benefits li svg { flex: none; color: var(--icon-default); }
+.dash-visa__benefits li span { flex: 1 1 auto; min-width: 0; }
+/* The amount is the offer, not metadata — indigo, never competing with the pink CTA. */
+.dash-visa__benefits strong { font-weight: 500; color: var(--color-indigo-500); white-space: nowrap; }
+
+.dash-visa__form { display: flex; flex-direction: column; gap: var(--space-16); }
+.dash-visa__steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-24); }
+.dash-visa__step { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: var(--space-12); align-items: start; }
+.dash-visa__num {
+  width: 28px;
+  height: 28px;
+  margin-top: -4px; /* centres the 28 circle on the 20 title line */
+  border-radius: var(--radius-full);
+  background: var(--interactive-selected-bg);
+  color: var(--interactive-selected-fg);
+  font: 600 13px/28px var(--font-sans);
+  text-align: center;
+}
+.dash-visa__stepbody { display: flex; flex-direction: column; gap: var(--space-12); min-width: 0; }
+.dash-visa__steptitle { font: 600 14px/20px var(--font-sans); color: var(--text-main); }
+.dash-visa__stepbody .gpi-field { gap: 0; }
+/* Text links hug their text: a column-flex child would otherwise stretch to the
+   card's width and take clicks from the empty space beside the label. */
+.dash-visa .gpi-link { align-self: flex-start; }
+
+.dash-visa__actions { display: flex; flex-direction: column; gap: var(--space-8); }
+.dash-visa__actions .gpi-btn { width: 100%; }
+
+.dash-visa__howto {
+  margin: 0;
+  padding-left: var(--space-20);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  font: 400 14px/22px var(--font-sans);
+  color: var(--text-main);
+}
+
+@media (max-width: 640px) {
+  .dash-visa__rows div { flex-direction: column; gap: 2px; }
+  .dash-visa__rows dd { text-align: left; }
+}
+
+/* ---- v2 (user, 2026-09-08 later): one-line strip → ONE claim card. The receipt
+   lost its card; what the customer still has to DO leads.
+   v2.3 (user, 2026-09-09 „hide stepper"): the Stepper tracker is gone — its
+   .dash-visa__tracker rules and their ≤767 override left with it. ----------- */
+/* Purchase confirmation = the shared CtaBanner (icon tile · title + sub · action),
+   the banner the designs already use — no bespoke strip. */
+/* The ONE reward, as a single inset row (points OR perks, never both). */
+.dash-visa__reward {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-8) var(--space-16);
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+}
+.dash-visa__reward-main {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+  min-width: 0;
+  font: 400 14px/20px var(--font-sans);
+  color: var(--text-main);
+}
+.dash-visa__reward-main strong { font-weight: 600; color: var(--color-indigo-800); }
+/* Steps still to do read as PENDING (warning tone), not as brand accents. */
+.dash-visa__num--pending { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+/* ---- v2.1 (user: "very noisy"): no numbered steps. The warning carries the
+   instruction; the field label carries an info trigger (tooltip on hover/focus,
+   the how-to modal on click); the consent is a plain checkbox. --------------- */
+.dash-visa__info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px; /* target floor, inline in a 16px label line */
+  height: 24px;
+  margin: -4px 0 -4px var(--space-4);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: none;
+  color: var(--icon-default);
+  cursor: pointer;
+  vertical-align: middle;
+}
+.dash-visa__info:hover { background: var(--interactive-hover-bg); }
+.dash-visa__info:focus-visible { outline: var(--focus-ring-width) solid var(--border-focus); outline-offset: var(--focus-ring-offset); }
+.dash-visa__consent { display: flex; flex-direction: column; gap: var(--space-4); }

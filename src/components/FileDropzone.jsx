@@ -152,7 +152,8 @@ export default function FileDropzone({
           </span>
           {extra && <span className="gpi-dropzone__extra">{extra}</span>}
           <label htmlFor={inputId} className="gpi-dropzone__cta">
-            {state === 'loading' ? loadingLabel : replaceLabel || browseLabel}
+            {/* idle shows BROWSE — the replace label before any file is chosen was a copy defect (2026-09-07) */}
+            {state === 'loading' ? loadingLabel : file ? replaceLabel || browseLabel : browseLabel}
           </label>
         </>
       ) : (

@@ -80,6 +80,30 @@ export function visaPoints(tier, amount) {
   return rate ? (amount * rate).toFixed(2) : null
 }
 
+/* CALL-CENTRE COMMITMENT (GPI, 2026-09-08) — this is the real mechanism:
+   the customer tells an agent on the phone which Visa tier they will pay with,
+   and the agent records it. So the TIER IS KNOWN before the payment screen
+   loads (it resolves open question #2 — no BIN lookup needed), it is NOT a
+   property of any saved card, and this portal only ever STATES it back.
+   'none' = no commitment on file → the banner falls back to the generic pitch.
+   Demo seeds 'signature' so the committed state is what you see first. */
+export const VISA_TIERS = { signature: 'Visa Signature', infinite: 'Visa Infinite' }
+export const TIER_CYCLE = ['signature', 'infinite', 'none']
+
+const COMMIT_KEY = 'gpi.pay.commitTier'
+
+export function getCommitTier() {
+  const t = sessionStorage.getItem(COMMIT_KEY)
+  return TIER_CYCLE.includes(t) ? t : 'signature'
+}
+
+export function setCommitTier(tier) {
+  sessionStorage.setItem(COMMIT_KEY, tier)
+}
+
+/* ⚠️ DEAD — the removed on-screen opt-in. Kept only so SuccessScreen's
+   settlement block stays provably inert while its fate is decided; do not
+   confuse it with the commitment above. */
 const VISA_KEY = 'gpi.pay.visaTier'
 
 export function getVisaTier() {

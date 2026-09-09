@@ -107,3 +107,15 @@ export function WhatsAppMark({ size = 24, className = '' }) {
     </svg>
   )
 }
+
+/* Visa wordmark — STAND-IN, the same simplified mark the payment portal uses.
+   The brand blue is a literal on purpose (brand-locked asset, the sanctioned
+   exception to the token rule); production needs the official Visa asset,
+   cleared with Visa for size and clear space. */
+export function VisaMark() {
+  return (
+    <span className="dash-visamark" aria-hidden="true">
+      VISA
+    </span>
+  )
+}

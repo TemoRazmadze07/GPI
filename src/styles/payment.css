@@ -104,6 +104,13 @@
   box-shadow: var(--elevation-card);
   padding: var(--space-40);
 }
+/* Below full desktop the sheet's 40px inset is too much (user, 2026-09-01:
+   "we can have 24px") — one step down. The ≤767 dissolve further on still
+   wins on true mobile (padding 0, no sheet). */
+@media (max-width: 1023px) {
+  .pay-card,
+  .pay-done { padding: var(--space-24); }
+}
 /* .pay-stack = the vertical rhythm INSIDE a step sheet. Same 16 gap as
    .pay-main so wrapping a screen in a sheet never changes its spacing. */
 .pay-stack { display: flex; flex-direction: column; gap: var(--space-16); }
@@ -270,12 +277,12 @@
 
 /* ---- Visa campaign promo (modular slot — delete the block when the campaign
         ends; nothing else depends on it) ------------------------------------
-   Structure per the user's 2026-09-01 mock: intro copy beside the card-stack
-   artwork, then a FULL-WIDTH tier radio group, then the terms link. Nested in
-   the step sheet → border grammar, radius 12 (ladder), no own elevation.
-   The artwork asset includes the export's blue gradient glow UNCROPPED (the
-   first extraction cut it at the cards' bbox); the row's overflow:hidden crops
-   the bleed exactly the way the export's own card clip did. */
+   Structure per the user's 2026-09-01 mock (2nd round): ONE column at every
+   width — intro copy, tier radio group, then the ARTWORK full-width, then the
+   terms link (compact: copy → artwork). 24px padding (user: "too much white
+   space… we can have 24px padding"); the art's dead glow zones are collapsed
+   with negative margins, which only OVERLAP siblings — nothing clips.
+   Nested in the step sheet → border grammar, radius 12 (ladder). */
 .pay-promo {
   display: flex;
   flex-direction: column;
@@ -283,55 +290,45 @@
   background: var(--surface-card);
   border: var(--border-width-sm) solid var(--border-default);
   border-radius: var(--radius-lg);
-  padding: var(--space-16);
-}
-/* A tier chosen: brand border — the same "selected" grammar as the card rows. */
-.pay-promo--on {
-  border-color: var(--action-primary);
-  box-shadow: inset 0 0 0 0.5px var(--action-primary);
-}
-.pay-promo__top {
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
-  /* Let the glow wash reach the sheet's edges like the export's own clip. */
-  margin: calc(-1 * var(--space-16)) calc(-1 * var(--space-16)) 0;
-  padding: var(--space-16) 0 0 var(--space-16);
+  padding: var(--space-24);
 }
 .pay-promo__body {
-  flex: 1;
-  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-8);
-  /* Above the glow, which spreads well past the cards themselves. */
+  /* Above the glow overlap (compact: the art rides up behind the copy). */
   position: relative;
   z-index: 1;
 }
-/* Artwork = cards + the full gradient glow. Flex sibling, never an absolute
-   overlay (that overlapped the copy at 390 once already).
+/* Artwork = cards + the full gradient glow, a full-width block in the column.
    TWO rules keep every edge smooth (user, 2026-09-01, twice: "gradient is not
    smooth" → "visual is still cropped"):
-   ① The image is NEVER clipped — no negative margins that cross an
-     overflow-hidden edge. Any clip cuts the glow at visible strength, because
-     the SVG's blur is computed only inside its filter region, so even the raw
-     image edges carry glow. (An earlier radial mask reached zero on the
-     right/bottom but still cut the TOP and LEFT at ~50–66% — an ellipse cannot
-     reach zero on all four edges without eating the cards.)
+   ① The image is NEVER clipped — nothing here has overflow:hidden and the
+     paint stays inside the banner. Any clip cuts the glow at visible strength,
+     because the SVG's blur is computed only inside its filter region, so even
+     the raw image edges carry glow. (An earlier radial mask reached zero on
+     the right/bottom but still cut the TOP and LEFT at ~50–66% — an ellipse
+     cannot reach zero on all four edges without eating the cards.)
    ② A RECTANGULAR fade: the wrapper carries the vertical gradient mask, the
      img the horizontal one — multiplied, opacity is zero at every edge with
      the cards fully solid (cards span 20–74.5% × 20.5–67.6% of the viewBox;
-     the solid stops clear them on each axis independently). */
+     the solid stops clear them on each axis independently).
+   The image is 20.5% glow-only above the cards and 32.4% below (of its own
+   1.13 aspect height) — the PERCENTAGE margins (resolve against the column
+   width, so they self-scale) collapse most of that dead space by overlapping
+   the neighbouring blocks with the faded glow, per the mock. */
 .pay-promo__artbox {
   display: block;
-  flex: none;
-  width: 210px;
+  width: 100%;
+  /* Bottom collapse −24% > the ~13.5% (gap+terms+padding) that sits below the
+     art, so its paint box extends past the banner border — but only its ≥88%
+     zone does, which the vertical mask keeps FULLY transparent. The fade ends
+     at 88% (not 95%) precisely so this overhang can never show. */
+  margin: -14% 0 -24%;
   pointer-events: none;
   user-select: none;
-  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 17%, #000 71%, transparent 95%);
-  mask-image: linear-gradient(180deg, transparent 0, #000 17%, #000 71%, transparent 95%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 17%, #000 70%, transparent 88%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 17%, #000 70%, transparent 88%);
 }
 .pay-promo__art {
   display: block;
@@ -340,31 +337,28 @@
   -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 16%, #000 78%, transparent 98%);
   mask-image: linear-gradient(90deg, transparent 0, #000 16%, #000 78%, transparent 98%);
 }
+/* Compact (returning): the art is the LAST child, so its dead zone overlaps
+   NOTHING — every pixel of glow below the cards is just white space at the
+   bottom of the banner (user, 2026-09-08: "we have a lot of white space
+   below"). Measured off the SVG itself: the card stack INCLUDING its drop
+   shadows ends at 67.6% of the image (filter5_d top 20.5% → filter2_d bottom
+   67.6%); the shared mask kept glow visible to 88%, and the flat -24px cap
+   collapsed none of it — 129px of near-empty banner.
+   Fix, compact only: hold the mask solid just past the cards (68%) and fade to
+   zero by 78%, then collapse the whole invisible tail with a PERCENTAGE margin
+   (-25% ≈ -0.22 × the image height, since % margins resolve against the
+   column width and the art is 1.13× as tall as it is wide). Paint still
+   extends ~63px below the border, but every pixel of it is masked to zero, so
+   the "never let paint cross the border" cap is no longer needed.
+   NOT applied to the full banner: there the art is followed by the terms line
+   and the long fade is doing real work — the glow is meant to sit behind it. */
+.pay-promo--compact .pay-promo__artbox {
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 17%, #000 68%, transparent 78%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 17%, #000 68%, transparent 78%);
+  margin-bottom: -25%;
+}
 .pay-promo__title { font: 600 16px/24px var(--font-sans); color: var(--color-indigo-800); margin: 0; }
 .pay-promo__text { font: 400 13px/20px var(--font-sans); color: var(--color-indigo-500); margin: 0; }
-
-/* Compact (returning user, 2026-09-01): the informational top block only — no
-   tier radios, no terms. With nothing below it, the top block bleeds to ALL
-   four edges (the full version bleeds top/right only) and inherits the radius
-   so its overflow clip cannot square off the banner's rounded corners. */
-.pay-promo--compact .pay-promo__top {
-  margin: calc(-1 * var(--space-16));
-  padding: var(--space-16) 0 var(--space-16) var(--space-16);
-  border-radius: inherit;
-}
-
-/* Tier choice — full-width rows under the intro, per the mock. */
-.pay-promo__choice { display: flex; flex-direction: column; gap: var(--space-8); }
-/* Tier labels wrap to two lines on a phone; the ring must stay with the FIRST
-   line (the tier name), not float centred against the block. Scoped override —
-   the shared .gpi-radiopt centres, which is right for its one-line consumers. */
-.pay-promo__choice .gpi-radiopt { align-items: flex-start; }
-.pay-promo__choice .gpi-radio { margin-top: 1px; flex: none; }
-.pay-promo__choice .pay-promo__tier { flex-direction: column; gap: var(--space-2); align-items: flex-start; }
-.pay-promo__chooselbl { font: 400 13px/20px var(--font-sans); color: var(--color-indigo-500); margin: 0; }
-.pay-promo__tier { display: flex; align-items: baseline; gap: var(--space-8); flex-wrap: wrap; }
-.pay-promo__tiername { font: 600 14px/20px var(--font-sans); color: var(--color-indigo-800); }
-.pay-promo__tierpts { font: 400 13px/20px var(--font-sans); color: var(--text-muted); }
 
 .pay-promo__terms { font: 400 12px/18px var(--font-sans); color: var(--text-muted); margin: 0; }
 /* Keep the link phrase whole — an underline split across two lines reads as
@@ -374,17 +368,6 @@
   outline: var(--focus-ring-width) solid var(--border-focus);
   outline-offset: var(--focus-ring-offset);
   border-radius: var(--radius-sm);
-}
-
-/* Narrow (user, 2026-09-01): the art STOPS sharing a row with the copy — the
-   squeezed side-by-side made it tiny (100–132px) and clipped. The block goes
-   VERTICAL: copy full width, then the artwork BELOW it, larger, right-aligned.
-   The negative TOP margin only overlaps the copy (glow behind text, body has
-   z-index 1) — overlap is safe, it is clips that leave hard lines, and this
-   layout has none: the art stays inside the container on every clipped edge. */
-@media (max-width: 419px) {
-  .pay-promo__top { flex-direction: column; align-items: stretch; }
-  .pay-promo__artbox { width: 250px; max-width: 100%; align-self: flex-end; margin-top: -40px; }
 }
 
 /* ---- Saved-card rows (Radio Card grammar: indicator left, selected =

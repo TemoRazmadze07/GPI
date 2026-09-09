@@ -4,25 +4,26 @@ import Badge from '../components/Badge.jsx'
 import Breadcrumbs from '../components/Breadcrumbs.jsx'
 import DemoBar from '../components/DemoBar.jsx'
 import Select from '../components/Select.jsx'
-import Switch from '../components/Switch.jsx'
 import { Button } from '../components/Button.jsx'
 import Icon from '../lib/Icon.jsx'
+import { ASSETS } from '../lib/assets.js'
 import { ListRow } from './DashParts.jsx'
-import { VisitStrip } from './CuratioCard.jsx'
+import { TicketHero } from './CuratioTicket.jsx'
 import { useGate } from './gate.jsx'
 import { D } from './strings.js'
 import {
-  PERSONS, DOCTOR, ANALYSES, MEDS, VISITS, PREVENTION, REMINDERS, forPerson, demo,
+  PERSONS, DOCTOR, ANALYSES, MEDS, VISITS, forPerson, demo,
 } from './curatioData.js'
 
-/* #/dash/curatio — the section. Two columns: what you DO (doctor, records) on
-   the left-weighted main; what runs by itself (prevention, reminders) on the
-   right. The F-05 reminders panel lands here — MVP1-in but homeless on mobile.
+/* #/dash/curatio — the section. Two columns: the personal doctor (what you DO)
+   on the left-weighted main, the records shelf on the right. Prevention and
+   reminders were CUT from desktop in the 2026-09-04 review (out of scope) —
+   the mobile module keeps them.
 
    Insurance gating (locked, 2026-08): the module serves uninsured users too —
-   records, prevention and reminders are theirs regardless. Only booking-class
-   actions gate: ჩაწერა and დისტანციური კონსულტაცია become a purchase trigger.
-   ისტორიის გადაცემა stays — moving your own records needs no policy. */
+   records are theirs regardless. Only booking-class actions gate: ჩაწერა and
+   დისტანციური კონსულტაცია become a purchase trigger. ისტორიის გადაცემა stays —
+   moving your own records needs no policy. */
 
 const go = (hash) => () => {
   window.location.hash = hash
@@ -44,7 +45,7 @@ function DoctorCard({ insured }) {
               <Button variant="secondary" size="md" leadingIcon="calendar" onClick={BOOK}>
                 {D.cur.doctor.book}
               </Button>
-              <Button variant="secondary" size="md" leadingIcon="video" onClick={BOOK}>
+              <Button variant="secondary" size="md" leadingIcon="phone" onClick={BOOK}>
                 {D.cur.doctor.remote}
               </Button>
             </>
@@ -73,15 +74,7 @@ function HistoryShelf({ personId, gate }) {
   ]
   return (
     <section className="gpi-card dash-shelf" aria-label={D.cur.hist.title}>
-      <div className="dash-rsec__head">
-        <h4 className="dash-rsec__title">{D.cur.hist.title}</h4>
-        {gate.unlocked && (
-          <button type="button" className="gpi-link dash-link dash-link--quiet" onClick={gate.relock}>
-            <Icon name="lock" size={16} />
-            {D.cur.lock}
-          </button>
-        )}
-      </div>
+      <h4 className="dash-rsec__title">{D.cur.hist.title}</h4>
       {gate.unlocked ? (
         <div className="dash-rsec__body">
           {secs.map((s) => (
@@ -101,62 +94,13 @@ function HistoryShelf({ personId, gate }) {
         </div>
       ) : (
         <div className="dash-ccard__locked">
-          <Icon name="lock" size={20} />
+          <img className="dash-lockillus" src={ASSETS.curatioLocked} alt="" />
           <p>{D.cur.recent.lockedBody}</p>
           <button type="button" className="gpi-link dash-link" onClick={gate.request}>
             {D.cur.recent.enter}
           </button>
         </div>
       )}
-    </section>
-  )
-}
-
-const PREV_TONE = { due: 'warning', missed: 'error', done: 'success' }
-
-function PreventionCard() {
-  return (
-    <section className="gpi-card dash-shelf" aria-label={D.cur.prevTitle}>
-      <h4 className="dash-rsec__title">{D.cur.prevTitle}</h4>
-      <div className="dash-rsec__body">
-        {PREVENTION.map((p) => (
-          <ListRow
-            key={p.id}
-            title={p.name}
-            sub={
-              p.status === 'done' ? null : (
-                <button type="button" className="gpi-link dash-link" onClick={BOOK}>
-                  {D.cur.prevBook}
-                </button>
-              )
-            }
-            trailing={
-              <Badge color={PREV_TONE[p.status]} size="sm">{D.cur.prevStatus[p.status]}</Badge>
-            }
-          />
-        ))}
-      </div>
-    </section>
-  )
-}
-
-function RemindersCard() {
-  const [state, setState] = useState(() => Object.fromEntries(REMINDERS.map((r) => [r.id, r.on])))
-  return (
-    <section className="gpi-card dash-shelf" aria-label={D.cur.remTitle}>
-      <h4 className="dash-rsec__title">{D.cur.remTitle}</h4>
-      <div className="dash-rem">
-        {REMINDERS.map((r) => (
-          <Switch
-            key={r.id}
-            name={`rem-${r.id}`}
-            checked={state[r.id]}
-            onChange={(on) => setState((s) => ({ ...s, [r.id]: on }))}
-            label={r.label}
-          />
-        ))}
-      </div>
-      <p className="dash-rem__note">{D.cur.remChannels}</p>
     </section>
   )
 }
@@ -174,6 +118,9 @@ export default function CuratioSection() {
           { label: visitDay ? 'ordinary day' : 'visit day', onClick: () => { demo.setVisitDay(!visitDay); setVisitDay(!visitDay) } },
           { label: uninsured ? 'insured' : 'uninsured', onClick: () => { demo.setUninsured(!uninsured); setUninsured(!uninsured) } },
           { label: gate.unlocked ? 'relock' : 'unlock', onClick: gate.unlocked ? gate.relock : gate.request },
+          /* v1 had NO way back to v2 while v2 linked here — a one-way door that read
+             as „the new structure isn't applied". The comparison now works both ways. */
+          { label: 'v2', ghost: true, onClick: go('#/dash/curatio') },
         ]}
       />
 
@@ -192,22 +139,19 @@ export default function CuratioSection() {
             value={personId}
             onChange={setPersonId}
             ariaLabel={D.cur.person}
-            options={PERSONS.map((p) => ({ value: p.id, label: `${p.name} · ${p.ocin}` }))}
-            renderValue={(o) => o.label.split(' · ')[0]}
+            options={PERSONS.map((p) => ({ value: p.id, label: p.name, sub: p.ocin, lead: <Avatar src={p.photo} name={p.name} size={34} /> }))}
           />
         </div>
       </header>
 
-      {visitDay && <VisitStrip />}
+      {visitDay && <TicketHero />}
 
       <div className="dash-cur__cols">
         <div className="dash-cur__main">
           <DoctorCard insured={!uninsured} />
-          <HistoryShelf personId={personId} gate={gate} />
         </div>
         <div className="dash-cur__side">
-          <PreventionCard />
-          <RemindersCard />
+          <HistoryShelf personId={personId} gate={gate} />
         </div>
       </div>
 

@@ -103,17 +103,27 @@ export function LimitMeter({ label, used, total, format }) {
    The card's primary actions. A tile is a button, not a card with a link in it:
    the whole surface is the target, which is also how it clears the 24px
    target-size floor comfortably (Rule 7). */
-export function ActionTile({ icon, mark, tint = 'neutral', label, sub, onClick }) {
-  return (
-    <button type="button" className="dash-tile" onClick={onClick}>
+/* `badge` marks a tile's status („მალე" for a feature that has not shipped);
+   passing NO onClick renders the tile as a plain block instead of a button —
+   deliberately not a disabled <button>, which is focusable-but-dead and tells a
+   keyboard user nothing. The badge carries the explanation for everyone. */
+export function ActionTile({ icon, mark, tint = 'neutral', label, sub, badge, onClick }) {
+  const inner = (
+    <>
       <span className={`dash-tile__disc dash-tile__disc--${tint}`}>
         {mark || <Icon name={icon} size={24} />}
       </span>
       <span className="dash-tile__text">
         <span className="dash-tile__label">{label}</span>
+        {badge}
         {sub && <span className="dash-tile__sub">{sub}</span>}
       </span>
-    </button>
+    </>
+  )
+  return onClick ? (
+    <button type="button" className="dash-tile" onClick={onClick}>{inner}</button>
+  ) : (
+    <div className="dash-tile dash-tile--static">{inner}</div>
   )
 }
 
@@ -164,7 +174,7 @@ export function ListRow({ lead, title, titleBadge, sub, trailing, onClick }) {
 }
 
 /* ---- Rail section: a heading + "View all" over a stack of rows ------------- */
-export function RailSection({ title, count, onViewAll, children }) {
+export function RailSection({ title, count, onViewAll, toolbar, children }) {
   return (
     <section className="dash-rsec">
       <div className="dash-rsec__head">
@@ -175,6 +185,9 @@ export function RailSection({ title, count, onViewAll, children }) {
           </button>
         )}
       </div>
+      {/* Optional control strip between head and rows (additive, 2026-09-04):
+          the Curatio rail's section switch. */}
+      {toolbar && <div className="dash-rsec__tools">{toolbar}</div>}
       <div className="dash-rsec__body">{children}</div>
     </section>
   )

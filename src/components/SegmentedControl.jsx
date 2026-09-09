@@ -1,5 +1,7 @@
-/* SegmentedControl — pill track with equal segments; selected = pink pill
-   by default, or dark indigo when variant="indigo" (Step-2 booking type tabs).
+/* SegmentedControl — pill track; selected = pink pill by default, dark indigo
+   when variant="indigo" (Step-2 booking type tabs), or a pale-indigo pill on a
+   white bordered track when variant="soft" — the web twin of the mobile product
+   switcher, for view tabs that are not a page's primary action.
    Mirrors the Figma Segmented Control component. */
 export default function SegmentedControl({ options, value, onChange, size = 'md', variant }) {
   return (
