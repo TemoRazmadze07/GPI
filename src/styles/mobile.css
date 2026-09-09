@@ -107,12 +107,21 @@
     gap: var(--space-12);
   }
   .gpi-banner__icon {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
   }
-  .gpi-banner__text h2 {
-    font-size: 19px;
-    line-height: 26px;
+  .gpi-banner__icon svg {
+    width: 20px;
+    height: 20px;
+  }
+  /* The heading carries .t-h3 whichever tag the `as` prop renders, so both tags
+     take the SAME mobile step. Targeting h2 alone left an `as="h3"` banner (the
+     Visa landing) reading 20px on mobile while an h2 banner read 19 — the tag,
+     not the design, was deciding the size. */
+  .gpi-banner__text h2,
+  .gpi-banner__text h3 {
+    font-size: 18px;
+    line-height: 24px;
   }
   .gpi-banner .gpi-btn {
     width: 100%;
