@@ -1511,11 +1511,12 @@
 /* ---- v2.1 (user: "very noisy"): no numbered steps. The warning carries the
    instruction; the consent is a plain checkbox.
    v2.4 (user, 2026-09-09): the label's icon-only info trigger (.dash-visa__info)
-   and its tooltip are gone — the help is a labelled tertiary Button beside the
-   input, so the sentence is on screen instead of one hover away. ------------- */
+   and its tooltip are gone — the help is a .gpi-link button beside the input
+   (an outlined Button there read as clunky), so the sentence is on screen
+   instead of one hover away. ------------------------------------------------ */
 /* A wallet number is a short token; a 592px input promised a paragraph. The
-   input hugs 260 and the button takes the space it left, at the input's own
-   control-md height. They wrap to two lines below ~460 of card width. */
+   input hugs 260 and the link sits centred on its 40px, overriding the page's
+   own align-self: flex-start for links. Wraps below ~440 of card width. */
 .dash-visa__walletrow {
   display: flex;
   flex-wrap: wrap;
@@ -1523,9 +1524,9 @@
   gap: var(--space-12);
 }
 .dash-visa__walletrow .gpi-input { flex: 0 1 260px; min-width: 0; }
-.dash-visa__walletrow .gpi-btn { flex: none; }
+.dash-visa__walletrow .gpi-link { flex: none; align-self: center; }
 /* Once the row wraps there is nothing to sit beside, and a 260 input stranded in
-   a 295 column just looks short — take the full width and let the button follow. */
+   a 295 column just looks short — take the full width and let the link follow. */
 @media (max-width: 640px) {
   .dash-visa__walletrow .gpi-input { flex: 1 1 100%; }
 }

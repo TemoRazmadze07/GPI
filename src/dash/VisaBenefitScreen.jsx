@@ -38,8 +38,9 @@ import { VISA_PAYMENT } from './data.js'
 
    v2.4 (user, 2026-09-09): the card breathes at 24, the wallet input hugs a
    short-token measure instead of the full 592, and the how-to help left the
-   label for a labelled tertiary Button on the input's right — same control-md
-   height. The icon-only trigger and its Tooltip are gone with it.
+   label for a .gpi-link button on the input's right (the „დეტალურად" idiom; an
+   outlined Button there read as clunky). The icon-only trigger and its Tooltip
+   are gone with it.
 
    v2.3 (user, 2026-09-09: "hide stepper"): the Stepper tracker is gone too.
    It restated what the banner and the warning already say — paid ✓, eligible ✓,
@@ -151,8 +152,9 @@ function ClaimForm({ onDone, onHelp }) {
   return (
     <form className="dash-visa__form" onSubmit={submit} noValidate>
       <Field label={V.claim.walletLabel} required errorMsg={errors.wallet}>
-        {/* The help sits BESIDE the input, not on the label: a labelled tertiary
-            button at the input's own control-md height says out loud what the
+        {/* The help sits BESIDE the input, not on the label, as the same link
+            button the reward row uses for „დეტალურად" (user, 2026-09-09: an
+            outlined Button here "seems clunky"). It says out loud what the
             icon-only trigger needed a tooltip to say. */}
         <div className="dash-visa__walletrow">
           <input
@@ -168,12 +170,10 @@ function ClaimForm({ onDone, onHelp }) {
               if (errors.wallet) setErrors(({ wallet: _w, ...rest }) => rest)
             }}
           />
-          {/* secondary, not tertiary: a transparent tertiary at rest reads as a
-              caption stranded beside the input. The outline says "control",
-              and indigo leaves the pink primary below unchallenged. */}
-          <Button type="button" variant="secondary" onClick={onHelp}>
+          <button type="button" className="gpi-link" onClick={onHelp}>
+            <Icon name="info" size={16} />
             {V.claim.howTo}
-          </Button>
+          </button>
         </div>
       </Field>
       <div className="dash-visa__consent">
