@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="ka">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GPI — ეკონომ კასკო · გადამოწმება (step 4)</title>
+<!--
+  LEGACY-STYLE PAGE — deliberately NOT on the GPI design system.
+  1:1 HTML port of Figma "Changes step_4" (GPI Foundation File, node 263:9487): the LIVE
+  mygpi.ge purchase wizard (economcasco, step 4 „გადამოწმება") traced at 1722px, plus the
+  new Visa-benefit + Super Bruno blocks. Purpose: iterate the Visa functionality quickly in
+  HTML, then port the agreed result back to Figma. Every value below is the Figma value.
+  The „payment method / policy start / consents" section was a raster screenshot in Figma
+  (Screenshot 2024-02-16) and is rebuilt here as real HTML from that screenshot.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;500;600;700&family=Inter:wght@400;700&family=Roboto:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* ---------- palette (Figma style names from the trace) ---------- */
+  :root {
+    --downriver: #0e215e;   /* headings, body navy */
+    --bunting:   #141c4f;   /* values, advice text */
+    --port-gore: #25215d;   /* card titles */
+    --jacarta:   #292562;   /* header name, legacy text */
+    --bali-hai:  #9199b4;   /* muted labels, inactive steps */
+    --athens:    #eeeff3;   /* card borders */
+    --yellow:    #f5f7ff;   /* tinted surfaces */
+    --razz:      #ed1c7c;   /* primary pink */
+    --violet:    #ee2a7b;   /* radio pink */
+    --sun:       #fcb618;   /* Bruno yellow */
+    --manatee:   #898da7;   /* disabled button */
+    --link:      #1000f6;
+    --error:     #d92d20;   /* validation red — ASSUMED, the legacy trace has no error state (4.9:1 on white) */
+    --font: "Noto Sans Georgian", system-ui, sans-serif;
+    --page-w: 1722px;
+    --col-w: 760px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #fff; }
+  body {
+    font-family: var(--font);
+    color: var(--downriver);
+    /* Figma canvas is 1722 wide; the side columns (steps 288 · advice 283) are absolute like the
+       legacy layout, so below ~1440 they would collide with the 760 column → scroll instead. */
+    min-width: 1440px;
+    letter-spacing: 0.25px;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input { font-family: inherit; letter-spacing: inherit; }
+  button { cursor: pointer; }
+  img { display: block; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* ---------- header (div.h2d-b36086e0) ---------- */
+  .hdr {
+    height: 62px;
+    border-bottom: 1px solid rgba(185, 204, 219, 0.35);
+    position: relative;
+    background: #fff;
+  }
+  .hdr__logo { position: absolute; left: 72px; top: 3px; width: 126px; height: 55px; display: block; }
+  .hdr__logo img { width: 124.5px; height: 55px; }
+  .hdr__right { position: absolute; right: 72px; top: 11px; height: 40px; display: flex; align-items: center; }
+  .hdr__flag { position: relative; width: 50px; height: 40px; margin-right: 20px; border: 0; background: none; padding: 0; }
+  .hdr__flag img { position: absolute; left: 9px; top: 9px; width: 32px; height: 22px; border-radius: 3px; filter: drop-shadow(0 0 3px rgba(22, 22, 22, 0.16)); }
+  .hdr__circle { width: 40px; height: 40px; border-radius: 38px; background: rgba(108, 100, 217, 0.08); display: flex; align-items: center; justify-content: center; border: 0; padding: 0; }
+  .hdr__mail { margin-right: 32px; }
+  .hdr__mail img { width: 20px; height: 16px; }
+  .hdr__user { display: flex; align-items: center; height: 40px; border: 0; background: none; padding: 0; }
+  .hdr__user img.av { width: 16px; height: 18px; }
+  .hdr__name { font: 400 14px/20px Inter, var(--font); color: var(--jacarta); margin: 0 10px 0 10px; letter-spacing: 0; }
+  .hdr__caret { width: 8px; height: 6px; }
+
+  /* ---------- page ---------- */
+  .page { position: relative; padding: 43px 0 40px; }
+  .page__title {
+    margin: 0 0 40px;
+    text-align: center;
+    font: 700 26px/31px var(--font);
+    text-transform: uppercase;
+    color: var(--downriver);
+  }
+  .col { width: var(--col-w); margin: 0 auto; display: flex; flex-direction: column; gap: 21px; }
+
+  /* wizard navigation (gpi-wizard-navigation) */
+  .nav { position: absolute; left: 24px; top: 84px; width: 288px; }
+  .nav__item { display: flex; align-items: center; height: 24px; margin-left: 24px; margin-bottom: 24.54px; }
+  .nav__num {
+    width: 24px; height: 24px; border-radius: 12px; background: var(--bali-hai);
+    color: #fff; font: 700 16px/22px Helvetica, Arial, var(--font);
+    display: flex; align-items: center; justify-content: center; flex: none;
+  }
+  .nav__label { margin-left: 12px; font: 600 14px/22px var(--font); color: var(--bali-hai); white-space: nowrap; }
+  .nav__active {
+    height: 80px; border: 1px solid rgba(145, 153, 180, 0.7); border-radius: 8px; background: #fff;
+    display: flex; align-items: center; padding: 0 24px;
+  }
+  .nav__active .nav__num { width: 30px; height: 30px; border-radius: 15px; background: var(--sun); color: var(--downriver); font-size: 18px; }
+  .nav__active .nav__label { color: var(--downriver); }
+
+  /* advice card (gpi-wizard__step-advice) */
+  .advice {
+    position: absolute; right: 38px; top: 61px; width: 283px; height: 210px;
+    background: var(--yellow); border-radius: 10.38px;
+  }
+  .advice__text { position: absolute; left: 19px; top: 19px; width: 197px; margin: 0; font: 400 14px/21px var(--font); color: var(--bunting); letter-spacing: 0; }
+  .advice__close { position: absolute; left: 236px; top: 18.88px; width: 28.31px; height: 28.31px; border: 0; background: none; padding: 0; }
+  .advice__close img { width: 28.31px; height: 28.31px; }
+  .advice[hidden] { display: none; }
+
+  /* ---------- summary group card (gpi-summary-group) ---------- */
+  /* Figma frame metrics include the 1px inside stroke → CSS padding = Figma inset − 1 */
+  .sum { border: 1px solid var(--athens); border-radius: 7.55px; background: #fff; padding: 22.09px 18.38px 19.4px 18.37px; }
+  .sum__head { display: flex; align-items: center; height: 22.65px; }
+  .sum__icon { width: 22.65px; height: 22.65px; flex: none; }
+  .sum__title { margin: 0 0 0 9.44px; font: 700 19.8px/20px var(--font); text-transform: uppercase; color: var(--port-gore); white-space: nowrap; flex: 1; }
+  .sum__toggle { width: 13.21px; height: 13.21px; border: 0; background: none; padding: 0; margin-right: 1.6px; transition: transform .15s; }
+  .sum__toggle img { width: 13.21px; height: 13.21px; }
+  .sum.is-collapsed .sum__toggle { transform: rotate(180deg); }
+  .sum.is-collapsed .sum__body { display: none; }
+  .sum.is-collapsed { padding-bottom: 22.09px; }
+  .sum__body { margin-top: 14.16px; display: grid; row-gap: 5.65px; padding-bottom: 5.66px; }
+  .sum__row { display: grid; grid-template-columns: 357.75px 1fr; column-gap: 5.66px; height: 20px; align-items: center; }
+  .sum__label { font: 600 13.2px/20px var(--font); color: var(--bali-hai); white-space: nowrap; }
+  .sum__value { font: 700 13.2px/20px var(--font); color: var(--bunting); white-space: nowrap; }
+  .sum__value.lat { font: 700 12px/20px Inter, var(--font); }
+
+  /* payment schema body */
+  .schema { margin-top: 14.16px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 34px; padding-bottom: 0; }
+  .schema__col { display: grid; row-gap: 8px; }
+  .schema__item { height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; }
+  .schema__item:nth-child(odd) { background: var(--yellow); }
+  .schema__date { font: 700 14px/20px var(--font); color: var(--bunting); opacity: .6; }
+  .schema__amt { font: 700 18px/20px var(--font); color: var(--bunting); }
+
+  /* ---------- promo code ---------- */
+  .promo { border: 1px solid #e0e7ff; border-radius: 10px; padding: 19px 29px; display: flex; align-items: center; justify-content: space-between; }
+  .promo__text { margin: 0; font: 600 14px/20px var(--font); color: var(--downriver); }
+  .promo__field { position: relative; width: 400px; height: 50px; border: 1px solid #dfe5ff; border-radius: 7.55px; background: #fff; }
+  .promo__input { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: none; padding: 0 130px 0 18px; font: 400 14px/12.27px var(--font); color: #000; outline: none; border-radius: 7.55px; }
+  .promo__input::placeholder { color: rgba(0, 0, 0, 0.5); }
+  .promo__btn { position: absolute; right: 7px; top: 6px; width: 110px; height: 36px; border: 0; border-radius: 7.55px; background: var(--razz); color: #fff; font: 700 11.3px/12.27px var(--font); letter-spacing: 0; }
+
+  /* ---------- totals ---------- */
+  .totals { background: var(--yellow); border-radius: 9.44px; padding: 30px 30px; display: flex; flex-direction: column; gap: 30px; }
+  .totals__row { display: flex; align-items: center; justify-content: space-between; }
+  .totals__label { margin: 0; font: 700 16px/20px var(--font); color: var(--downriver); }
+  .totals__sub { margin: 4px 0 0; font: 500 12px/20px var(--font); color: var(--downriver); }
+  .totals__prices { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .price-old { font: 600 18px/20px Roboto, var(--font); color: var(--bunting); opacity: .2; text-decoration: line-through; }
+  .price-new { font: 700 24px/42px Roboto, var(--font); color: var(--razz); }
+  .totals__row--today .price-old { font-size: 20px; }
+  .totals__row--today .price-new { font-size: 37.73px; }
+  .totals__divider { height: 0; border-top: 1px solid var(--downriver); opacity: .1; }
+  .bruno-pts { background: #fff; border-radius: 10px; height: 84px; padding: 20px 30px; display: flex; align-items: center; }
+  .bruno-pts__cb { width: 24px; height: 24px; border-radius: 4px; border: 1px solid #da387b; background: rgba(218, 56, 123, 0.05); flex: none; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .bruno-pts__cb svg { display: none; }
+  .bruno-pts__cb.is-on { background: #da387b; }
+  .bruno-pts__cb.is-on svg { display: block; }
+  .bruno-pts__group { display: flex; align-items: center; gap: 20px; margin-left: 30px; }
+  .bruno-pts__use { margin: 0; font: 500 12px/20px var(--font); color: var(--downriver); opacity: .5; }
+  .bruno-pts__name { margin: 0; font: 700 14px/20px var(--font); color: var(--downriver); text-transform: uppercase; }
+  .bruno-pts__vline { width: 1px; height: 33px; background: var(--downriver); opacity: .1; }
+  .bruno-pts__chip { background: var(--sun); border-radius: 7px; padding: 10px; display: flex; align-items: center; gap: 4px; color: #fff; white-space: nowrap; }
+  .bruno-pts__chip b { font: 700 14px/12.27px var(--font); }
+  .bruno-pts__chip span { font: 500 16px/12.27px var(--font); }
+
+  /* ---------- Visa benefits banner (Frame 1321316779) ---------- */
+  .card16 { background: #fff; border: 1px solid var(--athens); border-radius: 16px; box-shadow: 2px 4px 16px 0 rgba(14, 33, 94, 0.08); padding: 24px; position: relative; overflow: hidden; }
+  .visa { min-height: 318px; display: flex; }  /* min-, not fixed: the validation line below the radios adds 28px */
+  /* Card-stack + glow artwork = 2× raster crop of this exact Figma banner (x ≥ 400), so the
+     art sits pixel-for-pixel where Figma has it. Swap for a vector once GPI supplies one. */
+  .visa__art { position: absolute; left: 399px; top: 0; width: 359px; height: 316px; pointer-events: none; user-select: none; }
+  .visa__body { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 24px; flex: 1; }  /* gap 24 = the block→terms distance the fixed 318 height used to produce */
+  .visa__block { display: flex; flex-direction: column; gap: 16px; }
+  .visa__title { margin: 0; font: 300 24px/32px var(--font); text-transform: uppercase; color: var(--downriver); white-space: nowrap; letter-spacing: 0; }
+  .visa__text { margin: 0; width: 374px; font: 400 14px/20px var(--font); color: var(--downriver); letter-spacing: 0; }
+  .visa__opts { display: flex; flex-direction: column; gap: 8px; }
+  .visa__prompt { margin: 0; font: 400 14px/20px var(--font); color: rgba(41, 37, 98, 0.9); letter-spacing: 0; }
+  .radio { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
+  .radio input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .radio__dot { width: 24px; height: 24px; flex: none; background: url("assets/radio-off.svg") no-repeat center / 24px 24px; }
+  .radio input:checked + .radio__dot { background-image: url("assets/radio-on.svg"); }
+  .radio input:focus-visible + .radio__dot { outline: 2px solid var(--link); outline-offset: 2px; border-radius: 50%; }
+  .radio__label { font: 600 14px/24px var(--font); color: #0a1c5a; letter-spacing: 0; white-space: nowrap; }
+  .radio__label span { font-weight: 400; }
+  /* Validation (buy clicked with no tier chosen): message inside the banner + red rings on the unchecked radios. */
+  .visa__error { margin: 0; font: 400 14px/20px var(--font); color: var(--error); letter-spacing: 0; }
+  .visa__opts.is-invalid .radio input:not(:checked) + .radio__dot { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'><circle cx='12' cy='12' r='9.5' fill='white' stroke='%23d92d20'/></svg>"); }
+  .visa__terms { margin: 0; font: 400 16px/24px var(--font); color: var(--downriver); letter-spacing: 0; }
+  .visa__terms a { color: var(--link); text-decoration: underline; }
+
+  /* ---------- Super Bruno (Frame 1321316674) ---------- */
+  .bruno { height: 500px; padding: 23px; display: flex; flex-direction: column; gap: 24px; }
+  /* Bruno swirl = Figma's own export of the rotated symbol (Bruno_SVG_Symbol, 22.84°, 10%),
+     already clipped to the card, so it is placed 1:1: card-relative (83.7, 0) → padding box. */
+  .bruno__symbol { position: absolute; left: 82.72px; top: -1px; width: 675px; height: 426px; pointer-events: none; }
+  .bruno__symbol img { width: 675px; height: 426px; }
+  .bruno > *:not(.bruno__symbol) { position: relative; z-index: 1; }
+  .bruno__logo { width: 213px; height: 64px; }
+  .bruno__title { margin: 0; font: 300 24px/32px var(--font); text-transform: uppercase; color: var(--downriver); letter-spacing: 0; }
+  .bruno__title b { font-weight: 600; color: var(--razz); }
+  .bruno__sub { margin: 0; font: 400 16px/24px var(--font); color: var(--downriver); letter-spacing: 0; }
+  .bruno__opts { display: flex; gap: 16px; align-items: stretch; }
+  .opt { flex: 1 1 0; min-width: 0; background: #fff; border: 1px solid rgba(14, 33, 94, 0.5); border-radius: 12px; padding: 23px; display: flex; flex-direction: column; gap: 12px; text-align: left; color: var(--downriver); letter-spacing: 0; cursor: pointer; }
+  .opt.is-selected { border: 2px solid var(--downriver); padding: 22px; }
+  .opt__head { display: flex; gap: 12px; align-items: stretch; flex: 1; }
+  .opt__tick { width: 24px; height: 24px; flex: none; align-self: flex-start; background: url("assets/tick-outline.svg") no-repeat center / 24px 24px; }
+  .opt.is-selected .opt__tick { background-image: url("assets/tick-bold.svg"); }
+  .opt__col { display: flex; flex-direction: column; gap: 12px; flex: 1; min-width: 0; }
+  .opt__name { margin: 0; font: 600 16px/24px var(--font); text-transform: uppercase; }
+  .opt__body { display: flex; flex-direction: column; justify-content: space-between; flex: 1; }
+  .opt__top { display: flex; flex-direction: column; gap: 8px; }
+  .opt__coin { display: flex; align-items: center; gap: 8px; }
+  .opt__coin img { width: 32px; height: 32px; }
+  .opt__big { margin: 0; font: 600 24px/32px var(--font); white-space: nowrap; }
+  .opt__text { margin: 0; font: 400 16px/24px var(--font); max-width: 263px; }
+  .opt__rate { margin: 0; font: 600 16px/24px var(--font); }
+  .opt__select { margin-top: 0; height: 52px; border: 1px solid #b2b7c8; border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; width: 100%; font: 500 14px/normal var(--font); color: #13215a; letter-spacing: 0; }
+  .opt__select img { width: 20px; height: 20px; }
+
+  /* ---------- legacy: payment method / policy start / consents (from Screenshot 2024-02-16) ---------- */
+  .pm { border: 1px solid var(--athens); border-radius: 8px; padding: 24px 18px 30px; }
+  .pm__head { display: flex; align-items: center; gap: 10px; }
+  .pm__head img { width: 24px; height: 20px; }
+  .pm__title { margin: 0; font: 700 18px/22px var(--font); text-transform: uppercase; color: var(--port-gore); letter-spacing: 0; }
+  .pm__sub { margin: 20px 0 0; font: 400 16px/22px var(--font); color: #24215a; letter-spacing: 0; }
+  .pm__grid { margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .tile { position: relative; height: 48px; border: 1px solid var(--athens); border-radius: 8px; background: #fff; display: flex; align-items: center; padding: 0 18px 0 20px; cursor: pointer; }
+  .tile input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .tile__dot { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #dee0e7; flex: none; position: relative; }
+  .tile input:checked + .tile__dot { border-color: #da387b; }
+  .tile input:checked + .tile__dot::after { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: #da387b; }
+  .tile input:focus-visible + .tile__dot { outline: 2px solid var(--link); outline-offset: 2px; }
+  .tile__pan { flex: 1; text-align: center; font: 700 16px/20px "Times New Roman", Times, serif; color: #3c3a6d; letter-spacing: 0; }
+  .tile__card { width: 24px; height: 19px; }
+  .tile__other { flex: 1; text-align: right; font: 700 14px/20px var(--font); color: #3c3a6d; letter-spacing: 0; }
+  .line-card { height: 48px; border: 1px solid var(--athens); border-radius: 8px; background: #fff; display: flex; align-items: center; padding: 0 18px; letter-spacing: 0; }
+  .line-card--start { margin-top: 0; }
+  .line-card__label { font: 700 16px/20px var(--font); color: #161c4c; }
+  .line-card__date { margin-left: 20px; font: 400 16px/20px var(--font); color: #da387b; }
+  .consents { display: flex; flex-direction: column; gap: 10px; margin-top: -10px; }
+  .consent { padding: 0 13px; cursor: pointer; }
+  .consent input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .consent__box { width: 16px; height: 16px; border: 1.5px solid #c9cad6; border-radius: 3px; background: #fff; flex: none; display: flex; align-items: center; justify-content: center; }
+  .consent__box svg { display: none; width: 10px; height: 8px; }
+  .consent input:checked + .consent__box { background: #da387b; border-color: #da387b; }
+  .consent input:checked + .consent__box svg { display: block; }
+  .consent input:focus-visible + .consent__box { outline: 2px solid var(--link); outline-offset: 2px; }
+  .consent__text { margin-left: 10px; font: 700 15px/20px var(--font); color: #28255e; }
+  .consent__text a { color: #da387b; text-decoration: underline; }
+
+  /* ---------- footer (div.h2d-b35a8103) ---------- */
+  .ftr { position: sticky; bottom: 0; height: 87.63px; background: #fff; box-shadow: 0 -1px 10px rgba(41, 37, 98, 0.1); z-index: 5; }
+  .ftr__row { position: absolute; top: 23px; left: calc(50% - 400px + 32px); width: 800px; height: 41.63px; display: flex; justify-content: space-between; }
+  .btn { width: 150px; height: 41.63px; border-radius: 7.55px; display: flex; align-items: center; justify-content: center; border: 0; }
+  .btn--back { background: #fff; border: 1px solid var(--bali-hai); box-shadow: 0 3px 5px rgba(41, 37, 98, 0.1); color: var(--jacarta); font: 700 15.1px/12.27px Helvetica, Arial, var(--font); letter-spacing: 0; gap: 6px; }
+  .btn--back img { width: 18px; height: 12px; }
+  .btn--buy { background: var(--manatee); color: #fff; font: 600 15.1px/12.27px var(--font); letter-spacing: 0; }
+  .btn--buy:not([disabled]) { background: var(--razz); }
+  .btn--buy[disabled] { cursor: not-allowed; }
+
+  /* chat widget (Iframe → Body → SVG) */
+  .chat { position: fixed; right: 25px; bottom: 75px; width: 60px; height: 60px; border: 0; background: none; padding: 0; z-index: 6; }
+  .chat img { position: absolute; }
+  .chat .c1 { left: 0; top: 0.04px; width: 59.19px; height: 59.19px; }
+  .chat .c2 { left: 8.96px; top: 12.62px; width: 41.33px; height: 33.36px; }
+  .chat .c3 { left: 40.62px; top: 42.81px; width: 14.55px; height: 16.67px; }
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <a class="hdr__logo" href="#" aria-label="GPI"><img src="assets/gpi-logo.svg" alt="ჯიპიაი — ვენის სადაზღვევო ჯგუფი" /></a>
+  <div class="hdr__right">
+    <button class="hdr__flag" type="button" aria-label="English"><img src="assets/flag-gb.svg" alt="" /></button>
+    <a class="hdr__circle hdr__mail" href="#" aria-label="შეტყობინებები"><img src="assets/icon-mail.svg" alt="" /></a>
+    <button class="hdr__user" type="button">
+      <span class="hdr__circle"><img class="av" src="assets/icon-avatar.svg" alt="" /></span>
+      <span class="hdr__name">მარიამი</span>
+      <img class="hdr__caret" src="assets/caret-down.svg" alt="" />
+    </button>
+  </div>
+</header>
+
+<main class="page">
+  <h1 class="page__title">გადაამოწმე ინფორმაცია</h1>
+
+  <nav class="nav" aria-label="ნაბიჯები">
+    <div class="nav__item"><span class="nav__num">1</span><span class="nav__label">პოლისის არჩევა</span></div>
+    <div class="nav__item"><span class="nav__num">2</span><span class="nav__label">დამზღვევი</span></div>
+    <div class="nav__item"><span class="nav__num">3</span><span class="nav__label">ავტომობილის ინფორმაცია</span></div>
+    <div class="nav__active" aria-current="step"><span class="nav__num">4</span><span class="nav__label">გადამოწმება</span></div>
+  </nav>
+
+  <aside class="advice" id="advice">
+    <p class="advice__text">გაითვალისწინე, რომ პოლისი ძალაში შევა ავტომობილის დასურათების შემდეგ. ანაზღაურებას არ ექვემდებარება დაუდგენელ ვითარებაში მიყენებული ზიანი.</p>
+    <button class="advice__close" type="button" aria-label="დახურვა" data-close="advice"><img src="assets/x-circle.svg" alt="" /></button>
+  </aside>
+
+  <div class="col">
+
+    <!-- პოლისი -->
+    <section class="sum" data-collapsible>
+      <div class="sum__head">
+        <img class="sum__icon" src="assets/icon-file.svg" alt="" />
+        <h2 class="sum__title">პოლისი</h2>
+        <button class="sum__toggle" type="button" aria-label="ჩაკეცვა"><img src="assets/icon-collapse.svg" alt="" /></button>
+      </div>
+      <div class="sum__body">
+        <div class="sum__row"><span class="sum__label">გადახდის ტიპი:</span><span class="sum__value">ყოველთვიური</span></div>
+        <div class="sum__row"><span class="sum__label">ლიმიტი:</span><span class="sum__value lat">5000</span></div>
+      </div>
+    </section>
+
+    <!-- დამზღვევი -->
+    <section class="sum" data-collapsible>
+      <div class="sum__head">
+        <img class="sum__icon" src="assets/icon-user.svg" alt="" />
+        <h2 class="sum__title">დამზღვევი</h2>
+        <button class="sum__toggle" type="button" aria-label="ჩაკეცვა"><img src="assets/icon-collapse.svg" alt="" /></button>
+      </div>
+      <div class="sum__body">
+        <div class="sum__row"><span class="sum__label">სახელი, გვარი:</span><span class="sum__value">მარიამი მაღრაძე</span></div>
+        <div class="sum__row"><span class="sum__label">პირადი ნომერი:</span><span class="sum__value lat">35001126652</span></div>
+        <div class="sum__row"><span class="sum__label">დაბადების თარიღი:</span><span class="sum__value lat">10/05/1995</span></div>
+        <div class="sum__row"><span class="sum__label">მეილი:</span><span class="sum__value lat">mmaghradze@gpih.ge</span></div>
+        <div class="sum__row"><span class="sum__label">მობილური:</span><span class="sum__value lat">571002930</span></div>
+      </div>
+    </section>
+
+    <!-- ავტომობილის ინფორმაცია -->
+    <section class="sum" data-collapsible>
+      <div class="sum__head">
+        <img class="sum__icon" src="assets/icon-user.svg" alt="" />
+        <h2 class="sum__title">ავტომობილის ინფორმაცია</h2>
+        <button class="sum__toggle" type="button" aria-label="ჩაკეცვა"><img src="assets/icon-collapse.svg" alt="" /></button>
+      </div>
+      <div class="sum__body">
+        <div class="sum__row"><span class="sum__label">სახელმწიფო ნომერი:</span><span class="sum__value lat">vv330ff</span></div>
+        <div class="sum__row"><span class="sum__label">ბრენდი:</span><span class="sum__value lat">Alfa Romeo</span></div>
+        <div class="sum__row"><span class="sum__label">მოდელი:</span><span class="sum__value lat">8C</span></div>
+        <div class="sum__row"><span class="sum__label">ვინ კოდი:</span><span class="sum__value lat">231121</span></div>
+        <div class="sum__row"><span class="sum__label">გამოშვების წელი:</span><span class="sum__value lat">2012</span></div>
+        <div class="sum__row"><span class="sum__label">ძრავის მოცულობა:</span><span class="sum__value lat">1201-1800</span></div>
+      </div>
+    </section>
+
+    <!-- პრომო კოდი -->
+    <section class="promo">
+      <p class="promo__text">შეიყვანე პრომო კოდი და<br />მიიღე ფასდაკლება</p>
+      <form class="promo__field" onsubmit="return false">
+        <label class="sr-only" for="promo">პრომო კოდი</label>
+        <input class="promo__input" id="promo" type="text" placeholder="შეიყვანე პრომო კოდი" autocomplete="off" />
+        <button class="promo__btn" type="submit">გაგზავნა</button>
+      </form>
+    </section>
+
+    <!-- ჯამური ღირებულება -->
+    <section class="totals">
+      <div class="totals__row">
+        <p class="totals__label">ჯამური ღირებულება</p>
+        <div class="totals__prices"><span class="price-old">681.00 ₾</span><span class="price-new">518.00 ₾</span></div>
+      </div>
+      <div class="totals__divider"></div>
+      <div class="totals__row totals__row--today">
+        <div>
+          <p class="totals__label">დღეს გადასახდელი თანხა</p>
+          <p class="totals__sub">გრაფიკი : ყოველთვიური</p>
+        </div>
+        <div class="totals__prices"><span class="price-old">66.00 ₾</span><span class="price-new">43.20 ₾</span></div>
+      </div>
+      <div class="bruno-pts">
+        <button class="bruno-pts__cb" type="button" role="checkbox" aria-checked="false" aria-label="გამოიყენე ბრუნოს ქულები" data-toggle-cb>
+          <svg width="14" height="11" viewBox="0 0 14 11" fill="none"><path d="M1.5 5.5l3.6 3.5L12.5 1.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="bruno-pts__group">
+          <div>
+            <p class="bruno-pts__use">გამოიყენე</p>
+            <p class="bruno-pts__name">ბრუნოს ქულები</p>
+          </div>
+          <div class="bruno-pts__vline"></div>
+          <div class="bruno-pts__chip"><b>40,000 ბრუნოს ქულა =</b><span>400.00 ₾</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VISA ბენეფიტები -->
+    <section class="card16 visa" aria-labelledby="visa-title">
+      <img class="visa__art" src="assets/visa-art@2x.png" alt="" />
+      <div class="visa__body">
+        <div class="visa__block">
+          <h2 class="visa__title" id="visa-title">მიიღე დამატებითი ბენეფიტები</h2>
+          <p class="visa__text">გადაიხადე VISA ბარათით და მიიღეთ დამატებითი ბენეფიტები ყველა გადახდაზე</p>
+          <div class="visa__opts" role="radiogroup" aria-label="აირჩიეთ რომელი ბარათით გადაიხდით">
+            <p class="visa__prompt">აირჩიეთ რომელი ბარათით გადაიხდით</p>
+            <label class="radio"><input type="radio" name="visa-tier" value="other" /><span class="radio__dot"></span><span class="radio__label">სხვა ბარათი</span></label>
+            <label class="radio"><input type="radio" name="visa-tier" value="signature" /><span class="radio__dot"></span><span class="radio__label">VISA Signature <span>[benefit description]</span></span></label>
+            <label class="radio"><input type="radio" name="visa-tier" value="infinite" /><span class="radio__dot"></span><span class="radio__label">VISA Infinite&nbsp; <span>[benefit description]</span></span></label>
+            <p class="visa__error" id="visa-error" role="alert" hidden>აირჩიეთ ერთ-ერთი ვარიანტი</p>
+          </div>
+        </div>
+        <p class="visa__terms">აქციის სრული დეტალები <a href="#">იხილეთ ბმულზე</a></p>
+      </div>
+    </section>
+
+    <!-- სუპერ ბრუნო -->
+    <section class="card16 bruno" aria-labelledby="bruno-title">
+      <div class="bruno__symbol"><img src="assets/bruno-swirl.svg" alt="" /></div>
+      <img class="bruno__logo" src="assets/bruno-logo.svg" alt="ბრუნო" />
+      <h2 class="bruno__title" id="bruno-title">შენ გააქტიურე <b>სუპერ ბრუნო</b></h2>
+      <p class="bruno__sub">აირჩიე და ისარგელე მთელი წლის განმავლობაში</p>
+      <div class="bruno__opts" role="radiogroup" aria-label="ბრუნოს ბენეფიტი">
+        <div class="opt is-selected" role="radio" aria-checked="true" tabindex="0" data-opt="points">
+          <div class="opt__head">
+            <span class="opt__tick"></span>
+            <div class="opt__col">
+              <p class="opt__name">დააგროვე ქულები</p>
+              <div class="opt__body">
+                <div class="opt__top">
+                  <div class="opt__coin"><img src="assets/bruno-coin.svg" alt="" /><p class="opt__big">2,000 ქულა</p></div>
+                  <p class="opt__text">დაგროვებული ქულები გამოიყენე პოლისების შესაძენად ან გასაახლებლად.</p>
+                </div>
+                <p class="opt__rate">100 ბრუნოს ქულა = 1₾</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="opt" role="radio" aria-checked="false" tabindex="0" data-opt="benefits">
+          <div class="opt__head">
+            <span class="opt__tick"></span>
+            <div class="opt__col">
+              <p class="opt__name">აირჩიე ბენეფიტები</p>
+              <div class="opt__top">
+                <p class="opt__big">უფასო სერვისები</p>
+                <p class="opt__text">ისარგებლე მანქანის მოვლის სერვისებით მთელი წლის განმავლობაში.</p>
+              </div>
+            </div>
+          </div>
+          <button class="opt__select" type="button" aria-haspopup="listbox" aria-expanded="false"><span>აირჩიე სერვისი</span><img src="assets/chevron-down.svg" alt="" /></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- გადახდის სქემა -->
+    <section class="sum" data-collapsible>
+      <div class="sum__head">
+        <img class="sum__icon" src="assets/icon-hand-card.svg" alt="" />
+        <h2 class="sum__title">გადახდის სქემა</h2>
+        <button class="sum__toggle" type="button" aria-label="ჩაკეცვა"><img src="assets/icon-collapse.svg" alt="" /></button>
+      </div>
+      <div class="sum__body schema">
+        <div class="schema__col">
+          <div class="schema__item"><span class="schema__date">16/02/2024:</span><span class="schema__amt">43.2₾</span></div>
+          <div class="schema__item"><span class="schema__date">16/03/2024:</span><span class="schema__amt">43.2₾</span></div>
+          <div class="schema__item"><span class="schema__date">16/04/2024:</span><span class="schema__amt">43.2₾</span></div>
+          <div class="schema__item"><span class="schema__date">16/05/2024:</span><span class="schema__amt">43.2₾</span></div>
+          <div class="schema__item"><span class="schema__date">16/06/2024:</span><span class="schema__amt">43.2₾</span></div>
+          <div class="schema__item"><span class="schema__date">16/07/2024:</span><span class="schema__amt">43.2₾</span></div>
+        </div>
+        <div class="schema__col">
+          <div class="schema__item"><span class="schema__date">16/08/2024:</span><span class="schema__amt">43.2₾</span></div>
+          <div class="schema__item"><span class="schema__date">16/09/2024:</span><span class="schema__amt">43.2₾</span></div>
+          <div class="schema__item"><span class="schema__date">16/10/2024:</span><span class="schema__amt">43.2₾</span></div>
+          <div class="schema__item"><span class="schema__date">16/11/2024:</span><span class="schema__amt">43.2₾</span></div>
+          <div class="schema__item"><span class="schema__date">16/12/2024:</span><span class="schema__amt">43.2₾</span></div>
+          <div class="schema__item"><span class="schema__date">16/01/2025:</span><span class="schema__amt">43.2₾</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- გადახდის მეთოდი (rebuilt from the screenshot) -->
+    <section class="pm" aria-labelledby="pm-title">
+      <div class="pm__head"><img src="assets/icon-card-title@2x.png" alt="" /><h2 class="pm__title" id="pm-title">გადახდის მეთოდი</h2></div>
+      <p class="pm__sub">აირჩიე გადახდის მეთოდი</p>
+      <div class="pm__grid" role="radiogroup" aria-label="გადახდის მეთოდი">
+        <label class="tile"><input type="radio" name="pay-method" value="6372" checked /><span class="tile__dot"></span><span class="tile__pan">411634******6372</span><img class="tile__card" src="assets/icon-card@2x.png" alt="" /></label>
+        <label class="tile"><input type="radio" name="pay-method" value="9436" /><span class="tile__dot"></span><span class="tile__pan">411634******9436</span><img class="tile__card" src="assets/icon-card@2x.png" alt="" /></label>
+        <label class="tile"><input type="radio" name="pay-method" value="new" /><span class="tile__dot"></span><span class="tile__other">სხვა ბარათი</span></label>
+      </div>
+    </section>
+
+    <div class="line-card line-card--start">
+      <span class="line-card__label">პოლისი ძალაში შედის</span>
+      <span class="line-card__date">17 / 02 / 2024</span>
+    </div>
+
+    <div class="consents">
+      <label class="line-card consent"><input type="checkbox" data-consent /><span class="consent__box"><svg viewBox="0 0 10 8" fill="none"><path d="M1 4l2.6 2.6L9 1" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="consent__text">ვეთანხმები <a href="#">დაზღვევის პირობებს</a></span></label>
+      <label class="line-card consent"><input type="checkbox" data-consent /><span class="consent__box"><svg viewBox="0 0 10 8" fill="none"><path d="M1 4l2.6 2.6L9 1" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="consent__text">ვეთანხმები <a href="#">მომსახურების</a> პირობებს</span></label>
+    </div>
+
+  </div>
+</main>
+
+<footer class="ftr">
+  <div class="ftr__row">
+    <button class="btn btn--back" type="button"><img src="assets/icon-back.svg" alt="" /><span>უკან</span></button>
+    <button class="btn btn--buy" type="button" id="buy" disabled>ყიდვა</button>
+  </div>
+</footer>
+
+<button class="chat" type="button" aria-label="ჩატი">
+  <img class="c1" src="assets/chat-circle.svg" alt="" />
+  <img class="c2" src="assets/chat-bubble.svg" alt="" />
+  <img class="c3" src="assets/chat-tail.svg" alt="" />
+</button>
+
+<script>
+  // Figma renders `text-transform: uppercase` on Georgian as Mtavruli capitals; Chrome/Safari
+  // deliberately leave Georgian untouched. Convert the uppercase titles explicitly so the
+  // page matches the design (Mkhedruli U+10D0–10FF → Mtavruli U+1C90–1CBF). Source text
+  // stays Mkhedruli in the markup, so it remains easy to edit.
+  (function () {
+    var UP = '.page__title, .sum__title, .visa__title, .bruno__title, .opt__name, .bruno-pts__name, .pm__title';
+    var re = /[ა-ჺჽ-ჿ]/g;
+    document.querySelectorAll(UP).forEach(function (el) {
+      var w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), n;
+      while ((n = w.nextNode())) n.nodeValue = n.nodeValue.replace(re, function (c) { return String.fromCharCode(c.charCodeAt(0) + 0xBC0); });
+    });
+  })();
+  // Collapsible summary groups (gpi-summary-group chevron).
+  document.querySelectorAll('[data-collapsible] .sum__toggle').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var sec = btn.closest('.sum');
+      var open = !sec.classList.toggle('is-collapsed');
+      btn.setAttribute('aria-expanded', String(open));
+    });
+  });
+  // Advice card close.
+  document.querySelector('[data-close="advice"]').addEventListener('click', function () {
+    document.getElementById('advice').hidden = true;
+  });
+  // Bruno-points checkbox in the totals block.
+  var cb = document.querySelector('[data-toggle-cb]');
+  cb.addEventListener('click', function () {
+    var on = cb.classList.toggle('is-on');
+    cb.setAttribute('aria-checked', String(on));
+  });
+  // Super Bruno option cards: one selected at a time.
+  var opts = document.querySelectorAll('.opt');
+  function selectOpt(el) {
+    opts.forEach(function (o) { var sel = o === el; o.classList.toggle('is-selected', sel); o.setAttribute('aria-checked', String(sel)); });
+  }
+  opts.forEach(function (o) {
+    o.addEventListener('click', function (e) { if (e.target.closest('.opt__select')) return; selectOpt(o); });
+    o.addEventListener('keydown', function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); selectOpt(o); } });
+  });
+  // The buy button is disabled (grey) until both consents are ticked.
+  var consents = document.querySelectorAll('[data-consent]');
+  var buy = document.getElementById('buy');
+  function syncBuy() { buy.disabled = !Array.prototype.every.call(consents, function (c) { return c.checked; }); }
+  consents.forEach(function (c) { c.addEventListener('change', syncBuy); });
+  syncBuy();
+  // Visa tier: NO default (a pre-selected "other card" let customers skip the decision). Validated when
+  // the buy button is clicked; the error lives inside the banner and clears live on any selection.
+  // (Same treatment is planned for the Super Bruno cards later.)
+  var visaOpts = document.querySelector('.visa__opts');
+  var visaErr = document.getElementById('visa-error');
+  var visaRadios = document.querySelectorAll('input[name="visa-tier"]');
+  function visaChosen() { return Array.prototype.some.call(visaRadios, function (r) { return r.checked; }); }
+  function setVisaError(on) {
+    visaErr.hidden = !on;
+    visaOpts.classList.toggle('is-invalid', on);
+    if (on) { visaOpts.setAttribute('aria-invalid', 'true'); visaOpts.setAttribute('aria-describedby', 'visa-error'); }
+    else { visaOpts.removeAttribute('aria-invalid'); visaOpts.removeAttribute('aria-describedby'); }
+  }
+  visaRadios.forEach(function (r) { r.addEventListener('change', function () { setVisaError(false); }); });
+  buy.addEventListener('click', function () {
+    if (visaChosen()) return; // sandbox: payment hand-off not modelled
+    setVisaError(true);
+    document.querySelector('.visa').scrollIntoView({ block: 'center', behavior: 'smooth' });
+    visaRadios[0].focus({ preventScroll: true });
+  });
+</script>
+</body>
+</html>
