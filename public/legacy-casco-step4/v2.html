@@ -32,6 +32,9 @@
     --manatee:   #898da7;   /* disabled button */
     --link:      #1000f6;
     --error:     #d92d20;   /* validation red — ASSUMED, the legacy trace has no error state (4.9:1 on white) */
+    --success:     #0f7347;  /* = design-system --status-success-fg / -bg / -border, so the legacy */
+    --success-bg:  #e8f6ee;  /* sandbox shows the SAME green as every other GPI flow */
+    --success-brd: #8fd3ac;
     --font: "Noto Sans Georgian", system-ui, sans-serif;
     --page-w: 1722px;
     --col-w: 760px;
@@ -227,6 +230,13 @@
      The tiles carry a Visa "extra" line and the block ends with a "you get" summary. No defaults anywhere. */
   .rw { display: flex; flex-direction: column; }
   .rw__visa { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 16px; min-height: 270px; }
+  /* The glow used to stop 20px above the divider (the 316px raster ended before the taller v2 step). The art now sits
+     inside the Visa part, anchored top = card top, bottom = the divider (height 100% + the two 24px paddings), shows the
+     2× raster at exactly half size (object-fit cover on a 359-wide box = 359/718 = 0.5, anchored top-left) and crops it
+     at the divider. The *-tall asset carries 60 css px of continued fade below the original bottom row, so the box has
+     pixels to show however the copy grows (up to a 328px Visa part before cover would start to upscale). */
+  .rw .visa__art { left: 375px; top: -24px; width: 359px; height: calc(100% + 48px); object-fit: cover; object-position: left top; z-index: 0; }
+  .rw__visa > *:not(.visa__art) { position: relative; z-index: 1; }
   .rw .visa__opts { max-width: 400px; }
   .rw .radio__label { white-space: normal; }
   .rw .visa__terms { margin-top: 8px; }
@@ -241,6 +251,8 @@
   .rw__sum { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; background: var(--yellow); border-radius: 8px; padding: 14px 20px; font: 400 16px/24px var(--font); color: var(--downriver); letter-spacing: 0; }
   .rw__sum b { font-weight: 600; }
   .rw__sum.is-set { background: #e6edff; }
+  .rw__sum.is-bonus { background: #fff; color: var(--downriver); box-shadow: inset 0 0 0 1px #d9deea; }
+  .rw__sum.is-bonus::before { content: ""; flex: none; width: 20px; height: 20px; align-self: center; background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'><circle cx='10' cy='10' r='9' fill='%230f7347'/><path d='M5.6 10.2l2.9 2.9 5.9-5.9' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>") no-repeat center / 20px 20px; }
   /* V2.1 — one anatomy for both reward tiles, lighter chrome; the service picker lives under the tiles */
   .rw .opt { padding: 20px; gap: 12px; border: 1px solid #d9deea; border-radius: 12px; }
   .rw .opt:hover { border-color: rgba(14, 33, 94, 0.45); }
@@ -253,12 +265,50 @@
   .rw .opt__text { font: 400 14px/20px var(--font); color: var(--jacarta); max-width: none; min-height: 60px; }
   .rw .opt__meta { margin: 0; font: 600 14px/20px var(--font); color: var(--downriver); }
   .rw .opt__xtra { margin-top: auto; font: 400 14px/20px var(--font); color: var(--jacarta); background: var(--yellow); border-radius: 8px; padding: 8px 12px; }
-  .rw .opt__xtra.is-lit { color: var(--downriver); background: #e6edff; white-space: nowrap; }
-  .rw .opt__xtra b { font-weight: 700; }
+  .rw .opt__xtra { display: flex; align-items: center; gap: 6px; min-height: 56px; }
+  .rw .opt__xtra.is-lit { color: var(--downriver); background: #fff; box-shadow: inset 0 0 0 1px #d9deea; }
+  .rw .opt.is-selected .opt__xtra.is-lit::before { content: ""; flex: none; width: 16px; height: 16px; background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'><path d='M3.5 8.4l3 3 6-6' stroke='%230f7347' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>") no-repeat center / 16px 16px; }
+  /* Visa card icon = GPI's "Payment method icon.svg" (34×24, white tile + navy wordmark), 28×20 inside the
+     reward chips where it replaces the former bold "VISA" text stand-in. (It was also in the tier radio rows
+     for a moment — removed: "no visuals inside the radio button selector".) */
+  .rw .opt__xtra-brand { width: 28px; height: 20px; flex: none; }
+  /* Reward tiles select with the SAME radio dot as the tier options above (was a circle-tick icon). */
+  .rw .opt__tick { background-image: url("assets/radio-off.svg"); }
+  .rw .opt.is-selected .opt__tick { background-image: url("assets/radio-on.svg"); }
+  .rw .bruno__opts.is-invalid .opt:not(.is-selected) .opt__tick { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'><circle cx='12' cy='12' r='9.5' fill='white' stroke='%23d92d20'/></svg>"); }
   .rw__svc { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
   .rw__svc[hidden] { display: none; }
   .rw__svclbl { margin: 0; font: 600 14px/20px var(--font); color: var(--downriver); }
   .rw .opt__select { height: 48px; border-color: #d9deea; }
+  /* ---- Service picker (REQUIRED when „ბენეფიტი" is the reward). Mirrors the design system's rich Select
+     (.gpi-fsel in components.css): menu = card, 1px #dee1e8, radius 12, dropdown elevation, 8px inset, 320 max + scroll;
+     option = radius 8, padding 8/12/8/8, hover #eef0f4, selected pink-25 #fef3f8 + pink-700 #c42266; 34px round lead.
+     It opens IN FLOW, not as a popover: .card16 and .rw__bruno both clip overflow (corner radius + the Bruno swirl),
+     so a floating menu would be cut off at the card edge. */
+  .rw .svc__btn { justify-content: flex-start; gap: 10px; }
+  .rw .svc__btn .svc__chev { margin-left: auto; width: 20px; height: 20px; transition: none; }
+  .rw .svc__btn.is-open .svc__chev { transform: rotate(180deg); }
+  .rw .svc__btn .svc__ph { color: #6b7280; font-weight: 400; }
+  .rw .svc__btn.is-invalid { border-color: var(--error); }
+  .svc__lead { flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--yellow); display: inline-flex; align-items: center; justify-content: center; color: var(--downriver); }
+  .svc__lead svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .svc__menu { background: #fff; border: 1px solid #dee1e8; border-radius: 12px; box-shadow: 0 2px 4px rgba(17, 23, 34, 0.06), 0 4px 8px rgba(17, 23, 34, 0.08); padding: 8px; max-height: 320px; overflow: auto; display: flex; flex-direction: column; gap: 2px; }
+  .svc__menu[hidden] { display: none; }
+  .svc__opt { width: 100%; display: flex; align-items: center; gap: 10px; border: 0; background: transparent; text-align: left; padding: 8px 12px 8px 8px; border-radius: 8px; font: 400 14px/20px var(--font); color: var(--downriver); cursor: pointer; letter-spacing: 0; }
+  .svc__opt:hover { background: #eef0f4; }
+  .svc__opt:focus-visible { outline: none; background: #eef0f4; box-shadow: inset 0 0 0 2px var(--link); }
+  .svc__opt.is-sel { background: #fef3f8; color: #c42266; }
+  .svc__opt .svc__lead { width: 34px; height: 34px; }
+  .svc__opt .svc__lead svg { width: 18px; height: 18px; }
+  .svc__opt.is-sel .svc__lead { background: #fff; color: #c42266; }
+  .svc__meta { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+  .svc__meta > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .svc__name { font: 500 14px/20px var(--font); }
+  .svc__sub { font: 400 12px/16px var(--font); color: #6b7280; }
+  .svc__opt.is-sel .svc__sub { color: #c42266; }
+  .svc__check { flex: none; width: 18px; height: 18px; color: #c42266; visibility: hidden; }
+  .svc__opt.is-sel .svc__check { visibility: visible; }
+  .svc__check svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
   .vtag { position: fixed; left: 24px; bottom: 104px; z-index: 50; background: var(--downriver); color: #fff; font: 600 12px/16px var(--font); padding: 8px 12px; border-radius: 999px; }
   .vtag a { color: #fff; }
 
@@ -292,6 +342,8 @@
   .consent input:focus-visible + .consent__box { outline: 2px solid var(--link); outline-offset: 2px; }
   .consent__text { margin-left: 10px; font: 700 15px/20px var(--font); color: #28255e; }
   .consent__text a { color: #da387b; text-decoration: underline; }
+  .consents.is-invalid .consent input:not(:checked) + .consent__box { border-color: var(--error); }
+  .consents__error { margin: 0; padding-left: 13px; font: 400 14px/20px var(--font); color: var(--error); }
 
   /* ---------- footer (div.h2d-b35a8103) ---------- */
   .ftr { position: sticky; bottom: 0; height: 87.63px; background: #fff; box-shadow: 0 -1px 10px rgba(41, 37, 98, 0.1); z-index: 5; }
@@ -430,8 +482,8 @@
 
     <!-- V2: VISA × სუპერ ბრუნო — one rewards block (concept A) -->
     <section class="card16 rw" aria-labelledby="visa-title">
-      <img class="visa__art" src="assets/visa-art-clean@2x.png" alt="" />
       <div class="rw__visa">
+        <img class="visa__art" src="assets/visa-art-tall@2x.png" alt="" />
         <h2 class="visa__title" id="visa-title">მიიღე დამატებითი ბენეფიტები</h2>
         <p class="visa__text">გადაიხადე VISA Signature ან Infinite ბარათით და მიიღე ექსტრა ქულები ან ექსტრა სერვისი სუპერ ბრუნოს ჯილდოზე</p>
         <div class="visa__opts" role="radiogroup" aria-label="აირჩიეთ რომელი ბარათით გადაიხდით">
@@ -439,7 +491,7 @@
           <label class="radio"><input type="radio" name="visa-tier" value="signature" /><span class="radio__dot"></span><span class="radio__label">VISA Signature <span data-hint="signature">+31 ქულა ან +1 რეცხვა</span></span></label>
           <label class="radio"><input type="radio" name="visa-tier" value="infinite" /><span class="radio__dot"></span><span class="radio__label">VISA Infinite&nbsp; <span data-hint="infinite">+36 ქულა ან +2 სერვისი</span></span></label>
           <label class="radio"><input type="radio" name="visa-tier" value="other" /><span class="radio__dot"></span><span class="radio__label">სხვა ბარათი <span>სტანდარტული ჯილდო</span></span></label>
-          <p class="visa__error" id="visa-error" role="alert" hidden>აირჩიეთ რომელი ბარათით გადაიხდით</p>
+          <p class="visa__error" id="visa-error" role="alert" hidden>ბარათი არჩეული არ არის</p>
         </div>
         <p class="visa__terms">აქციის სრული დეტალები <a href="#">იხილეთ ბმულზე</a></p>
       </div>
@@ -467,10 +519,12 @@
             </div>
           </div>
           <div class="rw__svc" id="rw-svc" hidden>
-            <p class="rw__svclbl">რომელი სერვისი გინდა?</p>
-            <button class="opt__select" type="button" aria-haspopup="listbox" aria-expanded="false"><span>აირჩიე სერვისი</span><img src="assets/chevron-down.svg" alt="" /></button>
+            <p class="rw__svclbl" id="svc-label">აირჩიე ბენეფიტი</p>
+            <button class="opt__select svc__btn" type="button" id="svc-btn" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="svc-label svc-btn"><span class="svc__txt svc__ph">აირჩიე სერვისი</span><img class="svc__chev" src="assets/chevron-down.svg" alt="" /></button>
+            <div class="svc__menu" id="svc-menu" role="listbox" aria-labelledby="svc-label" hidden></div>
+            <p class="visa__error" id="svc-error" role="alert" hidden>სერვისი არჩეული არ არის</p>
           </div>
-          <p class="visa__error" id="bruno-error" role="alert" hidden>აირჩიეთ ჯილდოს ტიპი</p>
+          <p class="visa__error" id="bruno-error" role="alert" hidden>ჯილდო არჩეული არ არის</p>
         </div>
         <p class="rw__sum" id="rw-sum"><span>მიიღებ:</span> <b id="rw-sumval">აირჩიე ბარათი და ჯილდო</b></p>
       </div>
@@ -519,9 +573,10 @@
       <span class="line-card__date">17 / 02 / 2024</span>
     </div>
 
-    <div class="consents">
+    <div class="consents" role="group" aria-label="პირობები">
       <label class="line-card consent"><input type="checkbox" data-consent /><span class="consent__box"><svg viewBox="0 0 10 8" fill="none"><path d="M1 4l2.6 2.6L9 1" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="consent__text">ვეთანხმები <a href="#">დაზღვევის პირობებს</a></span></label>
       <label class="line-card consent"><input type="checkbox" data-consent /><span class="consent__box"><svg viewBox="0 0 10 8" fill="none"><path d="M1 4l2.6 2.6L9 1" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="consent__text">ვეთანხმები <a href="#">მომსახურების</a> პირობებს</span></label>
+      <p class="consents__error" id="consent-error" role="alert" hidden>დაეთანხმე ორივე პირობას</p>
     </div>
 
   </div>
@@ -530,7 +585,7 @@
 <footer class="ftr">
   <div class="ftr__row">
     <button class="btn btn--back" type="button"><img src="assets/icon-back.svg" alt="" /><span>უკან</span></button>
-    <button class="btn btn--buy" type="button" id="buy" disabled>ყიდვა</button>
+    <button class="btn btn--buy" type="button" id="buy">ყიდვა</button>
   </div>
 </footer>
 
@@ -574,12 +629,11 @@
     var on = cb.classList.toggle('is-on');
     cb.setAttribute('aria-checked', String(on));
   });
-  // The buy button is disabled (grey) until both consents are ticked.
+  // The buy button is ALWAYS active (user, 2026-09-10 — it used to sit disabled/grey until both
+  // consents were ticked, which hid the fact that anything was missing). Clicking it validates
+  // every required choice at once, marks each one in place, and scrolls to the first unmet block.
   var consents = document.querySelectorAll('[data-consent]');
   var buy = document.getElementById('buy');
-  function syncBuy() { buy.disabled = !Array.prototype.every.call(consents, function (c) { return c.checked; }); }
-  consents.forEach(function (c) { c.addEventListener('change', syncBuy); });
-  syncBuy();
   // ---------- V2: VISA × Super Bruno — one rewards block, no defaults ----------
   // DRAFT mechanics to confirm with GPI: Visa points = 6 % (Signature) / 7 % (Infinite) of the premium on screen.
   // PTS_PER_GEL flips the point unit: 1 = the payment-portal reading (13.73 ₾ → 13.73 pts), 100 = this page's "100 ქულა = 1₾".
@@ -605,18 +659,20 @@
   function reward() { var o = document.querySelector('.opt.is-selected'); return o ? o.getAttribute('data-opt') : null; }
   function render() {
     var t = tier(), r = reward(), lit = !!t && t !== 'other';
-    if (!t) { xP.textContent = 'VISA ბარათით — ექსტრა ქულები'; xB.textContent = 'VISA ბარათით — ექსტრა სერვისი'; }
+    var VISA = '<img class="opt__xtra-brand" src="assets/visa-icon.svg" alt="VISA" /> ';
+    if (!t) { xP.innerHTML = VISA + 'ბარათით — ექსტრა ქულები'; xB.innerHTML = VISA + 'ბარათით — ექსტრა სერვისი'; }
     else if (!lit) { xP.textContent = 'ექსტრა არ არის — სტანდარტული ჯილდო'; xB.textContent = xP.textContent; }
-    else { xP.innerHTML = '<b>VISA</b> +' + tierPts(t) + ' ქულა'; xB.innerHTML = '<b>VISA</b> ' + TIERS[t].service; }
+    else { xP.innerHTML = VISA + '+' + tierPts(t) + ' ქულა'; xB.innerHTML = VISA + TIERS[t].service; }
     xP.classList.toggle('is-lit', lit); xB.classList.toggle('is-lit', lit);
     var v;
     if (!t && !r) v = 'აირჩიე ბარათი და ჯილდო';
     else if (!t) v = 'აირჩიე ბარათი';
     else if (!r) v = 'აირჩიე ჯილდო';
     else if (r === 'points') v = '2,000 ქულა' + (lit ? ' + ' + tierPts(t) + ' ექსტრა ქულა (' + TIERS[t].name + ')' : ' — სტანდარტული ჯილდო');
-    else v = '1 უფასო სერვისი' + (lit ? ' ' + TIERS[t].service + ' (' + TIERS[t].name + ')' : ' — სტანდარტული ჯილდო');
+    else v = (service ? service.name : '1 უფასო სერვისი') + (lit ? ' ' + TIERS[t].service + ' (' + TIERS[t].name + ')' : ' — სტანდარტული ჯილდო');
     sumVal.textContent = v;
-    sum.classList.toggle('is-set', !!t && !!r);
+    sum.classList.toggle('is-set', !!t && !!r && !lit);
+    sum.classList.toggle('is-bonus', !!t && !!r && lit);
   }
   function setErr(group, errEl, on) {
     errEl.hidden = !on;
@@ -626,7 +682,9 @@
   }
   function selectOpt(el) {
     opts.forEach(function (o) { var sel = o === el; o.classList.toggle('is-selected', sel); o.setAttribute('aria-checked', String(sel)); });
-    document.getElementById('rw-svc').hidden = el.getAttribute('data-opt') !== 'benefits';
+    var isBenefits = el.getAttribute('data-opt') === 'benefits';
+    document.getElementById('rw-svc').hidden = !isBenefits;
+    if (!isBenefits) { svcOpen(false); setErr(svcBtn, svcErr, false); }
     setErr(brunoOpts, brunoErr, false); render();
   }
   opts.forEach(function (o) {
@@ -634,12 +692,98 @@
     o.addEventListener('keydown', function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); selectOpt(o); } });
   });
   visaRadios.forEach(function (r) { r.addEventListener('change', function () { setErr(visaOpts, visaErr, false); render(); }); });
+  // ---------- Service picker — REQUIRED when the reward is „ბენეფიტი" (user, 2026-09-10) ----------
+  // Glyphs = the design system's Lucide set (car-wash/wrench/gift verbatim from lib/Icon.jsx); fuel, parking, tyre,
+  // tow-truck, diagnostics and sparkles are the same family and are NOT in the Figma Icon set yet — add them there.
+  // The catalogue itself is a DRAFT: names, subs and which tier gets what are GPI's to confirm.
+  var SVG = function (inner) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + inner + '</svg>'; };
+  var ICONS = {
+    droplets: '<path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"/><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"/>',
+    wrench: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+    fuel: '<line x1="3" x2="15" y1="22" y2="22"/><line x1="4" x2="14" y1="9" y2="9"/><path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/>',
+    parking: '<circle cx="12" cy="12" r="10"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/>',
+    droplet: '<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
+    wheel: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><path d="M12 2v7"/><path d="m19.07 7-5.5 3.2"/><path d="m19.07 17-5.5-3.2"/><path d="M12 22v-7"/><path d="m4.93 17 5.5-3.2"/><path d="m4.93 7 5.5 3.2"/>',
+    truck: '<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>',
+    sparkles: '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>',
+    gauge: '<path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/>',
+    gift: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/>',
+    check: '<path d="M20 6 9 17l-5-5"/>'
+  };
+  var SERVICES = [
+    { id: 'wash',     icon: 'droplets', name: 'ავტომობილის რეცხვა',         sub: '1 სრული რეცხვა · პარტნიორ სადგურზე' },
+    { id: 'inspect',  icon: 'wrench',   name: 'ტექდათვალიერება',             sub: 'პერიოდული ტექნიკური დათვალიერება' },
+    { id: 'fuel',     icon: 'fuel',     name: 'საწვავი',                     sub: 'საწვავის ვაუჩერი' },
+    { id: 'parking',  icon: 'parking',  name: 'ზონალური პარკირება',          sub: '6 სთ / თვე' },
+    { id: 'oil',      icon: 'droplet',  name: 'ზეთის შეცვლა',                sub: 'ძრავის ზეთი და ფილტრი' },
+    { id: 'tyres',    icon: 'wheel',    name: 'საბურავების სეზონური შეცვლა', sub: 'დამონტაჟება და ბალანსირება' },
+    { id: 'tow',      icon: 'truck',    name: 'ევაკუატორი',                  sub: '24/7 · 1 გამოძახება' },
+    { id: 'interior', icon: 'sparkles', name: 'სალონის ქიმწმენდა',           sub: 'სრული სალონი' },
+    { id: 'diag',     icon: 'gauge',    name: 'კომპიუტერული დიაგნოსტიკა',    sub: 'სრული შემოწმება' },
+    { id: 'premium',  icon: 'gift',     name: 'ვუვლის პრემიუმ პაკეტი',       sub: 'პარტნიორის პაკეტი' }
+  ];
+  var svcWrap = document.getElementById('rw-svc'), svcBtn = document.getElementById('svc-btn'),
+      svcMenu = document.getElementById('svc-menu'), svcErr = document.getElementById('svc-error');
+  var service = null;
+  function lead(icon) { return '<span class="svc__lead">' + SVG(ICONS[icon]) + '</span>'; }
+  svcMenu.innerHTML = SERVICES.map(function (sv) {
+    return '<button type="button" class="svc__opt" role="option" data-id="' + sv.id + '" aria-selected="false" tabindex="-1">' +
+      lead(sv.icon) + '<span class="svc__meta"><span class="svc__name">' + sv.name + '</span><span class="svc__sub">' + sv.sub + '</span></span>' +
+      '<span class="svc__check">' + SVG(ICONS.check) + '</span></button>';
+  }).join('');
+  var svcOpts = svcMenu.querySelectorAll('.svc__opt');
+  function svcOpen(on) {
+    svcMenu.hidden = !on; svcBtn.classList.toggle('is-open', on); svcBtn.setAttribute('aria-expanded', String(on));
+    if (on) (svcMenu.querySelector('.is-sel') || svcOpts[0]).focus();
+  }
+  function paintSvcBtn() {
+    svcBtn.innerHTML = (service ? lead(service.icon) : '') +
+      '<span class="svc__txt' + (service ? '' : ' svc__ph') + '">' + (service ? service.name : 'აირჩიე სერვისი') + '</span>' +
+      '<img class="svc__chev" src="assets/chevron-down.svg" alt="" />';
+  }
+  function pickService(id) {
+    service = SERVICES.filter(function (sv) { return sv.id === id; })[0] || null;
+    svcOpts.forEach(function (o) { var sel = o.getAttribute('data-id') === id; o.classList.toggle('is-sel', sel); o.setAttribute('aria-selected', String(sel)); });
+    paintSvcBtn();
+    if (service) setErr(svcBtn, svcErr, false);
+    render();
+  }
+  function serviceOk() { return reward() !== 'benefits' || !!service; }
+  svcBtn.addEventListener('click', function () { svcOpen(svcMenu.hidden); });
+  svcBtn.addEventListener('keydown', function (e) { if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); svcOpen(true); } });
+  svcOpts.forEach(function (o, i) {
+    o.addEventListener('click', function () { pickService(o.getAttribute('data-id')); svcOpen(false); svcBtn.focus(); });
+    o.addEventListener('keydown', function (e) {
+      var n = svcOpts.length;
+      if (e.key === 'ArrowDown') { e.preventDefault(); svcOpts[(i + 1) % n].focus(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); svcOpts[(i - 1 + n) % n].focus(); }
+      else if (e.key === 'Home') { e.preventDefault(); svcOpts[0].focus(); }
+      else if (e.key === 'End') { e.preventDefault(); svcOpts[n - 1].focus(); }
+      else if (e.key === 'Escape') { e.preventDefault(); svcOpen(false); svcBtn.focus(); }
+      else if (e.key === 'Tab') { svcOpen(false); }
+    });
+  });
+  document.addEventListener('click', function (e) { if (!svcMenu.hidden && !svcWrap.contains(e.target)) svcOpen(false); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !svcMenu.hidden) { svcOpen(false); svcBtn.focus(); } });
+
+  var consentsWrap = document.querySelector('.consents');
+  var consentErr = document.getElementById('consent-error');
+  function consentsOk() { return Array.prototype.every.call(consents, function (c) { return c.checked; }); }
+  consents.forEach(function (c) { c.addEventListener('change', function () { if (consentsOk()) setErr(consentsWrap, consentErr, false); }); });
   buy.addEventListener('click', function () {
-    var badT = !tier(), badR = !reward();
-    if (!badT && !badR) return; // sandbox: payment hand-off not modelled
-    setErr(visaOpts, visaErr, badT); setErr(brunoOpts, brunoErr, badR);
-    (badT ? document.querySelector('.rw') : brunoOpts).scrollIntoView({ block: badT ? 'start' : 'center', behavior: 'smooth' });
-    (badT ? visaRadios[0] : opts[0]).focus({ preventScroll: true });
+    var badT = !tier(), badR = !reward(), badS = !serviceOk(), badC = !consentsOk();
+    setErr(visaOpts, visaErr, badT);
+    setErr(brunoOpts, brunoErr, badR);
+    setErr(svcBtn, svcErr, badS);
+    setErr(consentsWrap, consentErr, badC);
+    if (!badT && !badR && !badS && !badC) return; // sandbox: payment hand-off not modelled
+    // scroll to the FIRST unmet block in document order, and put focus in it
+    var first = badT ? { el: document.querySelector('.rw'), block: 'start', focus: visaRadios[0] }
+              : badR ? { el: brunoOpts, block: 'center', focus: opts[0] }
+              : badS ? { el: svcWrap, block: 'center', focus: svcBtn }
+              :        { el: consentsWrap, block: 'center', focus: consents[0] };
+    first.el.scrollIntoView({ block: first.block, behavior: 'smooth' });
+    first.focus.focus({ preventScroll: true });
   });
   render();
 </script>

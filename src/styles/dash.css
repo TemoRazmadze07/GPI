@@ -1269,40 +1269,35 @@
    (16 padding, border/default, radius/lg, selected = action/primary stroke +
    selected tint) so the two selection surfaces read as one family — it is a
    CONTAINER, not a label: the search field and checklist live inside it. */
-.dash-trfmodal { max-width: calc(100vw - 2 * var(--space-16)); max-height: calc(100vh - 2 * var(--space-16)); display: flex; flex-direction: column; }
-.dash-trfmodal .gpi-modal__body { flex: 1 1 auto; min-height: 0; overflow: auto; }
+/* ---- Transfer DRAWER (2026-09-10; was a 520px modal) ------------------------
+   The shared Drawer (720, right) — two blocks, each `label + optional head link`
+   over its control. The drawer BODY is the scroll container, so the record list
+   has no inner max-height (no nested scrolling). */
+.dash-trfdrawer .gpi-drawer__body { gap: var(--space-24); }
 .dash-trf__ctx { margin: 0; color: var(--text-muted); font: 400 13px/18px var(--font-sans); }
-.dash-trf__block { display: flex; flex-direction: column; gap: var(--space-8); }
+.dash-trf__block { display: flex; flex-direction: column; gap: var(--space-12); }
+.dash-trf__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-12); }
+.dash-trf__head .dash-link { white-space: nowrap; }
 .dash-trf__lbl { margin: 0; font: 500 13px/16px var(--font-sans); color: var(--text-main); }
-.dash-trf__opt {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
-  padding: var(--space-12) var(--space-16);
-  border: var(--border-width-sm) solid var(--border-default);
-  border-radius: var(--radius-lg);
-  background: var(--surface-card);
-}
-.dash-trf__opt.is-on { border-color: var(--action-primary); background: var(--interactive-selected-bg); }
-/* The radio ring is 20 + the 8 gap: everything under the label lines up with its text. */
-.dash-trf__sub { padding-left: 28px; color: var(--text-muted); font: 400 12px/16px var(--font-sans); }
-.dash-trf__opt .gpi-search { width: 100%; background: var(--surface-card); }
-.dash-trf__list { display: flex; flex-direction: column; gap: var(--space-12); max-height: 280px; overflow: auto; padding-right: var(--space-4); }
-.dash-trf__group { display: flex; flex-direction: column; gap: var(--space-8); }
-.dash-trf__ghead { display: flex; align-items: center; justify-content: space-between; gap: var(--space-8); font: 500 12px/16px var(--font-sans); color: var(--text-muted); }
-.dash-trf__ghead > span { flex: 1 1 auto; min-width: 0; }
-/* The select-all link is a text ACTION: it never wraps (button-label rule); the
-   group name yields instead — at 390 „ანალიზები და კვლევები · 12" wraps, the link does not. */
-.dash-trf__ghead .gpi-link { flex: none; font-size: 12px; white-space: nowrap; }
-.dash-trf__count { font-weight: 400; }
-.dash-trf__empty { margin: 0; color: var(--text-muted); font: 400 13px/18px var(--font-sans); }
-.dash-trf__err { margin: 0; }
-.dash-trf__doc { display: flex; align-items: center; gap: var(--space-12); padding-left: 28px; }
+/* the personal doctor, read-only */
+.dash-trf__doc { display: flex; align-items: center; gap: var(--space-12); padding: var(--space-4) 0; }
 .dash-trf__docmeta { display: flex; flex-direction: column; min-width: 0; }
 .dash-trf__docname { font: 500 14px/20px var(--font-sans); color: var(--text-main); }
 .dash-trf__docsub { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
-.dash-trf__pick { display: flex; flex-direction: column; gap: var(--space-4); padding-left: 28px; }
-.dash-trf__pick .gpi-fsel { width: 100%; }
+/* the network: search + the wizard's doctor rows */
+.dash-trf__network { display: flex; flex-direction: column; gap: var(--space-8); }
+.dash-trf__network .gpi-search { width: 100%; }
+.dash-trf__doclist { display: flex; flex-direction: column; gap: var(--space-4); }
+/* the records: header checkbox row (the open category) over the rows */
+.dash-trf__rows { display: flex; flex-direction: column; }
+.dash-trf__rows .gpi-checkrow { padding: var(--space-8) var(--space-4); border-bottom: var(--border-width-sm) solid var(--border-divider); }
+.dash-trf__rows .gpi-checkrow:last-child { border-bottom: 0; }
+.dash-trf__cathead .gpi-checkrow { border-bottom-color: var(--border-default); }
+.dash-trf__cathead .gpi-checkrow__title { font: 500 12px/16px var(--font-sans); color: var(--text-muted); }
+.dash-trf__empty { margin: 0; color: var(--text-muted); font: 400 13px/18px var(--font-sans); }
+.dash-trf__err { margin: 0; }
+/* footer: the running total on the left, the actions on the right */
+.dash-trf__total { margin-right: auto; align-self: center; color: var(--text-muted); font: 400 13px/18px var(--font-sans); }
 /* In the table: the visibility line under a record (same slot as the attached
    documents) and the row icon's shared state — success tone, check glyph. */
 .dash-shared { display: inline-flex; align-items: center; gap: var(--space-4); margin-top: var(--space-2); color: var(--status-success-fg); font: 400 12px/16px var(--font-sans); min-width: 0; }
@@ -1311,8 +1306,9 @@
 .dash-hist__share.is-shared:hover { color: var(--color-indigo-800); }
 .dash-attach__shared { display: inline-flex; align-items: center; color: var(--status-success-fg); }
 @media (max-width: 640px) {
-  .dash-trf__sub, .dash-trf__doc, .dash-trf__pick { padding-left: 0; }
-  .dash-trf__list { max-height: 220px; }
+  /* transfer drawer footer: the total drops above the actions */
+  .dash-trf__total { flex: 1 1 100%; margin-right: 0; }
+  .dash-trfdrawer .gpi-drawer__ft { flex-wrap: wrap; }
 }
 
 /* ---- Focus for the new controls ------------------------------------------- */

@@ -80,8 +80,10 @@ export const BOOKINGS = [
   {
     id: 'b1',
     apptId: 'a1',
-    doctor: L('ნინო ნინოშვილი', 'Nino Ninoshvili'),
-    photo: face('photo-1559839734-2b71ea197ec2'),
+    /* 2026-09-10: today's 11:30 is the cardiologist (curatioData TODAY), the
+       personal doctor moved to 18 Nov (b2) — one story across banner, rail, row. */
+    doctor: L('ზურაბ მაისურაძე', 'Zurab Maisuradze'),
+    photo: face('photo-1612349317150-e413f6a5b16d'),
     when: L('12 ნოე, 2025 · 11:30 — 12:00', '12 Nov, 2025 · 11:30 — 12:00'),
     person: L('გიორგი გიორგაძე', 'Giorgi Giorgadze'),
     status: 'ongoing',
@@ -93,8 +95,8 @@ export const BOOKINGS = [
      opens the wizard meets the same people. */
   {
     id: 'b2',
-    doctor: L('ზურაბ მაისურაძე', 'Zurab Maisuradze'),
-    photo: face('photo-1612349317150-e413f6a5b16d'),
+    doctor: L('ნინო ნინოშვილი', 'Nino Ninoshvili'),
+    photo: face('photo-1559839734-2b71ea197ec2'),
     when: L('18 ნოე, 2025 · 14:00 — 14:30', '18 Nov, 2025 · 14:00 — 14:30'),
     person: L('გიორგი გიორგაძე', 'Giorgi Giorgadze'),
     status: 'ongoing',

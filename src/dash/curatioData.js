@@ -124,7 +124,7 @@ export const DOCTOR = {
   id: 'pd',
   name: L('ნინო ნინოშვილი', 'Nino Ninoshvili'),
   spec: L('ოჯახის ექიმი · კურაციო საბურთალოზე', 'Family doctor · Curatio Saburtalo'),
-  next: L('12 ნოე', '12 Nov'),
+  next: L('18 ნოე', '18 Nov'), /* today (12 Nov) is the cardiologist's slot — see TODAY */
   photo: face('photo-1559839734-2b71ea197ec2'),
 }
 
@@ -134,17 +134,40 @@ export const DOCTOR = {
    doctor is NOT in this list — she is the preselected target in the modal, and
    listing her twice would make „other doctor" a trap. No photos: the network
    list renders initials (Avatar), as mobile does. */
+/* `languages` / `bio` / `avatar` (2026-09-10): the transfer drawer lists these
+   doctors with the booking wizard's DoctorRow and opens the wizard's
+   DoctorBioModal on the info trigger, so the rows need the wizard's shape —
+   language codes (booking.js langTag), a bio paragraph, a pravatar seed. DEMO
+   copy; the real network comes from Curatio. */
 export const TRANSFER_DOCTORS = [
-  { id: 'd1', name: L('გიორგი მამულაძე', 'Giorgi Mamuladze'), spec: L('კარდიოლოგი', 'Cardiologist'), clinic: L('კლ. კურაციო — ლორთქიფანიძის 31', 'Curatio Cl. — Lortkipanidze St. 31') },
-  { id: 'd2', name: L('ანა კობახიძე', 'Ana Kobakhidze'), spec: L('ენდოკრინოლოგი', 'Endocrinologist'), clinic: L('კლ. კურაციო — შეშელიძის 6', 'Curatio Cl. — Sheshelidze St. 6') },
-  { id: 'd3', name: L('დავით ჩხეიძე', 'Davit Chkheidze'), spec: L('ნევროლოგი', 'Neurologist'), clinic: L('კლ. კურაციო — შეშელიძის 6', 'Curatio Cl. — Sheshelidze St. 6') },
+  { id: 'd1', name: L('გიორგი მამულაძე', 'Giorgi Mamuladze'), spec: L('კარდიოლოგი', 'Cardiologist'), clinic: L('კლ. კურაციო — ლორთქიფანიძის 31', 'Curatio Cl. — Lortkipanidze St. 31'),
+    languages: ['KA', 'EN'], avatar: 12,
+    bio: L('კარდიოლოგი, 15 წლის გამოცდილება. არითმიების და არტერიული ჰიპერტენზიის მართვა, ექოკარდიოგრაფია.', 'Cardiologist, 15 years of practice. Arrhythmia and hypertension management, echocardiography.') },
+  { id: 'd2', name: L('ანა კობახიძე', 'Ana Kobakhidze'), spec: L('ენდოკრინოლოგი', 'Endocrinologist'), clinic: L('კლ. კურაციო — შეშელიძის 6', 'Curatio Cl. — Sheshelidze St. 6'),
+    languages: ['KA', 'EN', 'RU'], avatar: 47,
+    bio: L('ენდოკრინოლოგი. ფარისებრი ჯირკვლის დაავადებები, დიაბეტის მართვა, ჰორმონული კვლევების ინტერპრეტაცია.', 'Endocrinologist. Thyroid disorders, diabetes management, interpretation of hormone panels.') },
+  { id: 'd3', name: L('დავით ჩხეიძე', 'Davit Chkheidze'), spec: L('ნევროლოგი', 'Neurologist'), clinic: L('კლ. კურაციო — შეშელიძის 6', 'Curatio Cl. — Sheshelidze St. 6'),
+    languages: ['KA', 'DE'], avatar: 33,
+    bio: L('ნევროლოგი. თავის ტკივილის და ძილის დარღვევების დიაგნოსტიკა, ნეიროფიზიოლოგიური კვლევები.', 'Neurologist. Headache and sleep-disorder diagnostics, neurophysiological studies.') },
 ]
+
+/* Section glyphs — the record FAMILY (the history head switch, the transfer
+   drawer's category switch): document / pill / stethoscope. Rows keep their own
+   per-record glyph (a visit is in-person or remote). */
+export const SECTION_ICON = { analyses: 'file-text', meds: 'pill', visits: 'stethoscope' }
 
 /* ---- F-01: today (visit-day state only) ------------------------------------ */
 export const TODAY = {
   p: 'g', // whose visit it is — the switcher tags the other person while they are not selected
   time: '11:30',
-  doctor: DOCTOR.name,
+  /* Today's visit is with the CARDIOLOGIST, not the personal doctor (user,
+     2026-09-10: „do not want the same doctor here and below" — the banner sat
+     over the doctor row showing the same face twice). Same person as the
+     dashboard's b1 booking and the wizard roster's d9, so the three agree;
+     the personal doctor's next visit moved to 18 Nov (b2). */
+  doctor: L('ზურაბ მაისურაძე', 'Zurab Maisuradze'),
+  role: L('კარდიოლოგი', 'Cardiologist'),
+  photo: face('photo-1612349317150-e413f6a5b16d'),
   queue: 'A042',
   ahead: 3,
   cabinet: 208,

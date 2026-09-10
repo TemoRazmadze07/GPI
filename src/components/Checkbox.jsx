@@ -11,7 +11,13 @@ import Icon from '../lib/Icon.jsx'
 
    AddInsuredModal is deliberately left alone for now; migrating it is a
    follow-up, not part of this build. */
-export default function Checkbox({ name, checked, onChange, label, help, disabled = false, boxed = false }) {
+/* `indeterminate` (2026-09-10, additive): the header checkbox of a list —
+   some rows picked, not all. The native input carries the state (so AT reads
+   „mixed"); the painted box shows a bar instead of the check. Clicking a mixed
+   box selects ALL (native behaviour: mixed → checked), which is what a list
+   header means. */
+export default function Checkbox({ name, checked, onChange, label, help, disabled = false, boxed = false, indeterminate = false }) {
+  const mixed = indeterminate && !checked
   return (
     <label className={`gpi-checkrow ${boxed ? 'gpi-checkrow--boxed' : ''} ${checked ? 'is-checked' : ''} ${disabled ? 'is-disabled' : ''}`}>
       <input
@@ -20,9 +26,11 @@ export default function Checkbox({ name, checked, onChange, label, help, disable
         name={name}
         checked={checked}
         disabled={disabled}
+        aria-checked={mixed ? 'mixed' : undefined}
+        ref={(el) => { if (el) el.indeterminate = mixed }}
         onChange={(e) => onChange(e.target.checked)}
       />
-      <span className={`gpi-check ${checked ? 'is-on' : ''}`} aria-hidden="true">
+      <span className={`gpi-check ${checked || mixed ? 'is-on' : ''}${mixed ? ' is-mixed' : ''}`} aria-hidden="true">
         {checked && <Icon name="check" size={14} />}
       </span>
       <span className="gpi-checkrow__text">

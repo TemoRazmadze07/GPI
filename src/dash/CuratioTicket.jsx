@@ -39,7 +39,7 @@ export function TicketHero({ compact = false }) {
     <div className={`dash-tkt${compact ? ' dash-tkt--compact' : ''}`}>
       <div className="dash-tkt__main">
         <span className="dash-tkt__kicker">{T.hero}</span>
-        <strong className="dash-tkt__title">{T.who(TODAY.doctor, D.cur.doctor.role)}</strong>
+        <strong className="dash-tkt__title">{T.who(TODAY.doctor, TODAY.role)}</strong>
         <span className="dash-tkt__place">
           {/* Compact has no stats row, so its place line carries the queue facts
               (the card strip's original meta); full says where, the stats say what. */}
@@ -200,10 +200,10 @@ export function TicketBanner({ personId, details = true }) {
   return (
     <section className="dash-vban" aria-label={B.aria}>
       <div className="dash-vban__top">
-        <Avatar src={DOCTOR.photo} name={DOCTOR.name} size={48} />
+        <Avatar src={TODAY.photo} name={TODAY.doctor} size={48} />
         <div className="dash-vban__who">
           <span className="dash-vban__kicker">{B.kicker(person.name)}</span>
-          <strong className="dash-vban__title">{T.who(TODAY.doctor, D.cur.doctor.role)}</strong>
+          <strong className="dash-vban__title">{T.who(TODAY.doctor, TODAY.role)}</strong>
         </div>
         {details && (
           <Button variant="inverse" size="md" trailingIcon="arrow-right" onClick={go('#/dash/curatio')}>

@@ -1669,6 +1669,9 @@
   border-radius: var(--radius-sm); border: var(--border-width-md) solid var(--border-field);
   background: var(--surface-card); color: var(--text-inverse); }
 .gpi-check.is-on { background: var(--action-primary); border-color: var(--action-primary); }
+/* mixed (some rows picked): the filled box carries a bar, not a check */
+.gpi-check.is-mixed { display: grid; place-items: center; }
+.gpi-check.is-mixed::before { content: ''; width: 8px; height: 2px; border-radius: 1px; background: currentColor; }
 .gpi-checkrow__text { display: flex; flex-direction: column; gap: 2px; }
 .gpi-checkrow__title { font: 500 14px/20px var(--font-sans); color: var(--text-main); }
 .gpi-checkrow__help { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }

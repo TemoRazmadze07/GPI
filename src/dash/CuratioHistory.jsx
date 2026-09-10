@@ -19,7 +19,7 @@ import { useTransfer } from './CuratioTransfer.jsx'
 import { useGate } from './gate.jsx'
 import { D } from './strings.js'
 import { uc } from './text.js'
-import { PERSONS, DOCTOR, ANALYSES, MEDS, VISITS, forPerson, getAttachments, addAttachment, dateWithYear, shortName, shareName } from './curatioData.js'
+import { PERSONS, DOCTOR, ANALYSES, MEDS, VISITS, SECTION_ICON, forPerson, getAttachments, addAttachment, dateWithYear, shortName, shareName } from './curatioData.js'
 
 /* #/dash/curatio?sec= — F-02/F-03 on the surface they were made for.
    One page, three sections (a SEGMENTED CONTROL on the title line is the hub
@@ -39,10 +39,9 @@ import { PERSONS, DOCTOR, ANALYSES, MEDS, VISITS, forPerson, getAttachments, add
 
 const PAGE = 10 /* user 2026-09-08: paginate past 10 records */
 
-/* Section glyphs for the switch (user, 2026-09-10): the record family, not the
-   row's per-record glyph (visits rows show in-person/remote; the SECTION is
-   „consultations", so the stethoscope). */
-const SEC_ICON = { analyses: 'file-text', meds: 'pill', visits: 'stethoscope' }
+/* Section glyphs for the switch = SECTION_ICON (curatioData) — shared with the
+   transfer drawer's category switch, one map for one meaning. */
+const SEC_ICON = SECTION_ICON
 
 const go = (hash) => () => {
   window.location.hash = hash

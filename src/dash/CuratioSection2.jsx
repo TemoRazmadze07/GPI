@@ -4,7 +4,6 @@ import Breadcrumbs from '../components/Breadcrumbs.jsx'
 import DemoBar from '../components/DemoBar.jsx'
 import PersonSwitch from '../components/PersonSwitch.jsx'
 import { Button } from '../components/Button.jsx'
-import ActionMenu from '../components/ActionMenu.jsx'
 import CtaBanner from '../components/CtaBanner.jsx'
 import TicketBox from './CuratioTicket.jsx'
 import CuratioHistory from './CuratioHistory.jsx'
@@ -50,15 +49,14 @@ const BUY = undefined
    so the v1 file, which another track is editing, stays untouched. Fold into
    one export when v2 is chosen. */
 function DoctorBox({ onTransfer }) {
-  /* Insured accounts only since 2026-09-10 (uninsured → InsuranceBanner). The
-     menu is the design-system ActionMenu (kebab, portaled panel, Esc /
-     outside-click / scroll close) — Rule 9, no one-off. Transfer (wired
-     2026-09-09) opens the page's TransferModal — full history preselected,
-     personal doctor preselected; see CuratioTransfer.jsx. */
-  const menu = [
-    { id: 'remote', label: D.cur.doctor.remote, onSelect: BOOK },
-    { id: 'transfer', label: D.cur.doctor.transfer, onSelect: onTransfer },
-  ]
+  /* Insured accounts only since 2026-09-10 (uninsured → InsuranceBanner).
+     Two visible actions (user, 2026-09-10: „put history transfer on the card,
+     not in the menu"): Book, and Transfer as a tertiary beside it. The kebab is
+     GONE — with transfer out of it, it held only „დისტანციური კონსულტაცია", and
+     a one-item menu is an anti-pattern; remote is a visit TYPE the booking wizard
+     already offers under Book. `D.cur.doctor.remote` / `.more` stay in strings
+     for the parked v1. Transfer opens the page's TransferDrawer, nothing
+     preselected (medical data: the full-history link is one click away). */
   return (
     <section className="dash-mrow dash-doc dash-cur2__doc" aria-label={D.cur.doctor.role}>
       <Avatar src={DOCTOR.photo} name={DOCTOR.name} size={48} />
@@ -73,7 +71,9 @@ function DoctorBox({ onTransfer }) {
         <Button variant="secondary" size="md" leadingIcon="calendar" onClick={BOOK}>
           {D.cur.doctor.book}
         </Button>
-        <ActionMenu items={menu} label={D.cur.doctor.more} />
+        <Button variant="tertiary" size="md" leadingIcon="arrow-right-left" onClick={onTransfer}>
+          {D.cur.doctor.transfer}
+        </Button>
       </div>
     </section>
   )
