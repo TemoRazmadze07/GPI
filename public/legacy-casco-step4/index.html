@@ -260,6 +260,8 @@
   .btn--buy { background: var(--manatee); color: #fff; font: 600 15.1px/12.27px var(--font); letter-spacing: 0; }
   .btn--buy:not([disabled]) { background: var(--razz); }
   .btn--buy[disabled] { cursor: not-allowed; }
+  .vtag { position: fixed; left: 24px; bottom: 104px; z-index: 50; background: var(--downriver); color: #fff; font: 600 12px/16px var(--font); padding: 8px 12px; border-radius: 999px; }
+  .vtag a { color: #fff; }
 
   /* chat widget (Iframe → Body → SVG) */
   .chat { position: fixed; right: 25px; bottom: 75px; width: 60px; height: 60px; border: 0; background: none; padding: 0; z-index: 6; }
@@ -574,5 +576,6 @@
     visaRadios[0].focus({ preventScroll: true });
   });
 </script>
+<div class="vtag">V1 · ორიგინალი &nbsp;·&nbsp; <a href="v2.html">V2-ის ნახვა</a></div>
 </body>
 </html>
