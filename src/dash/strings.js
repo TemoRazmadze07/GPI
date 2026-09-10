@@ -202,7 +202,7 @@ export const kaDash = {
       live: 'რიგი მიმდინარეობს',
       who: (doc, role) => `${doc} · ${role}`,
       where: (addr, cab, floor) => `${addr} · კაბინეტი ${cab} · ${floor}`,
-      number: 'ბილეთი',
+      number: 'რიგის ნომერი', /* was ბილეთი — user 2026-09-10: it is the queue number */
       wait: 'მოლოდინი',
       ahead: 'წინ',
       status: 'სტატუსი',
@@ -216,18 +216,34 @@ export const kaDash = {
       history: 'სამედიცინო ისტორია',
       appointments: 'ჯავშნები',
       prevention: 'პრევენცია',
+      /* Uninsured account (2026-09-10): the appointments tile becomes this locked one. */
+      doctorBooking: 'პირადი ექიმი და ჩაწერა',
     },
     tileMeta: {
       locked: 'დაცული',
       records: (n) => `${n} ჩანაწერი`,
       bookings: (n) => (n ? `${n} მომავალი` : 'ჯავშანი არ არის'),
       soon: 'მალე',
+      insured: 'დაზღვევით',
     },
     recent: {
       title: 'ბოლო ჩანაწერები',
       lockedBody: 'ჩანაწერების სანახავად შეიყვანე ერთჯერადი კოდი',
       enter: 'კოდის შეყვანა',
       none: 'ამ განყოფილებაში ჩანაწერები ჯერ არ არის',
+    },
+    /* Ticket BANNER (2026-09-10) — the visit-day ticket at the top of the dashboard
+       and of the Curatio page. ka reuses the ticket vocabulary; only the new labels
+       live here. „რიგის ნომერი" (user): the value is the queue number, „ბილეთი"
+       named the artifact. */
+    banner: {
+      aria: 'დღევანდელი ვიზიტი',
+      kicker: (person) => `დღევანდელი ვიზიტი · ${person}`,
+      queue: 'რიგის ნომერი',
+      location: 'ლოკაცია',
+      where: (clinic, addr, cab, floor) => `${clinic} · ${addr} · კაბინეტი ${cab} · ${floor}`,
+      details: 'დეტალები',
+      ongoing: (num) => `ბილეთი მიმდინარეობს · ${num}`,
     },
     strip: {
       meta: (num, ahead, cab) => `რიგი ${num} · ${ahead} პაციენტი შენს წინ · კაბინეტი ${cab}`,
@@ -260,13 +276,18 @@ export const kaDash = {
       nextVisit: (d) => `შემდეგი ვიზიტი: ${d}`,
       book: 'ჩაწერა',
       remote: 'დისტანციური კონსულტაცია',
-      transfer: 'ისტორიის გადაცემა',
+      transfer: 'ისტორიის გადატანა',
       /* Accessible name of the kebab that holds the two actions above (2026-09-08). */
       more: 'მეტი მოქმედება',
     },
     uninsured: {
       note: 'ჩაწერა და კონსულტაცია საჭიროებს ჯანმრთელობის დაზღვევას',
       cta: 'ნახე პაკეტები',
+      /* Section-page banner (2026-09-10) — ⚠ DRAFT copy. First body sentence is
+         mobile's `ins.sheetBody` verbatim (#14); the rest lists what the policy
+         adds. Says nothing about price / self-pay — still the open question. */
+      title: 'პირადი ექიმი და ჩაწერა — ჯანმრთელობის დაზღვევით',
+      body: 'შენი სამედიცინო ისტორია დაზღვევის გარეშეც შენთანაა. დაზღვევა გიხსნის პირად ექიმს, ჩაწერას კურაციოს ქსელში და დისტანციურ კონსულტაციას.',
     },
     person: 'დაზღვეული',
     hist: {
@@ -285,7 +306,7 @@ export const kaDash = {
       sectionsShort: {
         visits: 'ვიზიტები',
       },
-      transfer: 'ისტორიის გადაცემა',
+      transfer: 'ისტორიის გადატანა',
       search: 'ძებნა ჩანაწერებში',
       filters: { period: 'პერიოდი', cat: 'კატეგორია', clinic: 'კლინიკა' },
       periods: { all: 'ყველა', m3: '3 თვე', m6: '6 თვე', y1: '1 წელი' },
@@ -311,6 +332,41 @@ export const kaDash = {
       expiryBadge: (n) => `${n} ვადა`,
       empty: 'ჩანაწერები ვერ მოიძებნა',
       emptyHint: 'შეცვალე ფილტრები ან ძებნის ტექსტი',
+    },
+    /* History transfer (2026-09-09) — the doctor-row action, finally wired. ONE flow
+       for both entry points: full history OR a checklist of records, to the personal
+       doctor (preselected) or another Curatio doctor. Names are never declined —
+       „გადაეცა: ნ. ნინოშვილი" — because a name-declension table for every doctor
+       in the network would be wrong the first time it met a new surname. Copy is a
+       DRAFT for GPI sign-off (share vs transfer is still open with the stakeholders). */
+    transfer: {
+      title: 'ისტორიის გადატანა',
+      scope: 'რა გადავიტანოთ',
+      full: 'სრული ისტორია',
+      selected: 'არჩეული ჩანაწერები',
+      selectedCount: (n) => `არჩეულია ${n}`,
+      search: 'ძებნა ჩანაწერებში',
+      selectAll: 'ყველას მონიშვნა',
+      clearAll: 'მოხსნა',
+      noMatch: 'ჩანაწერები ვერ მოიძებნა',
+      to: 'ვის',
+      personal: 'პირადი ექიმი',
+      other: 'სხვა ექიმი კურაციოს ქსელიდან',
+      /* Uninsured (2026-09-10): no personal doctor exists, so the only target is a network doctor. */
+      network: 'ექიმი კურაციოს ქსელიდან',
+      pickDoctor: 'აირჩიე ექიმი',
+      errNone: 'აირჩიე მინიმუმ ერთი ჩანაწერი',
+      errDoctor: 'აირჩიე ექიმი',
+      cancel: 'გაუქმება',
+      confirm: (n) => `გადატანა · ${n} ჩანაწერი`,
+      confirmNone: 'გადატანა',
+      confirmFull: 'სრული ისტორიის გადატანა',
+      doneFull: (doc) => `სრული ისტორია გადაეცა: ${doc}`,
+      done: (n, doc) => `${n} ჩანაწერი გადაეცა: ${doc}`,
+      visible: (docs) => `ხილვადია: ${docs}`,
+      rowAction: 'ექიმთან გადატანა',
+      rowShared: 'ხილვადია პირადი ექიმისთვის',
+      attachShared: 'ხილვადია პირადი ექიმისთვის',
     },
     upl: {
       title: 'დოკუმენტის ატვირთვა',
@@ -498,7 +554,7 @@ export const enDash = {
       live: 'Queue in progress',
       who: (doc, role) => `${doc} · ${role}`,
       where: (addr, cab, floor) => `${addr} · Cabinet ${cab} · ${floor}`,
-      number: 'Ticket',
+      number: 'Queue number',
       wait: 'Wait',
       ahead: 'Ahead',
       status: 'Status',
@@ -510,18 +566,29 @@ export const enDash = {
       history: 'Medical history',
       appointments: 'Appointments',
       prevention: 'Prevention',
+      doctorBooking: 'Personal doctor & booking',
     },
     tileMeta: {
       locked: 'Protected',
       records: (n) => `${n} records`,
       bookings: (n) => (n ? `${n} upcoming` : 'No appointments'),
       soon: 'Soon',
+      insured: 'With insurance',
     },
     recent: {
       title: 'Recent records',
       lockedBody: 'Enter a one-time code to view your records',
       enter: 'Enter code',
       none: 'No records in this section yet',
+    },
+    banner: {
+      aria: "Today's visit",
+      kicker: (person) => `Today's visit · ${person}`,
+      queue: 'Queue number',
+      location: 'Location',
+      where: (clinic, addr, cab, floor) => `${clinic} · ${addr} · Cabinet ${cab} · ${floor}`,
+      details: 'Details',
+      ongoing: (num) => `Ticket in progress · ${num}`,
     },
     strip: {
       meta: (num, ahead, cab) => `Queue ${num} · ${ahead} patients ahead · Cabinet ${cab}`,
@@ -556,6 +623,8 @@ export const enDash = {
     uninsured: {
       note: 'Booking and consultations require health insurance',
       cta: 'See packages',
+      title: 'Personal doctor and booking — with health insurance',
+      body: 'Your medical history stays with you without insurance. Insurance adds a personal doctor, booking across the Curatio network and remote consultations.',
     },
     person: 'Insured',
     hist: {
@@ -595,6 +664,35 @@ export const enDash = {
       expiryBadge: (n) => `${n} expiring`,
       empty: 'No records found',
       emptyHint: 'Change the filters or the search text',
+    },
+    /* see the ka note — one flow, two entry points; draft copy */
+    transfer: {
+      title: 'Transfer history',
+      scope: 'What to transfer',
+      full: 'Full history',
+      selected: 'Selected records',
+      selectedCount: (n) => `${n} selected`,
+      search: 'Search records',
+      selectAll: 'Select all',
+      clearAll: 'Clear',
+      noMatch: 'No records found',
+      to: 'To whom',
+      personal: 'Personal doctor',
+      other: 'Another doctor in the Curatio network',
+      network: 'A doctor from the Curatio network',
+      pickDoctor: 'Choose a doctor',
+      errNone: 'Select at least one record',
+      errDoctor: 'Choose a doctor',
+      cancel: 'Cancel',
+      confirm: (n) => `Transfer · ${n} ${n === 1 ? 'record' : 'records'}`,
+      confirmNone: 'Transfer',
+      confirmFull: 'Transfer full history',
+      doneFull: (doc) => `Full history transferred to ${doc}`,
+      done: (n, doc) => `${n} ${n === 1 ? 'record' : 'records'} transferred to ${doc}`,
+      visible: (docs) => `Visible to: ${docs}`,
+      rowAction: 'Transfer to a doctor',
+      rowShared: 'Visible to your personal doctor',
+      attachShared: 'Visible to your personal doctor',
     },
     upl: {
       title: 'Upload a document',

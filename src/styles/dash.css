@@ -760,6 +760,14 @@
   --dash-curatio-deep: #3a4690;
   --dash-curatio-2: #4a58ab;
   --dash-curatio-live: var(--color-green-400);
+  /* Ticket banner band: a DARK wash on the gradient (see TicketBanner note). */
+  --dash-curatio-band: rgba(17, 23, 34, 0.16);
+  /* In-network record rows (2026-09-10) — mobile's --mga-curatio-edge / -stripe
+     on web: the record-card hairline (curatio-150, decorative per Rule 7) and the
+     3px left stripe (curatio-500 → blue → sky → teal, the mark's own ramp).
+     TODO port with brand/curatio/* to Figma. */
+  --dash-curatio-edge: #d3dcf1;
+  --dash-curatio-stripe: linear-gradient(180deg, #424f9d 0%, #4290cd 38%, #48b6e8 72%, #50c2c0 100%);
 }
 .dash-pcard--curatio { --dash-rail: var(--dash-curatio); }
 
@@ -805,9 +813,17 @@
 .dash-ccard__tiles { flex: 1; align-content: center; }
 /* A tile with no action (a „მალე" feature): same shape, quieter, and it must
    not offer a pointer or a hover it cannot honour. */
-.dash-tile--static { cursor: default; }
-.dash-tile--static:hover { border-color: var(--border-default); background: var(--surface-card); }
-.dash-tile--static .dash-tile__label { color: var(--text-muted); }
+/* Coming-soon tile = a flat SUNKEN slab (user, 2026-09-10: „make the full rectangle
+   gray"), not a white card with a grey disc — the fill itself says "inactive", so
+   the disc flips to white and the label/badge take the neutral-status ink. Why not
+   text-muted on the grey: #6b7280 on #eef0f4 measures 4.24:1 — below AA for 15px
+   text (Rule 7). The neutral badge's bg is the SAME hex as the slab, so it gets a
+   white pill here or it vanishes. */
+.dash-tile--static { cursor: default; background: var(--surface-sunken); }
+.dash-tile--static:hover { border-color: var(--border-default); background: var(--surface-sunken); }
+.dash-tile--static .dash-tile__label { color: var(--status-neutral-fg); }
+.dash-tile--static .dash-tile__disc { background: var(--surface-card); color: var(--text-muted); }
+.dash-tile--static .gpi-badge--neutral { background: var(--surface-card); }
 .dash-tile__sub { color: var(--text-muted); font: 400 12px/16px var(--font-sans); text-align: center; }
 .dash-tile__disc--curatio { background: var(--dash-curatio-tint); color: var(--dash-curatio-fg); }
 
@@ -956,6 +972,106 @@
 .dash-tkt__cell dd { margin: 0; font: 700 16px/24px var(--font-sans); color: var(--text-main); }
 .dash-tkt__cell dd.dash-tkt__num { color: var(--dash-curatio-fg); letter-spacing: 0.02em; }
 
+/* ---- Ticket banner (2026-09-10) — TicketBanner in CuratioTicket.jsx ----------
+   Top row + figures band on the Curatio skin. The band's cells are fixed-width
+   in the user's order; location is the one flexible cell and wraps to its own
+   line ≤1024. Labels: white .78 on the gradient (5.9/5.2/4.6 measured), .85 on
+   the darkened band. */
+.dash-vban {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(160deg, var(--dash-curatio-deep) 0%, var(--dash-curatio) 65%, var(--dash-curatio-2) 100%);
+  color: var(--text-inverse);
+  box-shadow: var(--elevation-card);
+}
+.dash-vban::after {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -44px;
+  width: 200px;
+  height: 200px;
+  background: url('../assets/curatio-mark.svg') no-repeat center / contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.12;
+  pointer-events: none;
+}
+.dash-vban__top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  padding: var(--space-20) var(--space-24);
+}
+.dash-vban__who {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.dash-vban__kicker {
+  font: 700 12px/16px var(--font-sans);
+  letter-spacing: 0.07em;
+  text-transform: uppercase; /* no-op in Mkhedruli, shapes the en locale — as on mobile */
+  color: rgba(255, 255, 255, 0.78);
+}
+.dash-vban__title { font: 700 16px/24px var(--font-sans); }
+.dash-vban__band {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-12) var(--space-32);
+  margin: 0;
+  padding: var(--space-16) var(--space-24);
+  background: var(--dash-curatio-band);
+  border-top: var(--border-width-sm) solid rgba(255, 255, 255, 0.18);
+}
+.dash-vban__cell {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.dash-vban__cell dt { font: 400 12px/16px var(--font-sans); color: rgba(255, 255, 255, 0.85); }
+.dash-vban__cell dd { margin: 0; font: 600 15px/20px var(--font-sans); }
+.dash-vban__cell dd.dash-vban__fig { font: 800 26px/30px var(--font-sans); letter-spacing: 0.02em; }
+.dash-vban__cell--loc {
+  flex: 1 1 240px;
+  min-width: 0;
+  padding-left: var(--space-24);
+  border-left: var(--border-width-sm) solid rgba(255, 255, 255, 0.18);
+}
+.dash-vban__cell--loc dd { font: 500 14px/20px var(--font-sans); overflow-wrap: anywhere; }
+@media (max-width: 1024px) {
+  .dash-vban__cell--loc {
+    flex-basis: 100%;
+    padding-left: 0;
+    padding-top: var(--space-8);
+    border-left: 0;
+    border-top: var(--border-width-sm) solid rgba(255, 255, 255, 0.14);
+  }
+}
+@media (max-width: 640px) {
+  .dash-vban__top { flex-wrap: wrap; padding: var(--space-16); }
+  .dash-vban__top > .gpi-btn { flex: 1 1 100%; }
+  /* Phone: a 2-column grid, not a wrapping row — the four cells need 360px and
+     the band has 326, which stranded „წინ" alone on a line. Figures pair up,
+     wait/ahead pair up, location spans. */
+  .dash-vban__band {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: var(--space-12) var(--space-16);
+    gap: var(--space-12) var(--space-16);
+  }
+  .dash-vban__cell--loc { grid-column: 1 / -1; }
+  .dash-vban__cell dd.dash-vban__fig { font-size: 24px; line-height: 28px; }
+}
+
 /* ---- Section (#/dash/curatio) --------------------------------------------- */
 /* The shared Select stretches to its container (form default); as a HEADER
    control (person scope, filters) it sizes to content instead. */
@@ -1048,36 +1164,14 @@
 }
 .dash-histlock p { margin: 0; }
 
-.dash-hist {
-  display: grid;
-  /* The rail gives width back as the window narrows — at 1200 a fixed 300 left
-     the table 51px short of its own columns and it scrolled inside its card. */
-  grid-template-columns: clamp(224px, 21vw, 300px) minmax(0, 1fr);
-  gap: var(--space-24);
-  align-items: start;
-}
-.dash-hist__rail { display: flex; flex-direction: column; gap: var(--space-12); min-width: 0; }
-.dash-hist__nav { display: flex; flex-direction: column; padding: var(--space-8); }
-.dash-hist__navitem {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-8);
-  min-height: var(--control-md);
-  padding: var(--space-8) var(--space-12);
-  border: none;
-  border-radius: var(--radius-md);
-  background: none;
-  color: var(--text-main);
-  font: 500 14px/20px var(--font-sans);
-  text-align: left;
-  cursor: pointer;
-}
-.dash-hist__navitem:hover { background: var(--interactive-hover-bg); }
-.dash-hist__navitem.is-active { background: var(--interactive-selected-bg); color: var(--interactive-selected-fg); } /* 5.15:1 on the tint (audit A6) */
-.dash-hist__count { color: var(--text-muted); font-weight: 400; }
-.dash-hist__navitem.is-active .dash-hist__count { color: var(--interactive-selected-fg); }
-.dash-hist__action { width: 100%; }
+/* ONE column (2026-09-10): the section nav moved from a left rail into the head
+   as a Segmented Control (user: the rail scrolled out of view beside a 10-row
+   list and „we have white space"); the list takes the full width. */
+.dash-hist { min-width: 0; }
+/* The switch sizes to its content on the title line and never shrinks a label —
+   below the point where title + switch fit, `.dash-sechead` wraps it onto its
+   own line, where the base `.gpi-seg` scroll fallback takes over. */
+.dash-hist__switch { flex: 0 1 auto; }
 
 .dash-hist__main { display: flex; flex-direction: column; gap: var(--space-16); min-width: 0; }
 .dash-hist__filters {
@@ -1088,6 +1182,9 @@
 }
 .dash-hist__filters .gpi-search { flex: 1 1 220px; }
 .dash-hist__table { display: flex; flex-direction: column; gap: var(--space-16); }
+/* The footer's own 24 would stack on the card's 16 gap → 40; trim it so rows →
+   pagination measure the appointments screen's 24 exactly. */
+.dash-hist__table > .gpi-table__footer { margin-top: calc(var(--space-24) - var(--space-16)); }
 
 .dash-medcell { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
 .dash-medcell__meta {
@@ -1098,13 +1195,39 @@
   color: var(--text-muted);
   font: 400 12px/16px var(--font-sans);
 }
-.dash-visitname { display: inline-flex; align-items: center; gap: var(--space-8); }
-.dash-visitname svg { color: var(--icon-muted); flex: 0 0 auto; }
+/* Record identity in the history rows (2026-09-10): the dashboard rail's lead
+   disc (`.dash-lrow__disc`, 40) + the text block. lead 40 + gap 12 = the same
+   52px text inset the rail rows have. */
+.dash-rec { display: flex; align-items: center; gap: var(--space-12); min-width: 0; }
+.dash-rec > .dash-lrow__disc { flex: 0 0 auto; }
+.dash-rec > .dash-medcell { flex: 1 1 auto; }
 .dash-cell-muted { color: var(--text-muted); } /* a meaning-bearing dash, not a disabled control (audit C4) */
 
 .dash-srcmark { display: inline-flex; align-items: center; gap: var(--space-8); min-width: 0; }
 .dash-srcmark--curatio { color: var(--dash-curatio-fg); font-weight: 500; }
 .dash-srcmark svg { flex: 0 0 auto; }
+
+/* ---- In-network record row (2026-09-10) ------------------------------------
+   The history list took the appointments grammar (shared CardTable) so that the
+   Curatio highlight mobile has could come with it: an in-network record keeps a
+   WHITE card and is marked by the 3px left stripe + the Curatio-tinted hairline —
+   mobile's locked rule (2026-08-26: a blue wash INVERTED the hierarchy on a tinted
+   page; a left stroke builds a scannable rail down the list). The clinic label
+   with the mark (SourceMark) is the signal; stripe and edge reinforce it (WCAG
+   1.4.1). Status outranks brand: CuratioHistory withholds the class on an
+   expiring prescription. overflow:hidden clips the stripe to the card radius; the
+   row's 16/20 padding leaves the icon buttons' focus ring (2px + 2px offset)
+   uncut. Hover keeps the tinted edge (the lift still comes from .gpi-row:hover). */
+.dash-row--curatio { position: relative; overflow: hidden; border-color: var(--dash-curatio-edge); }
+.dash-row--curatio::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--dash-curatio-stripe);
+  pointer-events: none;
+}
+.dash-row--curatio:hover { border-color: var(--dash-curatio-edge); }
 
 /* ---- Upload modal ---------------------------------------------------------- */
 .dash-uplmodal .gpi-modal__body { display: flex; flex-direction: column; gap: var(--space-16); }
@@ -1139,8 +1262,60 @@
 .dash-attach__name { color: var(--color-indigo-800); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dash-attach__clinic::before { content: '· '; }
 
+/* ---- History transfer (2026-09-09) ------------------------------------------
+   The dialog the doctor row's „ისტორიის გადატანა" and every record's send icon
+   open (CuratioTransfer.jsx). Anatomy on the shared Modal: a context line, two
+   radio-card blocks (scope · target). The option box mirrors the boxed checkbox
+   (16 padding, border/default, radius/lg, selected = action/primary stroke +
+   selected tint) so the two selection surfaces read as one family — it is a
+   CONTAINER, not a label: the search field and checklist live inside it. */
+.dash-trfmodal { max-width: calc(100vw - 2 * var(--space-16)); max-height: calc(100vh - 2 * var(--space-16)); display: flex; flex-direction: column; }
+.dash-trfmodal .gpi-modal__body { flex: 1 1 auto; min-height: 0; overflow: auto; }
+.dash-trf__ctx { margin: 0; color: var(--text-muted); font: 400 13px/18px var(--font-sans); }
+.dash-trf__block { display: flex; flex-direction: column; gap: var(--space-8); }
+.dash-trf__lbl { margin: 0; font: 500 13px/16px var(--font-sans); color: var(--text-main); }
+.dash-trf__opt {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-12) var(--space-16);
+  border: var(--border-width-sm) solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+}
+.dash-trf__opt.is-on { border-color: var(--action-primary); background: var(--interactive-selected-bg); }
+/* The radio ring is 20 + the 8 gap: everything under the label lines up with its text. */
+.dash-trf__sub { padding-left: 28px; color: var(--text-muted); font: 400 12px/16px var(--font-sans); }
+.dash-trf__opt .gpi-search { width: 100%; background: var(--surface-card); }
+.dash-trf__list { display: flex; flex-direction: column; gap: var(--space-12); max-height: 280px; overflow: auto; padding-right: var(--space-4); }
+.dash-trf__group { display: flex; flex-direction: column; gap: var(--space-8); }
+.dash-trf__ghead { display: flex; align-items: center; justify-content: space-between; gap: var(--space-8); font: 500 12px/16px var(--font-sans); color: var(--text-muted); }
+.dash-trf__ghead > span { flex: 1 1 auto; min-width: 0; }
+/* The select-all link is a text ACTION: it never wraps (button-label rule); the
+   group name yields instead — at 390 „ანალიზები და კვლევები · 12" wraps, the link does not. */
+.dash-trf__ghead .gpi-link { flex: none; font-size: 12px; white-space: nowrap; }
+.dash-trf__count { font-weight: 400; }
+.dash-trf__empty { margin: 0; color: var(--text-muted); font: 400 13px/18px var(--font-sans); }
+.dash-trf__err { margin: 0; }
+.dash-trf__doc { display: flex; align-items: center; gap: var(--space-12); padding-left: 28px; }
+.dash-trf__docmeta { display: flex; flex-direction: column; min-width: 0; }
+.dash-trf__docname { font: 500 14px/20px var(--font-sans); color: var(--text-main); }
+.dash-trf__docsub { font: 400 12px/16px var(--font-sans); color: var(--text-muted); }
+.dash-trf__pick { display: flex; flex-direction: column; gap: var(--space-4); padding-left: 28px; }
+.dash-trf__pick .gpi-fsel { width: 100%; }
+/* In the table: the visibility line under a record (same slot as the attached
+   documents) and the row icon's shared state — success tone, check glyph. */
+.dash-shared { display: inline-flex; align-items: center; gap: var(--space-4); margin-top: var(--space-2); color: var(--status-success-fg); font: 400 12px/16px var(--font-sans); min-width: 0; }
+.dash-shared svg { flex: 0 0 auto; }
+.dash-hist__share.is-shared { color: var(--status-success-fg); }
+.dash-hist__share.is-shared:hover { color: var(--color-indigo-800); }
+.dash-attach__shared { display: inline-flex; align-items: center; color: var(--status-success-fg); }
+@media (max-width: 640px) {
+  .dash-trf__sub, .dash-trf__doc, .dash-trf__pick { padding-left: 0; }
+  .dash-trf__list { max-height: 220px; }
+}
+
 /* ---- Focus for the new controls ------------------------------------------- */
-.dash-hist__navitem:focus-visible,
 .dash-link--quiet:focus-visible,
 .dash-link--inline:focus-visible {
   outline: var(--focus-ring-width) solid var(--border-focus);
@@ -1148,10 +1323,8 @@
 }
 
 /* ---- Responsive ------------------------------------------------------------ */
-/* The table's declared column widths are SUGGESTIONS (table-layout: auto), so
-   content min-widths can still push it a few px past its card and trip the
-   pinned-edge scroll shadow. Below the comfortable width the card gives its own
-   padding back rather than letting the table scroll inside it. */
+/* Below the comfortable width the history card gives its own padding back (the
+   card rows own their inner spacing). */
 /* Rail rows below the designed ~1900: the md badge + fact no longer fit beside
    a name in a 640px rail, and the name (the thing being read) was the part that
    broke. Let the TRAILING block wrap onto two lines instead, right-aligned. */
@@ -1165,13 +1338,23 @@
 
 @media (max-width: 1180px) {
   .dash-cur__cols { grid-template-columns: minmax(0, 1fr); }
-  .dash-hist { grid-template-columns: minmax(0, 1fr); }
-  .dash-hist__rail { flex-direction: row; flex-wrap: wrap; align-items: stretch; }
-  .dash-hist__rail > * { flex: 1 1 220px; }
-  .dash-hist__action { width: auto; }
 }
 @media (max-width: 860px) {
   .dash-upl__grid { grid-template-columns: minmax(0, 1fr); }
+}
+/* History row actions on the phone stack (CardTable re-flows at 767, mobile.css):
+   the three icon-only ghosts become the labelled, bordered footer buttons the
+   appointments cards use — icon-only actions are desktop-only (rule 2026-07-28). */
+@media (max-width: 767px) {
+  .dash-hist__rowactions { gap: var(--space-8); }
+  .dash-hist__rowactions .gpi-iconbtn--ghost { border-color: var(--border-default); }
+  /* The section switch drops under the title at full width and scrolls sideways
+     with the short labels (mobile.css swaps them). */
+  .dash-hist__switch { flex: 1 1 100%; }
+  /* The map-pin meta marker leads the clinic line here; the Curatio mark beside it
+     made two glyphs in a row (the appointments card hides its clinic icon for the
+     same reason). The label's colour + the row stripe still say Curatio. */
+  .gpi-ctable__cell--meta .dash-srcmark svg { display: none; }
 }
 
 /* ---- Section v2 (#/dash/curatio) --------------------------------------------
@@ -1301,6 +1484,12 @@
 .dash-cur2__empty .gpi-btn { margin-top: var(--space-4); }
 /* The history section head sits under the row like any page section head. */
 .dash-cur2__histhead { margin-bottom: var(--space-16); }
+/* Its title steps UP from the dashboard's 15px section label (user, 2026-09-10:
+   „increase size"): beside a 42px section switch the label read as a caption.
+   18/24 = one step under the 20px page title above it (h2 → h3). Tracking eases
+   to 0.02em — Mtavruli capitals are wider than Mkhedruli. The dashboard's own
+   section heads keep the design's 15px. */
+.dash-cur2__histhead .dash-sechead__title { font: 700 18px/24px var(--font-sans); letter-spacing: 0.02em; }
 
 /* ---- <=640: the web dashboard's phone fallback (audit 2026-09-07) ----------
    Not an agreed responsive spec — the mobile app is the phone surface — but the

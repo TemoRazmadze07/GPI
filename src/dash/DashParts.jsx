@@ -1,5 +1,6 @@
 import Icon from '../lib/Icon.jsx'
 import { D } from './strings.js'
+import { uc } from './text.js'
 
 /* Dashboard host — the presentational primitives the screens compose from.
 
@@ -17,7 +18,8 @@ import { D } from './strings.js'
 export function SectionHead({ title, count, onViewAll, id }) {
   return (
     <div className="dash-sechead">
-      <h2 className="dash-sechead__title" id={id}>{title}</h2>
+      {/* uc(): the design's Mtavruli capitals in ka — CSS uppercase cannot (text.js) */}
+      <h2 className="dash-sechead__title" id={id}>{uc(title)}</h2>
       {onViewAll && (
         <button type="button" className="gpi-link dash-link" onClick={onViewAll}>
           {D.viewAll(count)}

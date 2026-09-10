@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Modal from '../components/Modal.jsx'
 import OtpInput from '../components/OtpInput.jsx'
 import { Button } from '../components/Button.jsx'
@@ -20,32 +20,63 @@ import { D } from './strings.js'
    Demo behaviour mirrors mobile: any 4 digits pass, the countdown is cosmetic. */
 
 const KEY = 'gpi.dash.otpUnlocked'
+/* One gate, many hooks (2026-09-09): the section page now holds TWO useGate()
+   instances — the history table's and the transfer flow's — and each seeded its
+   `unlocked` once from storage. Unlocking through one left the other stale until
+   a reload. Writes announce themselves on the window; every instance re-reads. */
+const EVT = 'gpi.dash.gate'
 
 export const isUnlocked = () => sessionStorage.getItem(KEY) === '1'
-export const setUnlocked = (on) =>
+export const setUnlocked = (on) => {
   on ? sessionStorage.setItem(KEY, '1') : sessionStorage.removeItem(KEY)
+  window.dispatchEvent(new Event(EVT))
+}
 
 export function useGate() {
   const [unlocked, setLocal] = useState(isUnlocked)
   const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    const sync = () => setLocal(isUnlocked())
+    window.addEventListener(EVT, sync)
+    return () => window.removeEventListener(EVT, sync)
+  }, [])
 
   const relock = () => {
     setUnlocked(false)
     setLocal(false)
   }
 
+  /* `request(after)` (additive, 2026-09-09): the transfer flow asks for the code
+     and then needs to continue — open its own dialog — only if the code passed.
+     Cancelling the OTP drops the continuation; nothing resumes later by surprise. */
+  const after = useRef(null)
   const modal = open ? (
     <OtpModal
       onSuccess={() => {
         setUnlocked(true)
         setLocal(true)
         setOpen(false)
+        const fn = after.current
+        after.current = null
+        fn?.()
       }}
-      onClose={() => setOpen(false)}
+      onClose={() => {
+        after.current = null
+        setOpen(false)
+      }}
     />
   ) : null
 
-  return { unlocked, request: () => setOpen(true), relock, modal }
+  return {
+    unlocked,
+    request: (fn = null) => {
+      after.current = typeof fn === 'function' ? fn : null
+      setOpen(true)
+    },
+    relock,
+    modal,
+  }
 }
 
 export function OtpModal({ onSuccess, onClose }) {

@@ -95,6 +95,11 @@ export default function ActionMenu({ items, label }) {
                        drawer). */
                     e.stopPropagation()
                     setPos(null)
+                    /* Focus returns to the TRIGGER before the action runs (WAI-ARIA
+                       menu pattern; 2026-09-09). The item is portaled and unmounts
+                       with the panel, so a dialog the action opens would otherwise
+                       record a dead opener and drop focus to <body> on close. */
+                    ref.current?.querySelector('button')?.focus()
                     it.onSelect?.()
                   }}
                 >

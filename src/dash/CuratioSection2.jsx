@@ -1,13 +1,14 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Avatar from '../components/Avatar.jsx'
 import Breadcrumbs from '../components/Breadcrumbs.jsx'
 import DemoBar from '../components/DemoBar.jsx'
 import PersonSwitch from '../components/PersonSwitch.jsx'
 import { Button } from '../components/Button.jsx'
 import ActionMenu from '../components/ActionMenu.jsx'
-import Icon from '../lib/Icon.jsx'
+import CtaBanner from '../components/CtaBanner.jsx'
 import TicketBox from './CuratioTicket.jsx'
 import CuratioHistory from './CuratioHistory.jsx'
+import { useTransfer } from './CuratioTransfer.jsx'
 import { D } from './strings.js'
 import { BOOKINGS, BOOKINGS_COUNT } from './data.js'
 import { DOCTOR, TODAY, PERSONS, demo } from './curatioData.js'
@@ -26,6 +27,12 @@ import { DOCTOR, TODAY, PERSONS, demo } from './curatioData.js'
      · No sub-navigation: prevention and reminders are being removed on a
        parallel track, so the page needs no hub.
      · ONE person scope — the header switcher — drives doctor, ticket, history.
+     · UNINSURED account (user, 2026-09-10): NO personal doctor and NO bookings
+       exist without a GPI health policy — both are policy benefits, not data the
+       person owns — so lines 1–2 are replaced by ONE banner (the shared
+       CtaBanner) that says what the policy adds; the history (own data, OTP)
+       is untouched, and the transfer dialog offers network doctors only.
+       This supersedes the earlier „doctor row + gate note" rendering.
    PROMOTED 2026-09-07: this is the version #/dash/curatio serves. v1 is parked at
    ?v=1 (Rule 4 — kept for comparison, not deleted); the demo bar toggles between them. */
 
@@ -34,17 +41,23 @@ const go = (hash) => () => {
   window.location.hash = hash
 }
 const BOOK = go('#/desktop/appointments/book')
+/* „ნახე პაკეტები" mirrors the nav's „შეიძინე დაზღვევა" — which has NO page on web
+   (DashShell NAV: no hash). So the banner CTA goes nowhere yet, deliberately: a
+   fake destination would demo a flow that does not exist. ⚠️ flagged. */
+const BUY = undefined
 
 /* Same anatomy as v1's DoctorCard (the `.dash-doc` grammar) — duplicated here
    so the v1 file, which another track is editing, stays untouched. Fold into
    one export when v2 is chosen. */
-function DoctorBox({ insured }) {
-  /* Remote consultation is a booking path too, so it is gated like Book; the
-     history transfer is not. The menu is the design-system ActionMenu (kebab,
-     portaled panel, Esc / outside-click / scroll close) — Rule 9, no one-off. */
+function DoctorBox({ onTransfer }) {
+  /* Insured accounts only since 2026-09-10 (uninsured → InsuranceBanner). The
+     menu is the design-system ActionMenu (kebab, portaled panel, Esc /
+     outside-click / scroll close) — Rule 9, no one-off. Transfer (wired
+     2026-09-09) opens the page's TransferModal — full history preselected,
+     personal doctor preselected; see CuratioTransfer.jsx. */
   const menu = [
-    ...(insured ? [{ id: 'remote', label: D.cur.doctor.remote, onSelect: BOOK }] : []),
-    { id: 'transfer', label: D.cur.doctor.transfer },
+    { id: 'remote', label: D.cur.doctor.remote, onSelect: BOOK },
+    { id: 'transfer', label: D.cur.doctor.transfer, onSelect: onTransfer },
   ]
   return (
     <section className="dash-mrow dash-doc dash-cur2__doc" aria-label={D.cur.doctor.role}>
@@ -57,20 +70,32 @@ function DoctorBox({ insured }) {
         </span>
       </div>
       <div className="dash-doc__actions">
-        {insured ? (
-          <Button variant="secondary" size="md" leadingIcon="calendar" onClick={BOOK}>
-            {D.cur.doctor.book}
-          </Button>
-        ) : (
-          <span className="dash-doc__gate">
-            <Icon name="lock" size={16} />
-            <span>{D.cur.uninsured.note}</span>
-            <button type="button" className="gpi-link dash-link">{D.cur.uninsured.cta}</button>
-          </span>
-        )}
+        <Button variant="secondary" size="md" leadingIcon="calendar" onClick={BOOK}>
+          {D.cur.doctor.book}
+        </Button>
         <ActionMenu items={menu} label={D.cur.doctor.more} />
       </div>
     </section>
+  )
+}
+
+/* The uninsured account's lines 1–2: one banner in the shared CtaBanner anatomy
+   (icon tile · title + sub · one action — the same component the booking pages
+   use, Rule 9). Lock tile = the glyph every insurance gate carries (#14); the
+   CTA keeps the component's default primary variant (Rule 1 — consistent with
+   its other uses), and it is the page's only action in this state. */
+function InsuranceBanner() {
+  return (
+    <CtaBanner
+      as="h3"
+      icon="lock"
+      title={D.cur.uninsured.title}
+      subtitle={D.cur.uninsured.body}
+      cta={D.cur.uninsured.cta}
+      ctaIcon="arrow-right"
+      className="dash-cur2__banner"
+      onStart={BUY}
+    />
   )
 }
 
@@ -82,14 +107,26 @@ export default function CuratioSection2() {
   const [visitDay, setVisitDay] = useState(demo.visitDay)
   const [uninsured, setUninsured] = useState(demo.uninsured)
   const person = PERSONS.find((p) => p.id === personId)
-  const alerts = visitDay ? { [TODAY.p]: D.cur.alerts.todayVisit } : {}
+  const alerts = visitDay && !uninsured ? { [TODAY.p]: D.cur.alerts.todayVisit } : {}
   /* Demo data keys bookings by display name; the list is already in date order,
      so the first two are what the ticket box shows. */
   const upcoming = BOOKINGS.filter((b) => b.person === person.name)
+  /* One transfer flow for the page: the doctor row's menu item and the history
+     table's row icons open the same dialog and read the same shares store. */
+  const transfer = useTransfer({ personId, insured: !uninsured })
+  /* `?transfer=1` (flow map / study links): land with the dialog open — the
+     OTP first if the session is locked, exactly as a click would. Read once. */
+  useEffect(() => {
+    const h = window.location.hash
+    const q = h.indexOf('?')
+    if (q !== -1 && new URLSearchParams(h.slice(q + 1)).get('transfer') === '1') transfer.open()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <>
       <DemoBar
+        wrap
         actions={[
           { label: visitDay ? 'ordinary day' : 'visit day', onClick: () => { demo.setVisitDay(!visitDay); setVisitDay(!visitDay) } },
           { label: uninsured ? 'insured' : 'uninsured', onClick: () => { demo.setUninsured(!uninsured); setUninsured(!uninsured) } },
@@ -97,6 +134,7 @@ export default function CuratioSection2() {
              waiting for 11:00. Reloads because the arrival block reads the flag once
              on mount — deliberate, the same way a real page load re-reads the time. */
           { label: 'check-in: early', onClick: () => { demo.setCheckinEarly(!demo.checkinEarly()); window.location.reload() } },
+          { label: 'clear transfers', ghost: true, onClick: transfer.reset },
           { label: 'v1', ghost: true, onClick: go('#/dash/curatio?v=1') },
         ]}
       />
@@ -114,16 +152,23 @@ export default function CuratioSection2() {
       </header>
 
       <div className="dash-cur2__stack">
-        <TicketBox slim visit={visitDay && TODAY.p === personId} upcoming={upcoming} count={BOOKINGS_COUNT} insured={!uninsured} personId={personId} />
-        <DoctorBox insured={!uninsured} />
+        {uninsured ? (
+          <InsuranceBanner />
+        ) : (
+          <>
+            <TicketBox slim visit={visitDay && TODAY.p === personId} upcoming={upcoming} count={BOOKINGS_COUNT} personId={personId} />
+            <DoctorBox onTransfer={() => transfer.open()} />
+          </>
+        )}
       </div>
 
+      {/* The head (title + section switch) is rendered BY CuratioHistory since
+          2026-09-10 — the switch owns the section state that lives there. */}
       <section className="dash-cur2__hist" aria-labelledby="dash-cur2-hist">
-        <div className="dash-sechead dash-cur2__histhead">
-          <h3 className="dash-sechead__title" id="dash-cur2-hist">{D.cur.hist.title}</h3>
-        </div>
-        <CuratioHistory embedded personId={personId} route={ROUTE} />
+        <CuratioHistory embedded personId={personId} route={ROUTE} transfer={transfer} />
       </section>
+      {transfer.modal}
+      {transfer.toast}
     </>
   )
 }

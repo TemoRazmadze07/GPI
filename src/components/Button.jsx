@@ -1,7 +1,8 @@
 import Icon from '../lib/Icon.jsx'
 
 /* Button — token-driven, mirrors the Figma Button component.
-   variant: primary | secondary | tertiary | danger | danger-tertiary. size: sm | md | lg.
+   variant: primary | secondary | tertiary | danger | danger-tertiary | inverse. size: sm | md | lg.
+   inverse (2026-09-10) = THE action on a brand-filled surface (white fill, main ink).
    `className` is ADDITIVE (appended, never replacing the base classes) — same
    additive pattern as Select, so a caller can scope one instance without
    losing gpi-btn/variant/size. */

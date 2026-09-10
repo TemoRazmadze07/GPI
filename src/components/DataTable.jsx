@@ -20,6 +20,25 @@ import { Button } from './Button.jsx'
    · a column may set `rowHeader: true` to render as <th scope="row">, so every
      cell announcement is prefixed with that row's identifier.
    Deferred by spec: selection/bulk bar, column resize, sticky header. */
+/* The empty state, shared with CardTable (2026-09-10) so both table grammars
+   render one and the same „nothing here" box. Markup unchanged. */
+export function TableEmpty({ empty }) {
+  return (
+    <div className="gpi-table gpi-table--empty">
+      <span className="gpi-table__empty-icon">
+        <Icon name={empty.icon || 'file-text'} size={24} />
+      </span>
+      <div className="gpi-table__empty-title">{empty.title}</div>
+      {empty.hint && <div className="gpi-table__empty-hint">{empty.hint}</div>}
+      {empty.actionLabel && (
+        <Button variant="secondary" size="md" onClick={empty.onAction}>
+          {empty.actionLabel}
+        </Button>
+      )}
+    </div>
+  )
+}
+
 export default function DataTable({ columns, rows, rowKey, onRowClick, empty, sort, onSort, caption, rowClassName }) {
   /* Pinned-edge elevation: a shadow shows ONLY while content is hidden behind
      that pinned column (user rule 2026-07-16 — never a stroke; a table that
@@ -40,22 +59,7 @@ export default function DataTable({ columns, rows, rowKey, onRowClick, empty, so
     return () => window.removeEventListener('resize', updateEdges)
   })
 
-  if (rows.length === 0 && empty) {
-    return (
-      <div className="gpi-table gpi-table--empty">
-        <span className="gpi-table__empty-icon">
-          <Icon name={empty.icon || 'file-text'} size={24} />
-        </span>
-        <div className="gpi-table__empty-title">{empty.title}</div>
-        {empty.hint && <div className="gpi-table__empty-hint">{empty.hint}</div>}
-        {empty.actionLabel && (
-          <Button variant="secondary" size="md" onClick={empty.onAction}>
-            {empty.actionLabel}
-          </Button>
-        )}
-      </div>
-    )
-  }
+  if (rows.length === 0 && empty) return <TableEmpty empty={empty} />
   return (
     <div
       className={`gpi-table gpi-table--pin${edges.left ? ' is-shadow-left' : ''}${edges.right ? ' is-shadow-right' : ''}`}

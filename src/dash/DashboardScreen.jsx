@@ -5,7 +5,8 @@ import PolicySummaryCard from './PolicySummaryCard.jsx'
 import HealthCard from './HealthCard.jsx'
 import AutoCard from './AutoCard.jsx'
 import CuratioCard from './CuratioCard.jsx'
-import { demo } from './curatioData.js'
+import { TicketBanner } from './CuratioTicket.jsx'
+import { demo, clearShares } from './curatioData.js'
 import { D } from './strings.js'
 import { POLICIES, POLICY_COUNT, BOOKINGS, REFERRALS } from './data.js'
 
@@ -74,6 +75,7 @@ export default function DashboardScreen() {
             onClick: () => {
               demo.setUninsured(false)
               demo.setVisitDay(false)
+              clearShares()
               setHasHealth(true)
               setRefs(true)
               setManyBookings(true)
@@ -82,6 +84,11 @@ export default function DashboardScreen() {
           },
         ]}
       />
+
+      {/* Visit-day ticket banner (2026-09-10): the queue number is the critical
+          thing on the day, so it LEADS the page instead of hiding in the last card.
+          Top of page, not sticky. Health accounts only — no policy, no visit. */}
+      {hasHealth && visitDay && <TicketBanner />}
 
       <section className="dash-sec" aria-labelledby="dash-active-title">
         <SectionHead
@@ -104,7 +111,7 @@ export default function DashboardScreen() {
       <AutoCard on={autoOn} />
       {/* Placement A (locked): its OWN card, after the policies — and it renders
           for the auto-only account too, which is placement A's whole argument. */}
-      <CuratioCard visitDay={visitDay} />
+      <CuratioCard visitDay={visitDay} insured={hasHealth} />
     </>
   )
 }

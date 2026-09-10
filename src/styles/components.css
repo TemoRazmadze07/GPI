@@ -223,6 +223,19 @@
   background: transparent;
   border-radius: 0;
 }
+
+/* ---- Card Table (2026-09-10) — components/CardTable.jsx ---------------------
+   The appointments grammar above (head band + `.gpi-row` cards) as a reusable
+   component: `--cols` comes inline from the column config, so band and rows share
+   one template and no screen needs a `--cols` override here. Rows are content-
+   driven with the appointments row's floor (padding 16 + avatar 40 + 16) so a
+   one-line record does not read as a thinner card beside a two-line one. */
+.gpi-ctable { display: flex; flex-direction: column; min-width: 0; }
+.gpi-ctable .gpi-table__head { margin-bottom: var(--space-12); }
+.gpi-ctable .is-right { text-align: right; }
+.gpi-ctable__rows { display: flex; flex-direction: column; gap: var(--space-12); }
+.gpi-ctable .gpi-row { min-height: calc(var(--space-16) * 2 + var(--space-40)); }
+.gpi-ctable .gpi-cell--right { align-items: flex-end; }
 .gpi-table__heading {
   margin: 0 0 var(--space-20);
   color: var(--text-main);
@@ -687,6 +700,17 @@
   color: var(--text-main);
 }
 .gpi-btn--tertiary:hover { background: var(--interactive-hover-bg); }
+/* Inverse (2026-09-10) — THE action on a brand-filled surface (first use: the
+   Curatio ticket banner). White fill + main ink, so it reads as the button on a
+   dark band where primary pink would clash and secondary's hairline would
+   vanish. Deliberately brand-agnostic (no Curatio token) so any coloured band
+   can carry it. NEW variant → Figma Button set port owed. */
+.gpi-btn--inverse {
+  background: var(--surface-card);
+  color: var(--text-main);
+}
+.gpi-btn--inverse:hover { background: var(--color-neutral-50); }
+.gpi-btn--inverse:active { background: var(--color-neutral-100); }
 .gpi-btn--danger {
   background: var(--action-danger);
   color: var(--action-danger-fg);
@@ -1107,9 +1131,21 @@
 
 /* ---- Segmented control --------------------------------------------------- */
 .gpi-seg { display: flex; gap: var(--space-2); background: var(--surface-sunken); border-radius: var(--radius-full); padding: var(--space-4); }
+/* Scroll fallback moved from the soft variant to the BASE (2026-09-10): a
+   section switch with three full Georgian names + icons + counts is ~780px, and
+   the history head at 768 has 682. Items never shrink below their label (flex
+   items' automatic min size), so the track scrolls instead of pushing the page
+   sideways. Scrollbar hidden; touch, wheel and keyboard still scroll it. The
+   4px track padding is exactly the item focus ring (2 + 2 offset). */
+.gpi-seg { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.gpi-seg::-webkit-scrollbar { display: none; }
 .gpi-seg--sm { border-radius: var(--radius-full); padding: var(--space-2); }
 .gpi-seg__item {
   flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
   border: none;
   background: transparent;
   border-radius: var(--radius-full);
@@ -1118,6 +1154,9 @@
   color: var(--text-muted);
   white-space: nowrap;
 }
+.gpi-seg__icon { flex: 0 0 auto; }
+.gpi-seg__count { font-weight: 400; } /* data beside the label: lighter by weight, never by colour */
+.gpi-seg__label--short { display: none; } /* ≤767 swaps it in — mobile.css */
 /* min-height 24 (2026-09-04): 4px padding + 13px type measured 21px — under
    the WCAG 2.2 target floor (Rule 7). The track grows to 28. */
 .gpi-seg--sm .gpi-seg__item { min-height: 24px; padding: var(--space-4) var(--space-8); font-size: 13px; border-radius: var(--radius-full); }
@@ -1141,15 +1180,9 @@
   border-radius: var(--radius-full);
   padding: var(--space-4);
   gap: var(--space-4);
-  /* When three Georgian labels outgrow the track (a narrow rail, ~<600px), the
-     row SCROLLS rather than shrinking its tabs — shrinking clipped the third
-     tab's text and left the control unreachable at 390. This is the fallback
-     mga.css already names for the mobile twin: scrollable tabs, not smaller
-     type. Scrollbar hidden; the row still scrolls by touch, wheel and keyboard. */
-  overflow-x: auto;
-  scrollbar-width: none;
+  /* The scroll fallback (three Georgian labels outgrowing a narrow rail) now
+     lives on the base `.gpi-seg` above — it was first written here for the card. */
 }
-.gpi-seg--soft::-webkit-scrollbar { display: none; }
 .gpi-seg--soft .gpi-seg__item {
   /* grow to share slack when there is room, NEVER shrink below the label. */
   flex: 1 0 auto;

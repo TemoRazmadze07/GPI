@@ -73,6 +73,7 @@ export const apps = [
           { id: 'dCurHist', path: 'dash/curatio/history',  label: 'history — analyses (OTP-gated)',   status: 'in-progress', hash: '/dash/curatio?sec=analyses' },
           { id: 'dCurMeds', path: '…/history?sec=meds',    label: '↳ prescriptions — expiry + renewal', status: 'in-progress', hash: '/dash/curatio?sec=meds' },
           { id: 'dCurVis',  path: '…/history?sec=visits',  label: '↳ visits — form 100',              status: 'in-progress', hash: '/dash/curatio?sec=visits' },
+          { id: 'dCurTrf',  path: 'dash/curatio?transfer=1', label: '↳ transfer history — full / selected → doctor (OTP-gated)', status: 'in-progress', hash: '/dash/curatio?transfer=1' },
         ],
       },
       {

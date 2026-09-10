@@ -15,7 +15,7 @@ const face = (id) => `https://images.unsplash.com/${id}?w=96&h=96&fit=crop&crop=
    visit-day and uninsured are STATES of one account, not separate pages, and a
    reviewer flips them from the demo bar. sessionStorage (not React state) so
    the dashboard and the section — separate routes — read the same account. */
-const DK = { visit: 'gpi.dash.visitDay', unins: 'gpi.dash.uninsured', attach: 'gpi.dash.attachments', arrived: 'gpi.dash.arrived', early: 'gpi.dash.checkinEarly' }
+const DK = { visit: 'gpi.dash.visitDay', unins: 'gpi.dash.uninsured', attach: 'gpi.dash.attachments', arrived: 'gpi.dash.arrived', early: 'gpi.dash.checkinEarly', shares: 'gpi.dash.shares' }
 /* Per-record attachments (web twin of mobile's addAttachment, 2026-09-04): a
    document hung off an EXISTING record, keyed by record id. Own key (Rule 5). */
 export function getAttachments() {
@@ -27,6 +27,44 @@ export function addAttachment(recId, doc) {
     sessionStorage.setItem(DK.attach, JSON.stringify({ ...all, [recId]: [...(all[recId] || []), doc] }))
   } catch { /* private mode — the prototype just forgets */ }
 }
+/* ---- History transfer (2026-09-09) --------------------------------------------
+   Which records the patient has handed to which doctor. Keyed by record id →
+   the doctors it is visible to (id + name, deduped), so the table can print
+   „ხილვადია: ნ. ნინოშვილი" under the record and the row icon can flip to a
+   check. sessionStorage, own key (Rule 5 — mobile's transfer has no store yet;
+   when it gets one it must NOT share this key). Illustrative like everything
+   else here: production reads this from Curatio Core. */
+export function getShares() {
+  try { return JSON.parse(sessionStorage.getItem(DK.shares) || '{}') } catch { return {} }
+}
+export function addShares(recIds, doctor) {
+  try {
+    const all = getShares()
+    const next = { ...all }
+    recIds.forEach((id) => {
+      const cur = next[id] || []
+      if (!cur.some((d) => d.id === doctor.id)) next[id] = [...cur, { id: doctor.id, name: doctor.name }]
+    })
+    sessionStorage.setItem(DK.shares, JSON.stringify(next))
+  } catch { /* private mode — the prototype just forgets */ }
+}
+export function clearShares() {
+  sessionStorage.removeItem(DK.shares)
+}
+/* „ნინო ნინოშვილი" → „ნ. ნინოშვილი": the short form the mark and the toast use,
+   so a record shared with two doctors still fits one line. Latin names behave
+   the same way (Nino Ninoshvili → N. Ninoshvili). */
+/* The store keeps the name it was written with, but the UI must print the
+   CURRENT locale's — a ka-session share read in an en session would otherwise
+   show „ნ. ნინოშვილი" beside English rows. Resolve by id first; the stored name
+   is only the fallback for a doctor the roster no longer lists. */
+export const shareName = (d) =>
+  (d.id === DOCTOR.id ? DOCTOR.name : TRANSFER_DOCTORS.find((x) => x.id === d.id)?.name) ?? d.name
+export const shortName = (name) => {
+  const parts = String(name).trim().split(/\s+/)
+  return parts.length > 1 ? `${parts[0][0]}. ${parts.slice(1).join(' ')}` : name
+}
+
 export const demo = {
   visitDay: () => sessionStorage.getItem(DK.visit) === '1',
   setVisitDay: (on) => (on ? sessionStorage.setItem(DK.visit, '1') : sessionStorage.removeItem(DK.visit)),
@@ -83,11 +121,24 @@ export const PERSONS = [
 ]
 
 export const DOCTOR = {
+  id: 'pd',
   name: L('ნინო ნინოშვილი', 'Nino Ninoshvili'),
   spec: L('ოჯახის ექიმი · კურაციო საბურთალოზე', 'Family doctor · Curatio Saburtalo'),
   next: L('12 ნოე', '12 Nov'),
   photo: face('photo-1559839734-2b71ea197ec2'),
 }
+
+/* ---- Transfer targets — the Curatio network beyond the personal doctor ----------
+   The mobile A5 roster (data.ka/en TRANSFER_DOCTORS), VERBATIM: same three
+   doctors, same clinics, so both platforms describe one network. The personal
+   doctor is NOT in this list — she is the preselected target in the modal, and
+   listing her twice would make „other doctor" a trap. No photos: the network
+   list renders initials (Avatar), as mobile does. */
+export const TRANSFER_DOCTORS = [
+  { id: 'd1', name: L('გიორგი მამულაძე', 'Giorgi Mamuladze'), spec: L('კარდიოლოგი', 'Cardiologist'), clinic: L('კლ. კურაციო — ლორთქიფანიძის 31', 'Curatio Cl. — Lortkipanidze St. 31') },
+  { id: 'd2', name: L('ანა კობახიძე', 'Ana Kobakhidze'), spec: L('ენდოკრინოლოგი', 'Endocrinologist'), clinic: L('კლ. კურაციო — შეშელიძის 6', 'Curatio Cl. — Sheshelidze St. 6') },
+  { id: 'd3', name: L('დავით ჩხეიძე', 'Davit Chkheidze'), spec: L('ნევროლოგი', 'Neurologist'), clinic: L('კლ. კურაციო — შეშელიძის 6', 'Curatio Cl. — Sheshelidze St. 6') },
+]
 
 /* ---- F-01: today (visit-day state only) ------------------------------------ */
 export const TODAY = {
@@ -101,6 +152,7 @@ export const TODAY = {
      QUEUE carries, and the clinic address/floor from mobile's CLINIC — the same
      Curatio Saburtalo the doctor card names. Illustrative, like the rest. */
   wait: 12,
+  clinic: L('კურაციო საბურთალო', 'Curatio Saburtalo'), /* banner location lead (2026-09-10) */
   address: L('ლორთქიფანიძის 31', 'Lortkipanidze St. 31'),
   floor: L('IV სართ.', '4th floor'),
 }
