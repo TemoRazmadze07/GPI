@@ -117,7 +117,12 @@ export function RecordPicker({ picker, label, already, err, onChange }) {
         size="sm"
         value={cat}
         onChange={setCat}
-        options={groups.map((g) => ({ value: g.id, label: g.label, short: g.short, icon: SECTION_ICON[g.id], count: g.rows.length }))}
+        /* NO counts (user, 2026-09-17, pointing at the pill in the drawer): same rule as the
+           history tabs and the dashboard card on 2026-09-16 — a record figure is not a
+           section attribute we can stand behind. The selection figures stay: the header
+           checkbox, the full-history link and the footer total all describe what the user
+           has picked from the rows in front of them, not how many files Curatio holds. */
+        options={groups.map((g) => ({ value: g.id, label: g.label, short: g.short, icon: SECTION_ICON[g.id] }))}
       />
       <div className="dash-trf__rows">
         <div className="dash-trf__cathead">
