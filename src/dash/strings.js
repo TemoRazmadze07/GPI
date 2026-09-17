@@ -370,15 +370,21 @@ export const kaDash = {
     change: {
       title: 'პირადი ექიმის შეცვლა',
       ctx: (person, doc) => `${person} · ახლანდელი პირადი ექიმი: ${doc}`,
-      pick: 'ახალი პირადი ექიმი',
+      /* Round 3 (2026-09-17, user): the block headings are INSTRUCTIONS, no „1 ·" / „2 ·"
+         numbers — the imperative verb carries the sequence. Note the heading says
+         „გაუზიარე" (share) while the buttons and toasts still say „გადატანა" (transfer):
+         the user's wording, and share-vs-transfer is the open stakeholder question. */
+      pick: 'აირჩიე ახალი პირადი ექიმი',
       /* Round 2 (2026-09-16): block 2 = the transfer drawer's record picker, all selected
          up front; the consent line is the mobile docsel wording; block 3 removed. */
-      hist: 'ისტორიის გადატანა ახალ ექიმთან',
+      hist: 'გაუზიარე სამედიცინო ისტორია ახალ პირად ექიმს',
       consent: (doc) => `${doc} მიიღებს წვდომას არჩეულ ჩანაწერებზე კურაციოში`,
       newDoc: 'ახალი ექიმი',
       cancel: 'გაუქმება',
       confirm: 'ექიმის შეცვლა',
-      errDoctor: 'აირჩიე ახალი პირადი ექიმი',
+      /* NOT the heading's words any more (round 3) — an error that repeats the heading
+         verbatim reads as an echo, not as a fix. */
+      errDoctor: 'აირჩიე ექიმი სიიდან',
       done: (doc) => `პირადი ექიმი შეიცვალა: ${doc}`,
       doneN: (n, doc) => `პირადი ექიმი შეიცვალა: ${doc} · გადაეცა ${n} ჩანაწერი`,
       doneHist: (doc) => `პირადი ექიმი შეიცვალა: ${doc} · სრული ისტორია გადატანილია`,
@@ -736,13 +742,13 @@ export const enDash = {
     change: {
       title: 'Change personal doctor',
       ctx: (person, doc) => `${person} · current personal doctor: ${doc}`,
-      pick: 'New personal doctor',
-      hist: 'History for the new doctor',
+      pick: 'Choose a new personal doctor',
+      hist: 'Share your medical history with the new doctor',
       consent: (doc) => `${doc} will get access to the selected records in Curatio`,
       newDoc: 'The new doctor',
       cancel: 'Cancel',
       confirm: 'Change doctor',
-      errDoctor: 'Choose a new personal doctor',
+      errDoctor: 'Choose a doctor from the list',
       done: (doc) => `Personal doctor changed to ${doc}`,
       doneN: (n, doc) => `Personal doctor changed to ${doc} · ${n} ${n === 1 ? 'record' : 'records'} transferred`,
       doneHist: (doc) => `Personal doctor changed to ${doc} · full history transferred`,

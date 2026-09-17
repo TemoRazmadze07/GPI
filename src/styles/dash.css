@@ -1336,6 +1336,11 @@
 .dash-trf__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-12); }
 .dash-trf__head .dash-link { white-space: nowrap; }
 .dash-trf__lbl { margin: 0; font: 500 13px/16px var(--font-sans); color: var(--text-main); }
+/* Change-doctor concept (2026-09-17): its block headings are instructions, so they take
+   the foundation's Heading/H5 (16/24 SemiBold) — one step under the drawer title and
+   clearly above the 14px rows they introduce. SCOPED to this drawer: the published
+   transfer drawer keeps its 13/500 labels until the user says to align it (Rule 4). */
+.dash-chgdrawer .dash-trf__lbl { font: 600 16px/24px var(--font-sans); }
 /* the personal doctor, read-only */
 .dash-trf__doc { display: flex; align-items: center; gap: var(--space-12); padding: var(--space-4) 0; }
 .dash-trf__docmeta { display: flex; flex-direction: column; min-width: 0; }
@@ -1399,6 +1404,12 @@
    the three icon-only ghosts become the labelled, bordered footer buttons the
    appointments cards use — icon-only actions are desktop-only (rule 2026-07-28). */
 @media (max-width: 767px) {
+  /* The concept drawer's instruction headings are a sentence, not a label: on a phone
+     they must not share a line with „ყველას მოხსნა" (the nowrap link squeezed the
+     heading into four lines at 390). Heading takes the row, the link drops under it. */
+  .dash-chgdrawer .dash-trf__head { flex-wrap: wrap; }
+  .dash-chgdrawer .dash-trf__lbl { flex: 1 1 100%; }
+  .dash-chgdrawer .dash-trf__head .dash-link { margin-left: auto; }
   .dash-hist__rowactions { gap: var(--space-8); }
   .dash-hist__rowactions .gpi-iconbtn--ghost { border-color: var(--border-default); }
   /* The section switch drops under the title at full width and scrolls sideways

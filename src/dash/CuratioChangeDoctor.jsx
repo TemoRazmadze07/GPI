@@ -26,6 +26,11 @@ import {
    so both versions stay demonstrable.)
 
    Anatomy (L1 approved in chat 2026-09-16, kebab placement the user's ask):
+     Headings are INSTRUCTIONS without step numbers (round 3, user): „აირჩიე …" /
+     „გაუზიარე …" — the verb carries the sequence, and the drawer only has two blocks.
+     They step DOWN from the drawer title (18/600) at Heading/H5 (16/24 SemiBold): the
+     old 13/500 label sat BELOW the record titles (14/500) and doctor names (14/600)
+     it introduces, and only weight told it apart from the muted context line.
      1 · ახალი პირადი ექიმი — search + the booking wizard's DoctorRow list over
        the Curatio network; the info trigger opens the wizard's DoctorBioModal
        over the drawer (select there picks here). ONE pick.
@@ -144,7 +149,7 @@ export function ChangeDoctorDrawer({ personId, onClose, onDone }) {
         {/* 1 · the new doctor — the transfer drawer's network block, verbatim. */}
         <section className="dash-trf__block" aria-label={C.pick}>
           <div className="dash-trf__head">
-            <p className="dash-trf__lbl">1 · {C.pick}</p>
+            <p className="dash-trf__lbl">{C.pick}</p>
           </div>
           <div className="dash-trf__network">
             <SearchField value={query} onChange={setQuery} placeholder={D.cur.transfer.docSearch} />
@@ -167,7 +172,7 @@ export function ChangeDoctorDrawer({ personId, onClose, onDone }) {
 
         {/* 2 · the handover — the shared picker, everything selected up front, plus
             the consent line naming who gets access. */}
-        <RecordPicker picker={picker} label={`2 · ${C.hist}`} />
+        <RecordPicker picker={picker} label={C.hist} />
         <p className="dash-trf__ctx">{C.consent(picked ? shortName(picked.name) : C.newDoc)}</p>
       </Drawer>
 
