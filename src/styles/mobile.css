@@ -312,6 +312,20 @@
   .gpi-seg__label--short {
     display: inline;
   }
+  /* Indigo variant: 12px sides (the base item's own inset) — its 16 is sized for
+     desktop. Its only mobile consumer is the add-insured sheet (step 2 swaps its
+     pill for a dropdown below): „პირადი ნომრით / პოლისის ნომრით" need ~310px and
+     a 360 sheet has 318. Under 360 it takes the --sm step (8px sides, 13px) so
+     both tabs still show at 320 instead of falling back to the scroll track. */
+  .gpi-seg--indigo .gpi-seg__item {
+    padding-inline: var(--space-12);
+  }
+  @media (max-width: 359px) {
+    .gpi-seg--indigo .gpi-seg__item {
+      padding-inline: var(--space-8);
+      font-size: 13px;
+    }
+  }
 
   /* ---- Wizard chrome ------------------------------------------------------ */
   .gpi-wizard {
@@ -405,21 +419,13 @@
     align-items: stretch;
     gap: var(--space-8);
   }
-  /* "add" is a bordered secondary here, so the desktop 8px optical trim (right
-     for a bare text link) is wrong — restore the standard control padding so
-     both buttons' boxes AND icons share one left edge. */
+  /* Content CENTRED (user, 2026-09-11) — the Button's own default; the old
+     left-aligned stack was a local restyle. The desktop 8px optical trim (right
+     for a bare text link) is undone so both keep the system's 16px padding.
+     "add" is a PLAIN Secondary here: its brand-pink label is scoped to the
+     desktop tertiary in components.css, so nothing overrides the variant. */
   .gpi-insured__add .gpi-btn {
     padding-left: var(--space-16);
-    justify-content: flex-start;
-  }
-  /* The brand-pink label belongs to the desktop TEXT-LINK presentation. As an
-     outlined secondary the button is indigo-bordered, so the label must be
-     indigo too — pink text in an indigo box is not a variant the system has. */
-  .gpi-insured__addbtn {
-    color: var(--action-secondary);
-  }
-  .gpi-insured__addbtn:hover {
-    background: var(--color-indigo-50);
   }
   /* Manage modal: the policy/ID line is dropped on narrow screens so each row is
      one compact line of identity — the delete button already eats ~96px, and the
@@ -717,8 +723,14 @@
     justify-content: center;
   }
 
-  /* ---- Modals: tighter padding, single-column add-insured grid -------------- */
-  /* The overlay is a place-items:center grid, so the shell's max-width:100%
+  /* ---- Modals (user, 2026-09-11 — GLOBAL, every GPI web module) -------------
+     Two shapes, picked by the shared Modal's `variant`:
+     · SHEET (default) — rises from the bottom, full width, grabber: the mobile
+       app's .mga-sheet grammar. Promoted from the accounts console, where it
+       was scoped to .acc-page.
+     · DIALOG (ConfirmDialog) — stays the small centred card below, so a remove/
+       delete question asked over a sheet reads as an interruption, not a task.
+     The overlay is a place-items:center grid, so the shell's max-width:100%
      resolves circularly and fixed widths (520/420/760) win — cap explicitly. */
   .gpi-modal {
     width: calc(100vw - 32px);
@@ -729,9 +741,67 @@
   .gpi-modal__body {
     padding: var(--space-16);
   }
+  /* Buttons, both shapes: ONE button fills the width; TWO stack with the primary
+     on TOP. Footers keep their desktop DOM order [secondary, primary] (read
+     left → right there), so column-reverse is what puts the primary first. */
   .gpi-modal__ft {
     padding: 0 var(--space-16) var(--space-16);
-    flex-wrap: wrap;
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: var(--space-12);
+  }
+  .gpi-modal__ft > .gpi-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  /* Sheet. `.overlay--sheet > .gpi-modal` (0,2,0) on purpose: the width
+     modifiers (.gpi-modal--sms/--cols/--email, .dash-otpmodal, .acc-*modal) are
+     one class and several load after this file. Padding 20 = the mobile
+     page-content margin, so a full-bleed sheet lines up with the page under it. */
+  .gpi-modal-overlay--sheet {
+    place-items: end stretch;
+    padding: 0;
+  }
+  .gpi-modal-overlay--sheet > .gpi-modal {
+    width: 100%;
+    max-width: none;
+    max-height: 92vh;
+    max-height: 92dvh;
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  }
+  .gpi-modal-overlay--sheet > .gpi-modal > .gpi-modal__hd {
+    position: relative;
+    padding: var(--space-24) var(--space-20) var(--space-12);
+  }
+  /* Grabber — the cue that this sheet came from the bottom (same 36×4 as .mga-sheet__grab). */
+  .gpi-modal-overlay--sheet > .gpi-modal > .gpi-modal__hd::before {
+    content: '';
+    position: absolute;
+    top: var(--space-8);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 4px;
+    border-radius: var(--radius-full);
+    background: var(--border-default);
+  }
+  /* Long content scrolls inside the body; header and buttons stay put. */
+  .gpi-modal-overlay--sheet > .gpi-modal > .gpi-modal__body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: var(--space-20);
+  }
+  .gpi-modal-overlay--sheet > .gpi-modal > .gpi-modal__ft {
+    padding: 0 var(--space-20) calc(var(--space-20) + env(safe-area-inset-bottom, 0px));
+  }
+  /* Reservation-expired alert (ReservationCountdown) — its own centred card on
+     the modal backdrop; same one-button rule. */
+  .gpi-cdexpire > .gpi-btn {
+    align-self: stretch;
+    justify-content: center;
   }
   .gpi-addins__grid {
     grid-template-columns: 1fr;

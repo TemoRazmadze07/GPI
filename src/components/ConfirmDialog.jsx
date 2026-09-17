@@ -7,10 +7,13 @@ import { Button } from './Button.jsx'
    initial focus so a stray Enter can't confirm. `appt` (optional) renders a
    compact summary of what's being acted on. `variant` (2026-08-06, additive)
    styles the confirm button: 'danger' (default — destructive confirms) or
-   'primary' for consequential-but-safe ones (e.g. contract switch → re-check). */
+   'primary' for consequential-but-safe ones (e.g. contract switch → re-check).
+   Always the Modal's 'dialog' shape: on mobile it stays a small centred card even
+   when it opens over a bottom sheet (user, 2026-09-11). */
 export default function ConfirmDialog({ title, body, appt, confirmLabel, keepLabel, onConfirm, onClose, variant = 'danger' }) {
   return (
     <Modal
+      variant="dialog"
       title={title}
       closeLabel={keepLabel}
       onClose={onClose}

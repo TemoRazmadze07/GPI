@@ -101,12 +101,14 @@ export default function TransferScreen() {
                   <div className="mga-meta__lbl">{picked.clinic}</div>
                 </div>
                 <div className="mga-trf__includes">{M.transfer.includes}</div>
-                <div className="mga-trf__btns">
-                  <button className="mga-btn mga-btn--secondary mga-btn--lg" style={{ flex: 1 }} onClick={() => setPicked(null)}>
-                    {M.transfer.cancel}
-                  </button>
-                  <button className="mga-btn mga-btn--primary mga-btn--lg" style={{ flex: 2 }} onClick={() => setDone(true)}>
+                {/* Stacked pair, primary on top — the sheet-action grammar every
+                    other sheet uses (user, 2026-09-11: two buttons never share a row). */}
+                <div className="mga-trf__btns mga-trf__btns--stack">
+                  <button className="mga-btn mga-btn--primary mga-btn--lg mga-btn--block" onClick={() => setDone(true)}>
                     {M.transfer.confirm}
+                  </button>
+                  <button className="mga-btn mga-btn--secondary mga-btn--lg mga-btn--block" onClick={() => setPicked(null)}>
+                    {M.transfer.cancel}
                   </button>
                 </div>
               </>

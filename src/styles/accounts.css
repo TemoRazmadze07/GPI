@@ -386,19 +386,13 @@
      (The inline „დადასტურება" link and its 40px-target rule left with the
      two-state model — the linking box's real Buttons carry the action now.) */
 
-  /* ---- Dialogs become BOTTOM SHEETS ------------------------------------
-     Scoped to .acc-page on purpose: My-Cabinet and B2B modals must not change
-     underneath us. Promote globally only if that is decided separately. */
-  .acc-page .gpi-modal-overlay { place-items: end stretch; padding: 0; }
-  .acc-page .gpi-modal { width: 100%; max-width: none; max-height: 92vh; display: flex; flex-direction: column; border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
-  /* Grabber — the affordance that says "this sheet came from the bottom". */
-  .acc-page .gpi-modal__hd { position: relative; padding-top: var(--space-24); }
-  .acc-page .gpi-modal__hd::before { content: ''; position: absolute; top: var(--space-8); left: 50%; transform: translateX(-50%); width: 36px; height: 4px; border-radius: var(--radius-full); background: var(--border-default); }
-  .acc-page .gpi-modal__body { flex: 1; min-height: 0; overflow-y: auto; }
-  .acc-page .gpi-modal__ft { flex-wrap: wrap; }
+  /* ---- Dialogs are BOTTOM SHEETS -----------------------------------------
+     Promoted to every GPI web module 2026-09-11 (user) — the sheet now lives in
+     mobile.css (.gpi-modal-overlay--sheet), so only the in-body footers are
+     local. Same button rule: one = full width, two = stacked, primary on top. */
   .acc-page .acc-form { max-width: none; }
   .acc-page .acc-form__ft .gpi-btn,
   .acc-page .acc-contactmodal__ft .gpi-btn { flex: 1 1 auto; justify-content: center; }
-  .acc-page .acc-contactmodal__ft { flex-wrap: wrap; }
+  .acc-page .acc-contactmodal__ft { flex-direction: column-reverse; gap: var(--space-12); }
   .acc-uploaderr { max-width: none; }
 }

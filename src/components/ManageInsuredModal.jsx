@@ -1,6 +1,7 @@
 import Modal from './Modal.jsx'
 import Avatar from './Avatar.jsx'
 import { Button } from './Button.jsx'
+import useIsMobile from '../lib/useIsMobile.js'
 import { t as strings } from '../i18n/index.js'
 
 /* ManageInsuredModal — housekeeping for the Step-1 insured list.
@@ -13,13 +14,16 @@ export default function ManageInsuredModal({ people, onRemove, onClose }) {
   const t = strings.wizard.insured.modal
   const removable = people.filter((p) => p.relation !== 'owner')
   const holder = people.find((p) => p.relation === 'owner')
+  /* Sheet footer = actions only (user, 2026-09-15): the lone Close is pure dismissal,
+     which the header × already does, so the mobile sheet has no footer. Desktop keeps it. */
+  const isMobile = useIsMobile()
 
   return (
     <Modal
       title={t.title}
       closeLabel={t.close}
       onClose={onClose}
-      footer={<Button variant="secondary" size="md" onClick={onClose}>{t.close}</Button>}
+      footer={isMobile ? null : <Button variant="secondary" size="md" onClick={onClose}>{t.close}</Button>}
     >
       <p className="gpi-manage__intro">{t.intro}</p>
 

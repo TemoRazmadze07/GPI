@@ -4,6 +4,7 @@ import SegmentedControl from './SegmentedControl.jsx'
 import Avatar from './Avatar.jsx'
 import Icon from '../lib/Icon.jsx'
 import { Button } from './Button.jsx'
+import useIsMobile from '../lib/useIsMobile.js'
 import { lookupByPersonalId, lookupByPolicy } from '../data/insured.js'
 import { t as strings } from '../i18n/index.js'
 
@@ -59,6 +60,14 @@ export default function AddInsuredModal({ existingIds = [], onAdd, onClose }) {
   const backToSearch = () => { setMode('search'); setFound(null); clearErr() }
   const onEnter = (e) => { if (e.key === 'Enter') { e.preventDefault(); search() } }
 
+  /* Cancel (2026-09-15, user): on the mobile SHEET the footer carries actions only —
+     dismissal is the header ×, the scrim and the grabber, and nothing here is worth
+     protecting. Desktop keeps Cancel + action side by side as in the Figma modal.
+     The confirmed state keeps both buttons on every width: both are actions. */
+  const isMobile = useIsMobile()
+  const cancelBtn = !isMobile && (
+    <Button variant="secondary" size="md" onClick={onClose}>{t.cancel}</Button>
+  )
   const footer =
     mode === 'confirmed' ? (
       <>
@@ -67,12 +76,12 @@ export default function AddInsuredModal({ existingIds = [], onAdd, onClose }) {
       </>
     ) : mode === 'manual' ? (
       <>
-        <Button variant="secondary" size="md" onClick={onClose}>{t.cancel}</Button>
+        {cancelBtn}
         <Button variant="primary" size="md" leadingIcon="plus" onClick={addManual}>{t.add}</Button>
       </>
     ) : (
       <>
-        <Button variant="secondary" size="md" onClick={onClose}>{t.cancel}</Button>
+        {cancelBtn}
         <Button variant="primary" size="md" leadingIcon="search" onClick={search}>{t.search}</Button>
       </>
     )
@@ -100,8 +109,12 @@ export default function AddInsuredModal({ existingIds = [], onAdd, onClose }) {
     <Modal title={t.title} closeLabel={t.cancel} onClose={onClose} footer={footer}>
       <div className="gpi-addins">
         {mode !== 'manual' && mode !== 'confirmed' && (
+          /* Soft (2026-09-15): these tabs switch the lookup method — a view switch, not the
+             page action — so they take the pale-indigo Soft pill, matching the Figma port and
+             the 2026-09-04 rule for the Curatio history switch. Solid pink would fight the
+             pink Search button below. */
           <SegmentedControl
-            variant="indigo"
+            variant="soft"
             value={method}
             onChange={(v) => { setMethod(v); clearErr() }}
             options={[
