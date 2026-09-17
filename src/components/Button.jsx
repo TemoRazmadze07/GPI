@@ -6,7 +6,10 @@ import Icon from '../lib/Icon.jsx'
    `className` is ADDITIVE (appended, never replacing the base classes) — same
    additive pattern as Select, so a caller can scope one instance without
    losing gpi-btn/variant/size. */
-const ICON_BY_SIZE = { sm: 16, md: 20, lg: 24 } // icon/sm · icon/md · icon/lg tokens
+/* Icon per size mirrors the Figma Button set: sm/md = 16, lg = 24 (the glyph never
+   exceeds the label line-height 16/16/24, so toggling an icon never changes the
+   height). md was 20 in code until 2026-09-16 — a drift the doctor-row audit caught. */
+const ICON_BY_SIZE = { sm: 16, md: 16, lg: 24 }
 
 export function Button({
   variant = 'primary',
