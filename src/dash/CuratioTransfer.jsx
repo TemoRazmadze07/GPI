@@ -11,7 +11,7 @@ import { Button } from '../components/Button.jsx'
 import { useGate } from './gate.jsx'
 import { D } from './strings.js'
 import {
-  PERSONS, DOCTOR, TRANSFER_DOCTORS, ANALYSES, MEDS, VISITS, SECTION_ICON,
+  PERSONS, currentDoctor, TRANSFER_DOCTORS, ANALYSES, MEDS, VISITS, SECTION_ICON,
   forPerson, dateWithYear, getShares, addShares, clearShares, shortName,
 } from './curatioData.js'
 
@@ -51,18 +51,115 @@ import {
 
    Rule 9: Drawer · SegmentedControl · DoctorRow · DoctorBioModal · Checkbox
    (+ its new additive `indeterminate`) · SearchField · Avatar · Button · Toast —
-   nothing new. */
+   nothing new.
+
+   2026-09-16: block 2 is now `useRecordPicker` + `RecordPicker` — ONE picker for
+   this drawer and the change-doctor concept's drawer (user: „what if I want to
+   share only some particular files when I change doctor" → the same selection,
+   starting with everything selected). `personalOnly` (concept mode): under the
+   PO rule only the personal doctor can receive history, so the target switch
+   goes and the drawer is „to your personal doctor" alone. */
 
 const T = D.cur.transfer
+
+/* ---- The record picker (2026-09-16) -------------------------------------------
+   The three history sections scoped to the person (the table's forPerson), a
+   category switch, a header Checkbox = the open category, rows, and a block-head
+   link that selects EVERYTHING / clears everything. `all` starts with every
+   record selected (the change-doctor drawer: the handover is the default and
+   unticking is the exception); `record` starts with that one record picked and
+   its category open (the table's per-record entry). */
+export function useRecordPicker({ personId, record = null, all = false }) {
+  const groups = useMemo(
+    () => [
+      { id: 'analyses', label: D.cur.hist.sections.analyses, short: D.cur.hist.sectionsShort?.analyses, rows: forPerson(ANALYSES, personId) },
+      { id: 'meds', label: D.cur.hist.sections.meds, short: D.cur.hist.sectionsShort?.meds, rows: forPerson(MEDS, personId) },
+      { id: 'visits', label: D.cur.hist.sections.visits, short: D.cur.hist.sectionsShort?.visits, rows: forPerson(VISITS, personId) },
+    ],
+    [personId],
+  )
+  const allIds = groups.flatMap((g) => g.rows.map((r) => r.id))
+  const [picked, setPicked] = useState(() => new Set(all ? allIds : record ? [record.id] : []))
+  /* Records do not carry their section; derive it from which list holds the id. */
+  const [cat, setCat] = useState(() =>
+    !record ? 'analyses'
+    : MEDS.some((r) => r.id === record.id) ? 'meds'
+    : VISITS.some((r) => r.id === record.id) ? 'visits'
+    : 'analyses',
+  )
+  const group = groups.find((g) => g.id === cat) || groups[0]
+  const inCat = group.rows.filter((r) => picked.has(r.id)).length
+  const full = allIds.length > 0 && allIds.every((id) => picked.has(id))
+  const toggle = (id, on) => setPicked((p) => { const n = new Set(p); on ? n.add(id) : n.delete(id); return n })
+  /* Header checkbox = the open category only (the data-table idiom); the block
+     head's link = everything. Two levels, each named for what it does. */
+  const toggleCat = (on) => setPicked((p) => { const n = new Set(p); group.rows.forEach((r) => (on ? n.add(r.id) : n.delete(r.id))); return n })
+  const toggleAll = () => setPicked(full ? new Set() : new Set(allIds))
+  return { groups, allIds, picked, ids: [...picked], cat, setCat, group, inCat, full, toggle, toggleCat, toggleAll }
+}
+
+/* `label` = the block heading (the caller numbers it) · `already(r)` = an optional
+   note per row („ხილვადია: …") · `err` = the submit error · `onChange` fires on any
+   pick so the caller can clear that error live. */
+export function RecordPicker({ picker, label, already, err, onChange }) {
+  const { groups, allIds, picked, cat, setCat, group, inCat, full, toggle, toggleCat, toggleAll } = picker
+  const act = (fn) => (...a) => { fn(...a); onChange?.() }
+  return (
+    <section className="dash-trf__block" aria-label={label}>
+      <div className="dash-trf__head">
+        <p className="dash-trf__lbl">{label}</p>
+        <button type="button" className="gpi-link dash-link" onClick={act(toggleAll)}>
+          {full ? T.clearFull : T.fullLink(allIds.length)}
+        </button>
+      </div>
+      <SegmentedControl
+        variant="soft"
+        size="sm"
+        value={cat}
+        onChange={setCat}
+        options={groups.map((g) => ({ value: g.id, label: g.label, short: g.short, icon: SECTION_ICON[g.id], count: g.rows.length }))}
+      />
+      <div className="dash-trf__rows">
+        <div className="dash-trf__cathead">
+          <Checkbox
+            name="trf-cat-all"
+            checked={group.rows.length > 0 && inCat === group.rows.length}
+            indeterminate={inCat > 0 && inCat < group.rows.length}
+            onChange={act(toggleCat)}
+            label={T.catHead(group.label, inCat, group.rows.length)}
+          />
+        </div>
+        {group.rows.map((r) => {
+          const note = already?.(r)
+          return (
+            <Checkbox
+              key={r.id}
+              name={`trf-${r.id}`}
+              checked={picked.has(r.id)}
+              onChange={(on) => act(toggle)(r.id, on)}
+              label={r.name}
+              help={`${dateWithYear(r)} · ${r.clinic || r.doctor}${note ? ` · ${note}` : ''}`}
+            />
+          )
+        })}
+      </div>
+      {err && (
+        <p className="gpi-field__hint gpi-field__hint--err dash-trf__err" role="alert">{err}</p>
+      )}
+    </section>
+  )
+}
 
 /* One hook owns the flow for a page: the shares store, the two dialogs (OTP +
    transfer) and the toast. The section page calls it once and hands the same
    object to the embedded history table, so the doctor row and the table rows
    drive ONE dialog and read ONE store. A standalone CuratioHistory (the parked
-   v1 route) falls back to its own instance. */
-/* `insured` (2026-09-10): an uninsured account has no personal doctor, so the
-   dialog offers network doctors only and starts on that option. */
-export function useTransfer({ personId, insured = true }) {
+   v1 route) falls back to its own instance.
+   `insured` (2026-09-10): an uninsured account has no personal doctor, so the
+   dialog offers network doctors only and starts on that option.
+   `personalOnly` (2026-09-16, change-doctor concept): the personal doctor is the
+   only target — no switch, no network list. */
+export function useTransfer({ personId, insured = true, personalOnly = false }) {
   const gate = useGate()
   const [shares, setShares] = useState(getShares)
   const [state, setState] = useState(null) /* { record } while the dialog is open */
@@ -77,6 +174,7 @@ export function useTransfer({ personId, insured = true }) {
     <>
       {state && (
         <TransferDrawer insured={insured}
+          personalOnly={personalOnly}
           personId={personId}
           record={state.record}
           shares={shares}
@@ -101,21 +199,17 @@ export function useTransfer({ personId, insured = true }) {
       clearShares()
       setShares({})
     },
+    /* `refresh` (2026-09-16): the change-doctor concept rewrites the store from its own
+       hook; the table reads THIS state, so the concept calls back here after a change. */
+    refresh: () => setShares(getShares()),
     modal,
     toast: <Toast toast={toast} onDone={() => setToast(null)} />,
   }
 }
 
-export function TransferDrawer({ personId, record = null, shares = {}, onClose, onDone, insured = true }) {
-  const [picked, setPicked] = useState(() => new Set(record ? [record.id] : []))
-  /* Records do not carry their section; the per-record entry derives it from
-     which list holds the id, so the drawer opens on that record's category. */
-  const [cat, setCat] = useState(() =>
-    !record ? 'analyses'
-    : MEDS.some((r) => r.id === record.id) ? 'meds'
-    : VISITS.some((r) => r.id === record.id) ? 'visits'
-    : 'analyses',
-  )
+export function TransferDrawer({ personId, record = null, shares = {}, onClose, onDone, insured = true, personalOnly = false }) {
+  const picker = useRecordPicker({ personId, record })
+  const { ids, full } = picker
   const [target, setTarget] = useState(insured ? 'personal' : 'other')
   const [otherId, setOtherId] = useState(null)
   const [docQuery, setDocQuery] = useState('')
@@ -123,22 +217,6 @@ export function TransferDrawer({ personId, record = null, shares = {}, onClose, 
   const [errs, setErrs] = useState({})
 
   const person = PERSONS.find((p) => p.id === personId)
-  /* The three history sections, in the table's order, scoped to the person the
-     header switcher shows — the same forPerson() the table uses, so the checklist
-     can never list a record the table would not. */
-  const groups = useMemo(
-    () => [
-      { id: 'analyses', label: D.cur.hist.sections.analyses, short: D.cur.hist.sectionsShort?.analyses, rows: forPerson(ANALYSES, personId) },
-      { id: 'meds', label: D.cur.hist.sections.meds, short: D.cur.hist.sectionsShort?.meds, rows: forPerson(MEDS, personId) },
-      { id: 'visits', label: D.cur.hist.sections.visits, short: D.cur.hist.sectionsShort?.visits, rows: forPerson(VISITS, personId) },
-    ],
-    [personId],
-  )
-  const allIds = groups.flatMap((g) => g.rows.map((r) => r.id))
-  const group = groups.find((g) => g.id === cat) || groups[0]
-  const inCat = group.rows.filter((r) => picked.has(r.id)).length
-  const full = allIds.length > 0 && allIds.every((id) => picked.has(id))
-  const ids = [...picked]
 
   /* Network doctors in the wizard's row shape: role = specialty · clinic on the
      row (the clinic decides the choice); the bio modal gets the bare specialty. */
@@ -147,32 +225,11 @@ export function TransferDrawer({ personId, record = null, shares = {}, onClose, 
   const rowShape = (d) => ({ ...d, role: `${d.spec} · ${d.clinic}` })
   const bioShape = (d) => ({ ...d, role: d.spec })
 
-  const doctor = target === 'personal' ? DOCTOR : TRANSFER_DOCTORS.find((d) => d.id === otherId) || null
-  const already = (r) => !!doctor && (shares[r.id] || []).some((d) => d.id === doctor.id)
+  const PD = currentDoctor() /* the change-doctor concept can swap her for the session */
+  const doctor = target === 'personal' ? PD : TRANSFER_DOCTORS.find((d) => d.id === otherId) || null
+  const already = (r) => (doctor && (shares[r.id] || []).some((d) => d.id === doctor.id) ? T.visible(shortName(doctor.name)) : '')
 
   const clearErr = (k) => errs[k] && setErrs((x) => ({ ...x, [k]: undefined }))
-  const toggle = (id, on) => {
-    setPicked((p) => {
-      const n = new Set(p)
-      on ? n.add(id) : n.delete(id)
-      return n
-    })
-    clearErr('pick')
-  }
-  /* Header checkbox = the open category only (the data-table idiom); the block
-     head's link = everything. Two levels, each named for what it does. */
-  const toggleCat = (on) => {
-    setPicked((p) => {
-      const n = new Set(p)
-      group.rows.forEach((r) => (on ? n.add(r.id) : n.delete(r.id)))
-      return n
-    })
-    clearErr('pick')
-  }
-  const toggleAll = () => {
-    setPicked(full ? new Set() : new Set(allIds))
-    clearErr('pick')
-  }
 
   const submit = () => {
     const e = {}
@@ -204,12 +261,13 @@ export function TransferDrawer({ personId, record = null, shares = {}, onClose, 
         <p className="dash-trf__ctx">{person?.name} · {D.cur.hist.title}</p>
 
         {/* 1 · ვის. Uninsured: no personal doctor exists, so there is nothing to
-            switch between — the block is the network list alone. */}
+            switch between — the block is the network list alone. Concept mode
+            (personalOnly): the personal doctor alone, nothing to switch either. */}
         <section className="dash-trf__block" aria-label={T.to}>
           <div className="dash-trf__head">
             <p className="dash-trf__lbl">1 · {T.to}</p>
           </div>
-          {insured && (
+          {insured && !personalOnly && (
             <SegmentedControl
               variant="soft"
               size="md"
@@ -223,10 +281,10 @@ export function TransferDrawer({ personId, record = null, shares = {}, onClose, 
           )}
           {target === 'personal' ? (
             <div className="dash-trf__doc">
-              <Avatar src={DOCTOR.photo} name={DOCTOR.name} size={40} />
+              <Avatar src={PD.photo} seed={PD.avatar} name={PD.name} size={40} />
               <span className="dash-trf__docmeta">
-                <span className="dash-trf__docname">{DOCTOR.name}</span>
-                <span className="dash-trf__docsub">{DOCTOR.spec}</span>
+                <span className="dash-trf__docname">{PD.name}</span>
+                <span className="dash-trf__docsub">{personalOnly ? `${T.personal} · ${PD.spec}` : PD.spec}</span>
               </span>
             </div>
           ) : (
@@ -252,46 +310,8 @@ export function TransferDrawer({ personId, record = null, shares = {}, onClose, 
           )}
         </section>
 
-        {/* 2 · რა გადავიტანოთ — one selection across the three categories. */}
-        <section className="dash-trf__block" aria-label={T.scope}>
-          <div className="dash-trf__head">
-            <p className="dash-trf__lbl">2 · {T.scope}</p>
-            <button type="button" className="gpi-link dash-link" onClick={toggleAll}>
-              {full ? T.clearFull : T.fullLink(allIds.length)}
-            </button>
-          </div>
-          <SegmentedControl
-            variant="soft"
-            size="sm"
-            value={cat}
-            onChange={setCat}
-            options={groups.map((g) => ({ value: g.id, label: g.label, short: g.short, icon: SECTION_ICON[g.id], count: g.rows.length }))}
-          />
-          <div className="dash-trf__rows">
-            <div className="dash-trf__cathead">
-              <Checkbox
-                name="trf-cat-all"
-                checked={group.rows.length > 0 && inCat === group.rows.length}
-                indeterminate={inCat > 0 && inCat < group.rows.length}
-                onChange={toggleCat}
-                label={T.catHead(group.label, inCat, group.rows.length)}
-              />
-            </div>
-            {group.rows.map((r) => (
-              <Checkbox
-                key={r.id}
-                name={`trf-${r.id}`}
-                checked={picked.has(r.id)}
-                onChange={(on) => toggle(r.id, on)}
-                label={r.name}
-                help={`${dateWithYear(r)} · ${r.clinic || r.doctor}${already(r) ? ` · ${T.visible(shortName(doctor.name))}` : ''}`}
-              />
-            ))}
-          </div>
-          {errs.pick && (
-            <p className="gpi-field__hint gpi-field__hint--err dash-trf__err" role="alert">{errs.pick}</p>
-          )}
-        </section>
+        {/* 2 · რა გადავიტანოთ — the shared picker, one selection across the three categories. */}
+        <RecordPicker picker={picker} label={`2 · ${T.scope}`} already={already} err={errs.pick} onChange={() => clearErr('pick')} />
       </Drawer>
 
       {/* Doctor details over the drawer — the booking wizard's own modal (Modal

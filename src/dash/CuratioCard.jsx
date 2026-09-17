@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Badge from '../components/Badge.jsx'
 import Icon from '../lib/Icon.jsx'
 import PersonSwitch from '../components/PersonSwitch.jsx'
@@ -9,7 +9,7 @@ import { ActionTile, ListRow, ProductCard, RailSection } from './DashParts.jsx'
 import { useGate } from './gate.jsx'
 import { D } from './strings.js'
 import { BOOKINGS } from './data.js'
-import { TODAY, PERSONS, ANALYSES, MEDS, VISITS, forPerson } from './curatioData.js'
+import { TODAY, PERSONS, ANALYSES, MEDS, VISITS, forPerson, ticketState } from './curatioData.js'
 
 /* The dashboard's „ჩემი კურაციო" card — placement A, locked in the concept
    round: its OWN card, rendered with or without a health policy, because the
@@ -18,8 +18,9 @@ import { TODAY, PERSONS, ANALYSES, MEDS, VISITS, forPerson } from './curatioData
    identical for both.
 
    Four states, all data/session-driven, none a separate page:
-   · locked (default)  — the records preview shows only the unlock prompt; no
-     counts leak past the gate.
+   · locked (default)  — the section tabs stay visible (user, 2026-09-16: set the
+     expectation of what each holds), under them the padlock + a per-section
+     „will appear here" line + the unlock prompt; no counts leak past the gate.
    · unlocked          — a per-section records preview (segmented switch).
    · visit day         — NO ticket in the card any more (2026-09-10, same day the
      ordinary-day „next booking" row went): the ticket now LEADS THE PAGE as the
@@ -72,20 +73,32 @@ export default function CuratioCard({ visitDay = false, insured = true }) {
   const alerts = visitDay && insured ? { [TODAY.p]: D.cur.alerts.todayVisit } : {}
   const gate = useGate()
   const [sec, setSec] = useState('analyses')
+  /* Head badge = the ticket's state (2026-09-16): a neutral „დღეს ვიზიტი · 11:30"
+     identifier until the ticket is issued, the success „ბილეთი მიმდინარეობს · A042"
+     after. Re-read when the banner above activates (same page). */
+  const [tstate, setTstate] = useState(() => ticketState(TODAY.p))
+  useEffect(() => {
+    const on = () => setTstate(ticketState(TODAY.p))
+    window.addEventListener('gpi:ticket', on)
+    return () => window.removeEventListener('gpi:ticket', on)
+  }, [])
   const rows = sectionRows(sec, personId)
   const person = PERSONS.find((p) => p.id === personId)
   const upcomingRows = insured ? BOOKINGS.filter((b) => b.person === person.name) : []
 
   /* The rail = the records preview, exactly where the policy cards keep their
-     lists. Locked: the padlock illustration + the unlock prompt, no link.
-     Unlocked: a section switch + the newest rows of that section + „ყველა N"
-     into the history page, opened on the same section. */
+     lists. The section switch renders in BOTH states (user, 2026-09-16 — the
+     history page already kept its switch behind the gate, so this is parity):
+     · locked — the padlock illustration + a line naming what the ACTIVE tab
+       will hold + the unlock prompt; no „ყველა N" link (no count leaks).
+     · unlocked — the newest rows of that section + „ყველა N" into the history
+       page, opened on the same section. */
   const rail = (
     <RailSection
       title={D.cur.recent.title}
-      count={rows.length}
+      /* No record count on the link (user, 2026-09-16: the API cannot count files). */
       onViewAll={gate.unlocked ? go(`#/dash/curatio?sec=${sec}`) : undefined}
-      toolbar={gate.unlocked ? (
+      toolbar={(
         <SegmentedControl
           size="sm"
           variant="soft"
@@ -100,7 +113,7 @@ export default function CuratioCard({ visitDay = false, insured = true }) {
             label: D.cur.hist.sectionsShort?.[id] ?? D.cur.hist.sections[id],
           }))}
         />
-      ) : null}
+      )}
     >
       {gate.unlocked ? (
         rows.length ? (
@@ -124,8 +137,11 @@ export default function CuratioCard({ visitDay = false, insured = true }) {
           <p className="dash-ccard__none">{D.cur.recent.none}</p>
         )
       ) : (
-        <div className="dash-ccard__locked">
+        <div className="dash-ccard__locked dash-ccard__locked--tabbed">
           <img className="dash-lockillus" src={ASSETS.curatioLocked} alt="" />
+          {/* Follows the active tab — the one line that changes as the user
+              switches sections while locked. */}
+          <p className="dash-ccard__lockedlead">{D.cur.recent.lockedSections[sec]}</p>
           <p>{D.cur.recent.lockedBody}</p>
           <button type="button" className="gpi-link dash-link" onClick={gate.request}>
             {D.cur.recent.enter}
@@ -163,9 +179,11 @@ export default function CuratioCard({ visitDay = false, insured = true }) {
               account-level pointer, whichever person is selected. It rides the
               ACTION slot, not the title row — there it wrapped under the title at
               every width (name 198 + switcher 260 + badge 235 > the 503px row). */}
-          {insured && visitDay && (
+          {insured && visitDay && (tstate === 'active' || tstate === 'arrived' ? (
             <Badge color="success" size="md" dot>{D.cur.banner.ongoing(TODAY.queue)}</Badge>
-          )}
+          ) : (
+            <Badge color="neutral" size="md">{D.cur.banner.todayAt(TODAY.time)}</Badge>
+          ))}
           <button type="button" className="gpi-link dash-link" onClick={go('#/dash/curatio')}>
             {D.cur.open}
           </button>
@@ -182,7 +200,8 @@ export default function CuratioCard({ visitDay = false, insured = true }) {
           tint="curatio"
           icon="file-text"
           label={D.cur.tiles.history}
-          sub={gate.unlocked ? D.cur.tileMeta.records(rows.length) : D.cur.tileMeta.locked}
+          /* Unlocked: no „N ჩანაწერი" sub (no counts from the API, 2026-09-16); locked keeps „დაცული". */
+          sub={gate.unlocked ? undefined : D.cur.tileMeta.locked}
           onClick={go(`#/dash/curatio?sec=${sec}`)}
         />
         {insured ? (

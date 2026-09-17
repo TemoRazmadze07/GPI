@@ -839,6 +839,17 @@
   font: 400 14px/20px var(--font-sans);
 }
 .dash-ccard__locked p { margin: 0; }
+/* The per-section line (2026-09-16): names what the ACTIVE tab will hold once
+   unlocked, so it leads in the main text colour; the unlock prompt under it
+   stays muted. */
+.dash-ccard__lockedlead { color: var(--text-main); font-weight: 500; }
+/* With the section tabs above it (44 + 12) and the extra line, the 200px art +
+   24px padding pushed the rail to 440 — past the 402 main column it must fit
+   (see the PREVIEW_ROWS note in CuratioCard.jsx). 160px art + 16px padding
+   brings the locked rail back under it (≈393). Scoped to the card's rail; the
+   section shelf and the history page keep the full-size art. */
+.dash-ccard__locked--tabbed { padding-top: var(--space-16); padding-bottom: var(--space-16); }
+.dash-ccard__locked--tabbed .dash-lockillus { width: 160px; }
 .dash-ccard__locked svg { color: var(--icon-muted); }
 /* Locked-state illustration (user-supplied padlock art, brand pink + neutral dots).
    Same 180px floor as .gpi-empty__illus so the two empty states read as one family.
@@ -1023,14 +1034,60 @@
   position: relative;
   z-index: 1;
   display: flex;
-  flex-wrap: wrap;
   align-items: flex-end;
-  gap: var(--space-12) var(--space-32);
-  margin: 0;
+  gap: var(--space-24);
   padding: var(--space-16) var(--space-24);
   background: var(--dash-curatio-band);
   border-top: var(--border-width-sm) solid rgba(255, 255, 255, 0.18);
 }
+/* The figures; the wrapper above owns the wash so „დეტალები" can sit beside them. */
+.dash-vban__cells {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-12) var(--space-32);
+  margin: 0;
+}
+.dash-vban__details {
+  flex: 0 0 auto;
+  align-self: flex-end;
+  color: var(--text-inverse);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.dash-vban__details:hover { color: var(--text-inverse); }
+/* ---- The action slot + the pre-activation skin (2026-09-16) ----
+   locked / open: no ticket yet → the tinted Curatio surface, the when/where in
+   the who block, the button on the card's own colours. active / arrived: the
+   brand gradient + the band; „მე მოვედი" is the inverse button, the stamp is
+   white text. One slot, one next step. */
+.dash-vban__action { flex: 0 0 auto; display: flex; align-items: center; }
+.dash-vban__meta { font: 400 13px/18px var(--font-sans); color: rgba(255, 255, 255, 0.85); }
+.dash-vban__stamp { display: flex; flex-direction: column; gap: 2px; text-align: right; }
+.dash-vban__stamp strong { display: inline-flex; align-items: center; justify-content: flex-end; gap: var(--space-8); font: 600 14px/20px var(--font-sans); }
+.dash-vban__stamp span { font: 400 13px/18px var(--font-sans); color: rgba(255, 255, 255, 0.85); }
+.dash-vban--pre {
+  background: var(--dash-curatio-tint);
+  color: var(--color-indigo-800);
+  border: var(--border-width-sm) solid var(--dash-curatio-edge);
+}
+.dash-vban--pre::after { filter: none; opacity: 0.08; }
+.dash-vban--pre .dash-vban__kicker,
+.dash-vban--pre .dash-vban__meta { color: var(--dash-curatio-fg); }
+/* PARKED (user, 2026-09-16): the prototype renders every state on the dark skin
+   (PRE_SKIN in CuratioTicket.jsx); the tint rules above stay for the Figma
+   Skin=Tint option and can be switched back on with one constant. */
+/* Locked = readable, not faded (4.9:1 rule from the mobile picker): the label
+   names the time that unlocks it, so the control must stay legible. */
+.dash-vban .gpi-btn.is-locked {
+  color: var(--text-muted);
+  border-color: var(--border-default);
+  background: var(--surface-card);
+  cursor: not-allowed;
+}
+.dash-vban .gpi-btn.is-locked:hover { background: var(--surface-card); }
 .dash-vban__cell {
   flex: 0 0 auto;
   display: flex;
@@ -1062,7 +1119,7 @@
   /* Phone: a 2-column grid, not a wrapping row — the four cells need 360px and
      the band has 326, which stranded „წინ" alone on a line. Figures pair up,
      wait/ahead pair up, location spans. */
-  .dash-vban__band {
+  .dash-vban__cells {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     padding: var(--space-12) var(--space-16);

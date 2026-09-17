@@ -15,7 +15,7 @@ const face = (id) => `https://images.unsplash.com/${id}?w=96&h=96&fit=crop&crop=
    visit-day and uninsured are STATES of one account, not separate pages, and a
    reviewer flips them from the demo bar. sessionStorage (not React state) so
    the dashboard and the section — separate routes — read the same account. */
-const DK = { visit: 'gpi.dash.visitDay', unins: 'gpi.dash.uninsured', attach: 'gpi.dash.attachments', arrived: 'gpi.dash.arrived', early: 'gpi.dash.checkinEarly', shares: 'gpi.dash.shares' }
+const DK = { visit: 'gpi.dash.visitDay', unins: 'gpi.dash.uninsured', attach: 'gpi.dash.attachments', ticket: 'gpi.dash.ticket', early: 'gpi.dash.windowClosed', shares: 'gpi.dash.shares', chg: 'gpi.dash.docChange', doc: 'gpi.dash.personalDoctor' }
 /* Per-record attachments (web twin of mobile's addAttachment, 2026-09-04): a
    document hung off an EXISTING record, keyed by record id. Own key (Rule 5). */
 export function getAttachments() {
@@ -75,42 +75,71 @@ export const demo = {
      11:00 to demonstrate the closed state, so the chip stands in for the clock.
      Default = OPEN, so a `?study` session (where the DemoBar is hidden) can
      actually exercise the check-in. */
-  checkinEarly: () => sessionStorage.getItem(DK.early) === '1',
-  setCheckinEarly: (on) => (on ? sessionStorage.setItem(DK.early, '1') : sessionStorage.removeItem(DK.early)),
+  /* „window: closed" — stands in for the clock on visit day: the activation
+     window (appointment − ACTIVATION_OPENS_MIN) has not opened yet. */
+  windowClosed: () => sessionStorage.getItem(DK.early) === '1',
+  /* „Change personal doctor" CONCEPT (2026-09-16, comparison variant — Rule 4): ON =
+     the doctor row hides „ისტორიის გადატანა" behind a kebab as „პირადი ექიმის შეცვლა"
+     (the PO's rule: transferring history == changing the doctor). OFF = v2 as published. */
+  docChange: () => sessionStorage.getItem(DK.chg) === '1',
+  setDocChange: (on) => (on ? sessionStorage.setItem(DK.chg, '1') : sessionStorage.removeItem(DK.chg)),
+  setWindowClosed: (on) => (on ? sessionStorage.setItem(DK.early, '1') : sessionStorage.removeItem(DK.early)),
 }
 
-/* ---- F-01 · arrival check-in („მე მოვედი") --------------------------------
-   Mobile stakeholder comment #5 (2026-08-18), ported to the web ticket box on
-   2026-09-07 at the user's request. Qmatic separates ACTIVATING a ticket from
-   physically ARRIVING; the clinic needs the second signal before it can call
-   the patient.
-   ⚠️ WEB HAS ITS OWN KEY — `gpi.dash.arrived`, never mobile's `mgaArrived`
-   (Rule 5, the same split the OTP gate already makes). Per person, because the
-   ticket is person-scoped; sessionStorage, so the state survives navigation
-   inside a session but a fresh tab resets the scenario.
-   ⚠️ TIME-GATED ON WEB, unlike mobile (user's call, 2026-09-07): a desktop user
-   is usually at a desk, not in the waiting room, and a check-in from home puts a
-   patient in the queue who is not there. Mobile corroborates with a geolocation
-   push near the clinic; a browser has nothing, so the window is the guard.
-   CHECKIN_OPENS_MIN is the production rule this demo switch stands for. */
-export const CHECKIN_OPENS_MIN = 30
+/* ---- The visit ticket (user journey, 2026-09-16) ----------------------------
+   One ticket per person per visit day, four states, ONE action slot on the banner:
+     locked  — visit day, but the activation window has not opened
+               (window = appointment − ACTIVATION_OPENS_MIN; „გააქტიურება 11:15-დან")
+     open    — inside the window → „ბილეთის გააქტიურება" (the queue number is issued
+               only now; visits can exist without a ticket)
+     active  — ticket issued (A042 …) → „მე მოვედი", no time gate on arrival
+     arrived — the stamp; Curatio's API retires the ticket after the visit (not ours)
+   Assumptions stated to the user: the window stays open past the appointment time
+   until Curatio retires the visit; the holder can act for the selected family member
+   (person-scoped, mobile parity). The web has no geolocation, so the window is the guard.
+   ACTIVATION_OPENS_MIN is the production rule the demo „window: closed" switch stands
+   for. The stamp is the patient's evidence, so it is stored, not re-derived. */
+export const ACTIVATION_OPENS_MIN = 15
+/** @deprecated parked v1 (CuratioSection.jsx) still gates CHECK-IN by this; new code gates ACTIVATION. */
+export const CHECKIN_OPENS_MIN = ACTIVATION_OPENS_MIN
 
-function arrivedMap() {
+function ticketMap() {
   try {
-    return JSON.parse(sessionStorage.getItem(DK.arrived)) || {}
+    return JSON.parse(sessionStorage.getItem(DK.ticket) || '{}')
   } catch {
     return {}
   }
 }
-/* The stamp is the patient's evidence, so it is stored, not re-derived. */
+function writeTicket(personId, patch) {
+  const m = ticketMap()
+  sessionStorage.setItem(DK.ticket, JSON.stringify({ ...m, [personId]: { ...(m[personId] || {}), ...patch } }))
+  /* Siblings on one page (dashboard banner ↔ Curatio card badge) re-read on this. */
+  window.dispatchEvent(new CustomEvent('gpi:ticket'))
+}
+export function ticketFor(personId) {
+  return ticketMap()[personId] || {}
+}
+export function activatedAtFor(personId) {
+  return ticketFor(personId).activatedAt || null
+}
+export function activateTicket(personId, at) {
+  writeTicket(personId, { activatedAt: at })
+}
 export function arrivedAtFor(personId) {
-  return arrivedMap()[personId] || null
+  return ticketFor(personId).arrivedAt || null
 }
 export function setArrived(personId, at) {
-  sessionStorage.setItem(DK.arrived, JSON.stringify({ ...arrivedMap(), [personId]: at }))
+  writeTicket(personId, { arrivedAt: at })
 }
 export function clearArrived() {
-  sessionStorage.removeItem(DK.arrived)
+  sessionStorage.removeItem(DK.ticket)
+  window.dispatchEvent(new CustomEvent('gpi:ticket'))
+}
+/** State of the banner's action slot for a person on visit day. */
+export function ticketState(personId) {
+  if (arrivedAtFor(personId)) return 'arrived'
+  if (activatedAtFor(personId)) return 'active'
+  return demo.windowClosed() ? 'locked' : 'open'
 }
 
 /* ---- People ---------------------------------------------------------------- */
@@ -122,6 +151,10 @@ export const PERSONS = [
 
 export const DOCTOR = {
   id: 'pd',
+  /* `languages` / `bio` (2026-09-16): the concept's „ექიმის დეტალები" opens the wizard's
+     DoctorBioModal on her too, so she needs its shape. DEMO copy. */
+  languages: ['KA', 'EN', 'RU'],
+  bio: L('ოჯახის ექიმი, 12 წლის გამოცდილება. ქრონიკული დაავადებების მართვა, პრევენციული მედიცინა, ოჯახის ყველა წევრის მეთვალყურეობა.', 'Family doctor, 12 years of practice. Chronic-condition management, preventive medicine, care for the whole family.'),
   name: L('ნინო ნინოშვილი', 'Nino Ninoshvili'),
   spec: L('ოჯახის ექიმი · კურაციო საბურთალოზე', 'Family doctor · Curatio Saburtalo'),
   next: L('18 ნოე', '18 Nov'), /* today (12 Nov) is the cardiologist's slot — see TODAY */
@@ -150,6 +183,30 @@ export const TRANSFER_DOCTORS = [
     languages: ['KA', 'DE'], avatar: 33,
     bio: L('ნევროლოგი. თავის ტკივილის და ძილის დარღვევების დიაგნოსტიკა, ნეიროფიზიოლოგიური კვლევები.', 'Neurologist. Headache and sleep-disorder diagnostics, neurophysiological studies.') },
 ]
+
+/* ---- The CURRENT personal doctor (2026-09-16, change-doctor concept) -------------
+   DOCTOR is the seed; the concept's drawer can replace her with a network doctor
+   for the session (sessionStorage, own key). Everything that means „the personal
+   doctor" — the doctor row, the history's „visible to" check, the transfer
+   drawer's personal target — reads currentDoctor(), never DOCTOR directly. A
+   network doctor is reshaped to DOCTOR's fields: `spec` = specialty · clinic,
+   no `next` (a new doctor has no booked visit yet), initials avatar (no photo). */
+export const getDoctorId = () => sessionStorage.getItem(DK.doc)
+export function setPersonalDoctor(id) {
+  id ? sessionStorage.setItem(DK.doc, id) : sessionStorage.removeItem(DK.doc)
+}
+export function currentDoctor() {
+  const d = TRANSFER_DOCTORS.find((x) => x.id === getDoctorId())
+  return d ? { ...d, spec: `${d.spec} · ${d.clinic}`, next: null, photo: undefined } : DOCTOR
+}
+/* The concept's history handover: the new doctor sees EVERYTHING (or nothing) —
+   the old doctor drops off every record, per the PO rule that only the personal
+   doctor sees Curatio history. Replaces the store instead of appending. */
+export function replaceShares(ids, doctor) {
+  const next = {}
+  ids.forEach((id) => { next[id] = [{ id: doctor.id, name: doctor.name }] })
+  sessionStorage.setItem(DK.shares, JSON.stringify(next))
+}
 
 /* Section glyphs — the record FAMILY (the history head switch, the transfer
    drawer's category switch): document / pill / stethoscope. Rows keep their own

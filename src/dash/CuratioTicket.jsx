@@ -5,7 +5,7 @@ import { Button } from '../components/Button.jsx'
 import Icon from '../lib/Icon.jsx'
 import { ListRow } from './DashParts.jsx'
 import { D } from './strings.js'
-import { TODAY, DOCTOR, PERSONS, demo, CHECKIN_OPENS_MIN, arrivedAtFor, setArrived } from './curatioData.js'
+import { TODAY, DOCTOR, PERSONS, demo, CHECKIN_OPENS_MIN, ACTIVATION_OPENS_MIN, arrivedAtFor, setArrived, activateTicket, ticketState } from './curatioData.js'
 
 /* The Curatio e-ticket on the WEB (2026-09-08) — ONE component, two sizes, used by
    the dashboard card (compact) and the section page (full). Anatomy is the MOBILE
@@ -98,9 +98,9 @@ function nowHHMM() {
 }
 /* When the window opens = appointment − CHECKIN_OPENS_MIN, derived from the same
    TODAY.time the hero prints, so the two can never disagree. */
-function opensAt() {
+function opensAt(lead = CHECKIN_OPENS_MIN) {
   const [h, m] = TODAY.time.split(':').map(Number)
-  const t = h * 60 + m - CHECKIN_OPENS_MIN
+  const t = h * 60 + m - lead
   return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`
 }
 
@@ -113,7 +113,7 @@ function opensAt() {
                  to do next. Time-gated on web, unlike mobile: a desk is not a
                  waiting room, and a browser has no geolocation to corroborate. */
 function ArrivalCheckIn({ personId }) {
-  const [early] = useState(() => demo.checkinEarly())
+  const [early] = useState(() => demo.windowClosed())
   const [at, setAt] = useState(() => arrivedAtFor(personId))
 
   if (at) {
@@ -193,46 +193,106 @@ function BookingRow({ b }) {
    lightest stop lightened by 12% measured 4.0:1 — darkened by 16% they clear
    5.5 (Rule 7). The phone pointer is GONE: this site IS the app for people who
    do not have it. `details=false` on the Curatio page (already there). */
+/* Skin of the pre-activation states (user, 2026-09-16): „keep only the darker
+   blue … I also like the white option, do not remove it completely, but for the
+   prototype only use dark." 'dark' = the Curatio gradient in every state (the
+   action buttons go inverse); 'tint' = the parked pale-surface variant
+   (.dash-vban--pre, kept in CSS and as Skin=Tint in Figma). */
+const PRE_SKIN = 'dark'
+
 export function TicketBanner({ personId, details = true }) {
   const T = D.cur.ticket
   const B = D.cur.banner
-  const person = PERSONS.find((p) => p.id === (personId ?? TODAY.p)) || PERSONS[0]
+  const A = D.cur.arrive
+  const pid = personId ?? TODAY.p
+  const person = PERSONS.find((p) => p.id === pid) || PERSONS[0]
+  /* The journey (user, 2026-09-16): locked → open → active → arrived. ONE action
+     slot on the card carries the next step; the check-in is no longer a second
+     box under the ticket („it definitely is connected with the ticket"). The
+     brand skin switches on only once a ticket EXISTS (active/arrived) — before
+     that the card is the tinted Curatio surface, so „you have a visit today"
+     and „your queue is live" read differently at a glance. */
+  const [state, setState] = useState(() => ticketState(pid))
+  const [at, setAt] = useState(() => arrivedAtFor(pid))
+  const pre = state === 'locked' || state === 'open'
+  const activate = () => {
+    activateTicket(pid, nowHHMM())
+    setState('active')
+  }
+  const arrive = () => {
+    const t = nowHHMM()
+    setArrived(pid, t)
+    setAt(t)
+    setState('arrived')
+  }
   return (
-    <section className="dash-vban" aria-label={B.aria}>
+    <section className={`dash-vban${pre && PRE_SKIN === 'tint' ? ' dash-vban--pre' : ''}`} aria-label={B.aria}>
       <div className="dash-vban__top">
         <Avatar src={TODAY.photo} name={TODAY.doctor} size={48} />
         <div className="dash-vban__who">
           <span className="dash-vban__kicker">{B.kicker(person.name)}</span>
           <strong className="dash-vban__title">{T.who(TODAY.doctor, TODAY.role)}</strong>
+          {/* No band before activation: the when/where ride the who block instead. */}
+          {pre && (
+            <span className="dash-vban__meta">
+              {T.time} {TODAY.time} · {B.where(TODAY.clinic, TODAY.address, TODAY.cabinet, TODAY.floor)}
+            </span>
+          )}
         </div>
-        {details && (
-          <Button variant="inverse" size="md" trailingIcon="arrow-right" onClick={go('#/dash/curatio')}>
-            {B.details}
-          </Button>
-        )}
+        <div className="dash-vban__action">
+          {state === 'locked' && (
+            /* The action stays in place, locked, with the one thing that unlocks it
+               (mobile queue-picker rule, user 2026-08-20) — not prose in its place. */
+            <Button variant="secondary" size="md" leadingIcon="lock" className="is-locked" aria-disabled="true" onClick={(e) => e.preventDefault()}>
+              {B.activateFrom(opensAt(ACTIVATION_OPENS_MIN))}
+            </Button>
+          )}
+          {state === 'open' && (
+            <Button variant={PRE_SKIN === 'tint' ? 'primary' : 'inverse'} size="md" onClick={activate}>{B.activate}</Button>
+          )}
+          {state === 'active' && (
+            <Button variant="inverse" size="md" leadingIcon="map-pin" onClick={arrive} title={A.hint}>{A.cta}</Button>
+          )}
+          {state === 'arrived' && (
+            <div className="dash-vban__stamp" role="status">
+              <strong><Icon name="check" size={16} /> {A.doneTitle} · {at}</strong>
+              <span>{A.next(TODAY.cabinet)}</span>
+            </div>
+          )}
+        </div>
       </div>
-      <dl className="dash-vban__band">
-        <div className="dash-vban__cell">
-          <dt>{B.queue}</dt>
-          <dd className="dash-vban__fig">{TODAY.queue}</dd>
+      {!pre && (
+        <div className="dash-vban__band">
+          <dl className="dash-vban__cells">
+            <div className="dash-vban__cell">
+              <dt>{B.queue}</dt>
+              <dd className="dash-vban__fig">{TODAY.queue}</dd>
+            </div>
+            <div className="dash-vban__cell">
+              <dt>{T.time}</dt>
+              <dd className="dash-vban__fig">{TODAY.time}</dd>
+            </div>
+            <div className="dash-vban__cell">
+              <dt>{T.wait}</dt>
+              <dd>~{TODAY.wait} {T.minutes}</dd>
+            </div>
+            <div className="dash-vban__cell">
+              <dt>{T.ahead}</dt>
+              <dd>{TODAY.ahead} {T.patients}</dd>
+            </div>
+            <div className="dash-vban__cell dash-vban__cell--loc">
+              <dt>{B.location}</dt>
+              <dd>{B.where(TODAY.clinic, TODAY.address, TODAY.cabinet, TODAY.floor)}</dd>
+            </div>
+          </dl>
+          {/* The slot is the ACTION's; „დეტალები" (dashboard only) drops to a link. */}
+          {details && (
+            <button type="button" className="gpi-link dash-link dash-vban__details" onClick={go('#/dash/curatio')}>
+              {B.details} <Icon name="arrow-right" size={16} />
+            </button>
+          )}
         </div>
-        <div className="dash-vban__cell">
-          <dt>{T.time}</dt>
-          <dd className="dash-vban__fig">{TODAY.time}</dd>
-        </div>
-        <div className="dash-vban__cell">
-          <dt>{T.wait}</dt>
-          <dd>~{TODAY.wait} {T.minutes}</dd>
-        </div>
-        <div className="dash-vban__cell">
-          <dt>{T.ahead}</dt>
-          <dd>{TODAY.ahead} {T.patients}</dd>
-        </div>
-        <div className="dash-vban__cell dash-vban__cell--loc">
-          <dt>{B.location}</dt>
-          <dd>{B.where(TODAY.clinic, TODAY.address, TODAY.cabinet, TODAY.floor)}</dd>
-        </div>
-      </dl>
+      )}
     </section>
   )
 }
@@ -250,14 +310,9 @@ export default function TicketBox({ visit, upcoming = [], count, insured = true,
        page), and the check-in keeps its own white box under it. The stats row is
        gone here: every figure it carried now sits in the banner's band. */
     if (slim) {
-      return (
-        <>
-          <TicketBanner personId={personId} details={false} />
-          <section className="dash-cur2__box dash-cur2__box--ticket" aria-label={D.cur.arrive.title}>
-            <ArrivalCheckIn personId={personId} />
-          </section>
-        </>
-      )
+      /* The check-in lives IN the banner's action slot now (user, 2026-09-16);
+         the separate box under it is gone. ArrivalCheckIn survives for parked v1. */
+      return <TicketBanner personId={personId} details={false} />
     }
     /* Parked v1 keeps the 09-08 full box. */
     return (

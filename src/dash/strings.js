@@ -229,6 +229,14 @@ export const kaDash = {
     recent: {
       title: 'ბოლო ჩანაწერები',
       lockedBody: 'ჩანაწერების სანახავად შეიყვანე ერთჯერადი კოდი',
+      /* Locked, PER SECTION (user, 2026-09-16): the section tabs stay visible behind
+         the gate so the user learns what each one will hold; this line, under the
+         padlock, names it for the active tab. Still no counts — the gate leaks nothing. */
+      lockedSections: {
+        analyses: 'აქ გამოჩნდება შენი ანალიზები და კვლევები',
+        meds: 'აქ გამოჩნდება ექიმის დანიშნულებები და რეცეპტები',
+        visits: 'აქ გამოჩნდება ვიზიტები და კონსულტაციები',
+      },
       enter: 'კოდის შეყვანა',
       none: 'ამ განყოფილებაში ჩანაწერები ჯერ არ არის',
     },
@@ -244,6 +252,10 @@ export const kaDash = {
       where: (clinic, addr, cab, floor) => `${clinic} · ${addr} · კაბინეტი ${cab} · ${floor}`,
       details: 'დეტალები',
       ongoing: (num) => `ბილეთი მიმდინარეობს · ${num}`,
+      /* The action slot (2026-09-16): one slot, one next step. */
+      activate: 'ბილეთის გააქტიურება',
+      activateFrom: (t) => `გააქტიურება ${t}-დან`,
+      todayAt: (t) => `დღეს ვიზიტი · ${t}`,
     },
     strip: {
       meta: (num, ahead, cab) => `რიგი ${num} · ${ahead} პაციენტი შენს წინ · კაბინეტი ${cab}`,
@@ -279,6 +291,13 @@ export const kaDash = {
       transfer: 'ისტორიის გადატანა',
       /* Accessible name of the kebab that holds the two actions above (2026-09-08). */
       more: 'მეტი მოქმედება',
+      /* Change-doctor CONCEPT (2026-09-16, comparison variant): the kebab returns with
+         TWO items — details + change — so it is never a one-item menu. A freshly
+         chosen doctor has no visit yet: the row says so and Book becomes „first visit". */
+      details: 'ექიმის დეტალები',
+      change: 'პირადი ექიმის შეცვლა',
+      noVisit: 'ვიზიტი ჯერ არ არის',
+      bookFirst: 'პირველი ვიზიტის ჩაწერა',
     },
     uninsured: {
       note: 'ჩაწერა და კონსულტაცია საჭიროებს ჯანმრთელობის დაზღვევას',
@@ -311,6 +330,12 @@ export const kaDash = {
       filters: { period: 'პერიოდი', cat: 'კატეგორია', clinic: 'კლინიკა' },
       periods: { all: 'ყველა', m3: '3 თვე', m6: '6 თვე', y1: '1 წელი' },
       cats: { all: 'ყველა', blood: 'სისხლი', biochem: 'ბიოქიმია', hormones: 'ჰორმონები', urine: 'შარდი' },
+      /* Category filter on EVERY tab (user, 2026-09-16: „it should be in every category").
+         Options are per section and data-backed, nothing invented: prescriptions
+         = the three states the table's own badges already show (mobile `medStates`,
+         Rule 6); visits = the record's `kind`, worded like the web booking CTA. */
+      medCats: { all: 'ყველა', active: 'აქტიური', expiring: 'ვადა იწურება', chronic: 'ქრონიკული' },
+      visitCats: { all: 'ყველა', inclinic: 'ვიზიტი კლინიკაში', remote: 'დისტანციური კონსულტაცია' },
       clinics: { all: 'ყველა', curatio: 'კურაციო', external: 'გარე კლინიკები' },
       cols: {
         date: 'თარიღი',
@@ -339,6 +364,25 @@ export const kaDash = {
        „გადაეცა: ნ. ნინოშვილი" — because a name-declension table for every doctor
        in the network would be wrong the first time it met a new surname. Copy is a
        DRAFT for GPI sign-off (share vs transfer is still open with the stakeholders). */
+    /* პირადი ექიმის შეცვლა (2026-09-16) — the concept drawer. The consent line is
+       the mobile docsel wording (Rule 6); „წვდომას აღარ ექნება" follows from the PO's
+       rule itself. DRAFT until GPI signs it off; the PO discussion is 2026-09-17. */
+    change: {
+      title: 'პირადი ექიმის შეცვლა',
+      ctx: (person, doc) => `${person} · ახლანდელი პირადი ექიმი: ${doc}`,
+      pick: 'ახალი პირადი ექიმი',
+      /* Round 2 (2026-09-16): block 2 = the transfer drawer's record picker, all selected
+         up front; the consent line is the mobile docsel wording; block 3 removed. */
+      hist: 'ისტორიის გადატანა ახალ ექიმთან',
+      consent: (doc) => `${doc} მიიღებს წვდომას არჩეულ ჩანაწერებზე კურაციოში`,
+      newDoc: 'ახალი ექიმი',
+      cancel: 'გაუქმება',
+      confirm: 'ექიმის შეცვლა',
+      errDoctor: 'აირჩიე ახალი პირადი ექიმი',
+      done: (doc) => `პირადი ექიმი შეიცვალა: ${doc}`,
+      doneN: (n, doc) => `პირადი ექიმი შეიცვალა: ${doc} · გადაეცა ${n} ჩანაწერი`,
+      doneHist: (doc) => `პირადი ექიმი შეიცვალა: ${doc} · სრული ისტორია გადატანილია`,
+    },
     transfer: {
       title: 'ისტორიის გადატანა',
       scope: 'რა გადავიტანოთ',
@@ -587,6 +631,11 @@ export const enDash = {
     recent: {
       title: 'Recent records',
       lockedBody: 'Enter a one-time code to view your records',
+      lockedSections: {
+        analyses: 'Your analyses and studies will appear here',
+        meds: "Your doctor's prescriptions will appear here",
+        visits: 'Your visits and consultations will appear here',
+      },
       enter: 'Enter code',
       none: 'No records in this section yet',
     },
@@ -598,6 +647,9 @@ export const enDash = {
       where: (clinic, addr, cab, floor) => `${clinic} · ${addr} · Cabinet ${cab} · ${floor}`,
       details: 'Details',
       ongoing: (num) => `Ticket in progress · ${num}`,
+      activate: 'Activate ticket',
+      activateFrom: (t) => `Activate from ${t}`,
+      todayAt: (t) => `Visit today · ${t}`,
     },
     strip: {
       meta: (num, ahead, cab) => `Queue ${num} · ${ahead} patients ahead · Cabinet ${cab}`,
@@ -627,6 +679,10 @@ export const enDash = {
       book: 'Book',
       remote: 'Remote consultation',
       transfer: 'Transfer history',
+      details: 'Doctor details',
+      change: 'Change personal doctor',
+      noVisit: 'No visit booked yet',
+      bookFirst: 'Book first visit',
       more: 'More actions',
     },
     uninsured: {
@@ -652,6 +708,8 @@ export const enDash = {
       filters: { period: 'Period', cat: 'Category', clinic: 'Clinic' },
       periods: { all: 'All', m3: '3 months', m6: '6 months', y1: '1 year' },
       cats: { all: 'All', blood: 'Blood', biochem: 'Biochemistry', hormones: 'Hormones', urine: 'Urine' },
+      medCats: { all: 'All', active: 'Active', expiring: 'Expiring', chronic: 'Chronic' },
+      visitCats: { all: 'All', inclinic: 'Clinic visit', remote: 'Online consultation' },
       clinics: { all: 'All', curatio: 'Curatio', external: 'External clinics' },
       cols: {
         date: 'Date',
@@ -675,6 +733,20 @@ export const enDash = {
       emptyHint: 'Change the filters or the search text',
     },
     /* see the ka note — one flow, two entry points; draft copy */
+    change: {
+      title: 'Change personal doctor',
+      ctx: (person, doc) => `${person} · current personal doctor: ${doc}`,
+      pick: 'New personal doctor',
+      hist: 'History for the new doctor',
+      consent: (doc) => `${doc} will get access to the selected records in Curatio`,
+      newDoc: 'The new doctor',
+      cancel: 'Cancel',
+      confirm: 'Change doctor',
+      errDoctor: 'Choose a new personal doctor',
+      done: (doc) => `Personal doctor changed to ${doc}`,
+      doneN: (n, doc) => `Personal doctor changed to ${doc} · ${n} ${n === 1 ? 'record' : 'records'} transferred`,
+      doneHist: (doc) => `Personal doctor changed to ${doc} · full history transferred`,
+    },
     transfer: {
       title: 'Transfer history',
       scope: 'What to transfer',

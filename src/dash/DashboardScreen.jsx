@@ -6,7 +6,7 @@ import HealthCard from './HealthCard.jsx'
 import AutoCard from './AutoCard.jsx'
 import CuratioCard from './CuratioCard.jsx'
 import { TicketBanner } from './CuratioTicket.jsx'
-import { demo, clearShares } from './curatioData.js'
+import { demo, clearShares, clearArrived } from './curatioData.js'
 import { D } from './strings.js'
 import { POLICIES, POLICY_COUNT, BOOKINGS, REFERRALS } from './data.js'
 
@@ -66,7 +66,7 @@ export default function DashboardScreen() {
       <DemoBar
         actions={[
           { label: hasHealth ? 'auto-only account' : 'health + auto', onClick: () => { demo.setUninsured(hasHealth); setHasHealth((v) => !v) } },
-          { label: visitDay ? 'ordinary day' : 'visit day', onClick: () => { demo.setVisitDay(!visitDay); setVisitDay(!visitDay) } },
+          { label: visitDay ? 'ordinary day' : 'visit day', onClick: () => { if (visitDay) clearArrived(); demo.setVisitDay(!visitDay); setVisitDay(!visitDay) } },
           { label: refs ? 'no referrals' : 'referrals', onClick: () => setRefs((v) => !v) },
           { label: manyBookings ? '1 booking' : '3 bookings', onClick: () => setManyBookings((v) => !v) },
           {
@@ -75,6 +75,7 @@ export default function DashboardScreen() {
             onClick: () => {
               demo.setUninsured(false)
               demo.setVisitDay(false)
+              clearArrived()
               clearShares()
               setHasHealth(true)
               setRefs(true)

@@ -19,7 +19,7 @@ import { useTransfer } from './CuratioTransfer.jsx'
 import { useGate } from './gate.jsx'
 import { D } from './strings.js'
 import { uc } from './text.js'
-import { PERSONS, DOCTOR, ANALYSES, MEDS, VISITS, SECTION_ICON, forPerson, getAttachments, addAttachment, dateWithYear, shortName, shareName } from './curatioData.js'
+import { PERSONS, currentDoctor, ANALYSES, MEDS, VISITS, SECTION_ICON, forPerson, getAttachments, addAttachment, dateWithYear, shortName, shareName } from './curatioData.js'
 
 /* #/dash/curatio?sec= — F-02/F-03 on the surface they were made for.
    One page, three sections (a SEGMENTED CONTROL on the title line is the hub
@@ -48,6 +48,22 @@ const go = (hash) => () => {
 }
 
 /* ?sec= inside the hash. Re-read on every render — App re-renders on hashchange. */
+/* Category filter, one per section (user, 2026-09-16 — the filter row must keep
+   the same shape on every tab). Analyses cut on the record's `cat`; prescriptions
+   on the SAME reading the expiry column renders (active = valid beyond 14 days,
+   expiring = 14 days or less, chronic = the badge) so the filter never disagrees
+   with the badge next to it; visits on the encounter `kind`. */
+const CATS = () => ({ analyses: D.cur.hist.cats, meds: D.cur.hist.medCats, visits: D.cur.hist.visitCats })
+function matchCat(sec, r, cat) {
+  if (sec === 'meds') {
+    if (cat === 'chronic') return !!r.chronic
+    if (cat === 'expiring') return r.expiryDays != null && r.expiryDays <= 14
+    return r.expiryDays != null && r.expiryDays > 14
+  }
+  if (sec === 'visits') return r.kind === cat
+  return r.cat === cat
+}
+
 function currentSec() {
   const h = window.location.hash
   const q = h.indexOf('?')
@@ -129,7 +145,7 @@ function AttachModal({ record, onClose, onAdd }) {
           checked={share}
           onChange={setShare}
           label={D.cur.upl.consent}
-          help={share ? D.cur.upl.consentOn(DOCTOR.name) : D.cur.upl.consentOff}
+          help={share ? D.cur.upl.consentOn(currentDoctor().name) : D.cur.upl.consentOff}
         />
       </div>
     </Modal>
@@ -175,7 +191,7 @@ export default function CuratioHistory({ embedded = false, personId: personProp 
       const cap = { m3: 3, m6: 6, y1: 12 }[period]
       r = r.filter((x) => (x.monthsAgo ?? 0) < cap)
     }
-    if (sec === 'analyses' && cat !== 'all') r = r.filter((x) => x.cat === cat)
+    if (cat !== 'all') r = r.filter((x) => matchCat(sec, x, cat))
     if (clinic !== 'all') r = r.filter((x) => x.src === clinic)
     if (search.trim()) {
       const q = search.trim().toLowerCase()
@@ -185,12 +201,15 @@ export default function CuratioHistory({ embedded = false, personId: personProp 
   }, [base, personId, period, cat, clinic, search, sec])
 
   const secList = [
-    { id: 'analyses', label: D.cur.hist.sections.analyses, count: forPerson(ANALYSES, personId).length },
-    { id: 'meds', label: D.cur.hist.sections.meds, count: forPerson(MEDS, personId).length },
-    { id: 'visits', label: D.cur.hist.sections.visits, count: forPerson(VISITS, personId).length },
+    /* NO counts (user, 2026-09-16: „we are not able to count files") — the Curatio
+       API cannot report how many records a section holds, so the tabs carry the
+       name + glyph only. Same rule on the dashboard card („ყველა", no figure). */
+    { id: 'analyses', label: D.cur.hist.sections.analyses },
+    { id: 'meds', label: D.cur.hist.sections.meds },
+    { id: 'visits', label: D.cur.hist.sections.visits },
   ]
   /* The section switch (user, 2026-09-10) — replaces the left rail. Full names
-     (stakeholder comment #8) + counts + the family glyph; `short` = the card's
+     (stakeholder comment #8) + the family glyph — NO counts since 2026-09-16; `short` = the card's
      labels, swapped in ≤767 where the row scrolls sideways. Hidden while
      locked: the counts are record data, and the rail never showed them either. */
   const sectionSwitch = gate.unlocked ? (
@@ -209,7 +228,6 @@ export default function CuratioHistory({ embedded = false, personId: personProp 
         label: s.label,
         short: D.cur.hist.sectionsShort?.[s.id],
         icon: SEC_ICON[s.id],
-        count: s.count,
       }))}
     />
   ) : null
@@ -310,7 +328,7 @@ export default function CuratioHistory({ embedded = false, personId: personProp 
      accessible name stays the ACTION; the title carries the state. */
   const shareBtn = (r) => {
     const docs = trf.shares[r.id] || []
-    const withPersonal = docs.some((d) => d.id === DOCTOR.id)
+    const withPersonal = docs.some((d) => d.id === currentDoctor().id)
     return (
       <button
         type="button"
@@ -491,15 +509,15 @@ export default function CuratioHistory({ embedded = false, personId: personProp 
               options={Object.entries(D.cur.hist.periods).map(([value, label]) => ({ value, label }))}
               renderValue={(o) => `${D.cur.hist.filters.period}: ${o.label}`}
             />
-            {sec === 'analyses' && (
-              <Select
-                value={cat}
-                onChange={(v) => { setCat(v); setPage(1) }}
-                ariaLabel={D.cur.hist.filters.cat}
-                options={Object.entries(D.cur.hist.cats).map(([value, label]) => ({ value, label }))}
-                renderValue={(o) => `${D.cur.hist.filters.cat}: ${o.label}`}
-              />
-            )}
+            {/* On every tab since 2026-09-16 (was analyses-only) — same slot, per-section
+                options; the switch resets it to „ყველა" because the values differ. */}
+            <Select
+              value={cat}
+              onChange={(v) => { setCat(v); setPage(1) }}
+              ariaLabel={D.cur.hist.filters.cat}
+              options={Object.entries(CATS()[sec]).map(([value, label]) => ({ value, label }))}
+              renderValue={(o) => `${D.cur.hist.filters.cat}: ${o.label}`}
+            />
             <Select
               value={clinic}
               onChange={(v) => { setClinic(v); setPage(1) }}
