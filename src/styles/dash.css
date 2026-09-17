@@ -203,8 +203,8 @@
       overridden; this reads as „24, not 40". */
 .dash-main__inner > .dash-pagehead { margin-bottom: calc(var(--space-24) - var(--space-40)); }
 /* Crumbs sit directly on --dash-page-bg (#f1f5fb), where text/muted measures 4.42:1 —
-   under AA (it passes on the foundation's surface/page). neutral/600 = 7.07, the same
-   call .dash-doc__gate makes on the sunken ground (audit 2026-09-07 A7). */
+   under AA (it passes on the foundation's surface/page). neutral/600 = 7.07
+   (audit 2026-09-07 A7). */
 .dash-shell .gpi-crumbs a:not(:hover),
 .dash-shell .gpi-crumbs .gpi-crumbs__current { color: var(--color-neutral-600); } /* (0,3,0) beats `.gpi-crumbs span:not(.gpi-crumbs__sep)` */
 
@@ -1135,47 +1135,30 @@
 .dash-sechead .gpi-fsel { flex: 0 1 auto; min-width: 280px; }
 .dash-hist__filters .gpi-fsel { flex: 0 1 auto; min-width: 170px; }
 
-.dash-cur__cols {
-  display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
-  gap: var(--space-24);
-  align-items: start;
-}
-.dash-cur__main,
-.dash-cur__side {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-24);
-  min-width: 0;
-}
-
-.dash-shelf { display: flex; flex-direction: column; gap: var(--space-12); padding: var(--space-24); }
-
 .dash-doc { margin-top: 0; background: var(--surface-card); box-shadow: var(--elevation-card); border-radius: var(--radius-xl); padding: var(--space-24); align-items: flex-start; }
 .dash-doc__text { display: flex; flex-direction: column; gap: var(--space-4); flex: 1; min-width: 0; }
-.dash-doc__btns {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--space-8);
-  margin-top: var(--space-12);
-}
-.dash-doc__gate {
-  display: inline-flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--space-8);
-  padding: var(--space-8) var(--space-12);
-  border-radius: var(--radius-md);
-  background: var(--surface-sunken);
-  /* neutral/600, not text-muted: muted on the sunken ground measures 4.24 — and
-     the sentence explaining WHY booking is locked is meaningful text (Rule 7). */
-  color: var(--color-neutral-600);
-  font: 400 13px/18px var(--font-sans);
-}
-.dash-doc__gate svg { flex: 0 0 auto; }
 
 .dash-lrow__disc--curatio { background: var(--dash-curatio-tint); color: var(--dash-curatio-fg); }
+/* Unread mark (2026-09-17): the dot sits ON the glyph — inside the disc, over the
+   file's folded corner — not on the disc's rim (user). The 20px glyph is centred
+   in the 40px disc (10…30); an 8px dot at 9/9 covers 23…31 × 9…17, i.e. the
+   glyph's top-right corner, and the 2px ring in the disc's OWN fill lifts it off
+   the strokes. Decoration only (aria-hidden): the row name goes semibold and the
+   words ship as sr-only text beside it. Same danger token as the tab counter. */
+.dash-lrow__disc { position: relative; }
+.dash-lrow__new {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--action-danger);
+  box-shadow: 0 0 0 2px var(--color-neutral-100);
+}
+.dash-lrow__disc--curatio .dash-lrow__new { box-shadow: 0 0 0 2px var(--dash-curatio-tint); }
+.dash-lrow--unread .dash-lrow__title,
+.dash-rec--unread .dash-rec__name { font-weight: 600; }
 
 
 /* ---- OTP modal -------------------------------------------------------------
@@ -1336,10 +1319,12 @@
 .dash-trf__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-12); }
 .dash-trf__head .dash-link { white-space: nowrap; }
 .dash-trf__lbl { margin: 0; font: 500 13px/16px var(--font-sans); color: var(--text-main); }
-/* Change-doctor concept (2026-09-17): its block headings are instructions, so they take
-   the foundation's Heading/H5 (16/24 SemiBold) — one step under the drawer title and
-   clearly above the 14px rows they introduce. SCOPED to this drawer: the published
-   transfer drawer keeps its 13/500 labels until the user says to align it (Rule 4). */
+/* Change-doctor drawer (2026-09-17, the default since the same day): its block headings
+   are instructions, so they take the foundation's Heading/H5 (16/24 SemiBold) — one
+   step under the drawer title and clearly above the 14px rows they introduce. SCOPED
+   to this drawer: the published v2 transfer drawer keeps its 13/500 labels until the
+   user says to align it (Rule 4). Its body = info alert → clinic Select → doctor rows;
+   the shared InlineAlert and Select need no extra rules here. */
 .dash-chgdrawer .dash-trf__lbl { font: 600 16px/24px var(--font-sans); }
 /* the personal doctor, read-only */
 .dash-trf__doc { display: flex; align-items: center; gap: var(--space-12); padding: var(--space-4) 0; }
@@ -1394,9 +1379,6 @@
   .dash-hist__table { padding: var(--space-16); }
 }
 
-@media (max-width: 1180px) {
-  .dash-cur__cols { grid-template-columns: minmax(0, 1fr); }
-}
 @media (max-width: 860px) {
   .dash-upl__grid { grid-template-columns: minmax(0, 1fr); }
 }
@@ -1404,12 +1386,6 @@
    the three icon-only ghosts become the labelled, bordered footer buttons the
    appointments cards use — icon-only actions are desktop-only (rule 2026-07-28). */
 @media (max-width: 767px) {
-  /* The concept drawer's instruction headings are a sentence, not a label: on a phone
-     they must not share a line with „ყველას მოხსნა" (the nowrap link squeezed the
-     heading into four lines at 390). Heading takes the row, the link drops under it. */
-  .dash-chgdrawer .dash-trf__head { flex-wrap: wrap; }
-  .dash-chgdrawer .dash-trf__lbl { flex: 1 1 100%; }
-  .dash-chgdrawer .dash-trf__head .dash-link { margin-left: auto; }
   .dash-hist__rowactions { gap: var(--space-8); }
   .dash-hist__rowactions .gpi-iconbtn--ghost { border-color: var(--border-default); }
   /* The section switch drops under the title at full width and scrolls sideways
@@ -1563,8 +1539,6 @@
      width — the ka remote-consultation label is 277px and escaped a 246px column
      at 390. Buttons become a full-width column; a label never wraps. */
   .dash-cur2__box.dash-doc { flex-direction: column; }
-  .dash-doc__btns { flex-direction: column; align-items: stretch; }
-  .dash-doc__btns .gpi-btn { width: 100%; }
   /* One-column v2: the doctor row wraps its actions under the text, Book full
      width; the slim booking row stacks label / row / link. */
   .dash-cur2__doc { flex-wrap: wrap; }
@@ -1605,7 +1579,6 @@
   /* Button-label rule, fix order 2 (2026-07-06): when the widest label still
      does not fit, keep the text and drop the icon — never a second line. */
   .dash-cur2__box.dash-doc { padding: var(--space-16); }
-  .dash-doc__btns .gpi-btn > svg { display: none; }
   .dash-cur2__doc { padding: var(--space-16); }
   .dash-doc__actions .gpi-btn > svg { display: none; }
   /* The 260px person pill is wider than a 248px column: let the name ellipsize

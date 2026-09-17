@@ -2,61 +2,54 @@ import { useState } from 'react'
 import DoctorBioModal from '../components/DoctorBioModal.jsx'
 import DoctorRow from '../components/DoctorRow.jsx'
 import Drawer from '../components/Drawer.jsx'
-import SearchField from '../components/SearchField.jsx'
+import InlineAlert from '../components/InlineAlert.jsx'
+import Select from '../components/Select.jsx'
 import Toast from '../components/Toast.jsx'
 import { Button } from '../components/Button.jsx'
 import { useGate } from './gate.jsx'
-import { useRecordPicker, RecordPicker } from './CuratioTransfer.jsx'
 import { D } from './strings.js'
 import {
-  PERSONS, TRANSFER_DOCTORS, currentDoctor, setPersonalDoctor, replaceShares, clearShares, shortName,
+  PERSONS, CLINICS, personalDoctorsAt, currentDoctor, setPersonalDoctor, handoverShares, clearShares,
+  allRecordIds, shortName,
 } from './curatioData.js'
 
-/* პირადი ექიმის შეცვლა — the CHANGE-DOCTOR CONCEPT (2026-09-16), a comparison
-   variant beside the published v2 transfer drawer (Rule 4: v2 untouched; the demo
-   bar's „change doctor" chip switches the doctor row between the two).
+/* პირადი ექიმის შეცვლა — the change-doctor drawer. THE DEFAULT on #/dash/curatio
+   since 2026-09-17 (the PO discussion settled the rule; the published v2 transfer
+   drawer stays as the comparison baseline behind the demo chip „transfer (v2)",
+   Rule 4).
 
-   Why: the product owner's rule is that transferring history == changing the
-   personal doctor — only the personal doctor can see Curatio history. v2 says
-   „transfer history" and changes the doctor as a side effect nobody sees. This
-   version makes the real act the call to action: the drawer asks for the NEW
-   doctor first, carries the history handover as ONE pre-ticked option, and
-   spells out what changes before the primary button. (The user is challenging
-   the rule itself on 2026-09-17 — the substitute-doctor and referral cases —
-   so both versions stay demonstrable.)
+   The rule: transferring history == changing the personal doctor, and the history
+   moves AUTOMATICALLY — the new personal doctor sees it, the old one stops. So the
+   drawer no longer asks WHAT to hand over (the 09-16 record picker is gone); it
+   states the rule once, up front, and asks WHERE and WHO. Sharing particular
+   records with a doctor is the history table's job alone (each row's send icon).
 
-   Anatomy (L1 approved in chat 2026-09-16, kebab placement the user's ask):
-     Headings are INSTRUCTIONS without step numbers (round 3, user): „აირჩიე …" /
-     „გაუზიარე …" — the verb carries the sequence, and the drawer only has two blocks.
-     They step DOWN from the drawer title (18/600) at Heading/H5 (16/24 SemiBold): the
-     old 13/500 label sat BELOW the record titles (14/500) and doctor names (14/600)
-     it introduces, and only weight told it apart from the muted context line.
-     1 · ახალი პირადი ექიმი — search + the booking wizard's DoctorRow list over
-       the Curatio network; the info trigger opens the wizard's DoctorBioModal
-       over the drawer (select there picks here). ONE pick.
-     2 · ისტორიის გადატანა ახალ ექიმთან — the transfer drawer's RecordPicker with
-       EVERYTHING selected up front (round 2, user: „what if I want to share only
-       some particular files when I change doctor" — the earlier single pre-ticked
-       checkbox could not say which). Full history = leave it; particular files =
-       untick; nothing = „ყველას მოხსნა". The footer totals it. A consent line
-       under the picker names who gets access (mobile docsel wording, Rule 6).
-       The consent risk of a pre-selected handover on health data stays flagged.
-     (Round 2 removed „3 · რა შეიცვლება" — the user's call; the „old doctor loses
-       access" line went with it.)
-   Footer: total · გაუქმება · primary „ექიმის შეცვლა". Validation on submit (no
-   doctor → inline role=alert, clears on pick). OTP first when the session is
-   locked — the handover is history-class data, same gate as the transfer flow.
+   Anatomy (the user's change request, 2026-09-17):
+     context line (person · current personal doctor)
+     InlineAlert (info) — „after you choose a new personal doctor, your medical
+       history is transferred to them automatically" — the one thing to know
+       before choosing, so it leads.
+     „აირჩიე კლინიკა" — the shared Select over the eight Tbilisi Curatio clinics
+       (the booking wizard's own list; rich rows carry the address, because the
+       address is how one picks a clinic). The doctor block waits for it.
+     „აირჩიე ახალი პირადი ექიმი" — the wizard's DoctorRow list of the personal
+       doctors who practise at THAT clinic (the current doctor excluded — listing
+       her as „new" would be a trap); the info trigger opens the wizard's
+       DoctorBioModal over the drawer (select there picks here). ONE pick.
+     Headings are instructions without step numbers (round 3) at Heading/H5.
+   Footer: გაუქმება · primary „ექიმის შეცვლა". Validation on submit — no clinic →
+   error under the select; no doctor → error under the list — both inline
+   role=alert, cleared live by the next pick. OTP first when the session is
+   locked: the handover is history-class data, same gate as the transfer flow.
 
-   After confirm: currentDoctor() = the pick (sessionStorage); the shares store
-   is REPLACED — the picked records → the new doctor, or nothing — so the table's
-   „ხილვადია" marks and the check glyph follow the new doctor; Toast names the
-   outcome (full / N records / none). The doctor row re-renders with the new
-   doctor, no next visit, and Book reading „პირველი ვიზიტის ჩაწერა". Whatever
-   was NOT handed over can follow later: the row's kebab keeps „ისტორიის
-   გადატანა" (the transfer drawer, personal doctor only in this mode).
+   After confirm: currentDoctor() = the pick at that clinic (sessionStorage);
+   every record of the person is marked visible to the new doctor and the old
+   doctor drops off them (handoverShares keeps other doctors' shares); Toast
+   „პირადი ექიმი შეიცვალა: … · სრული ისტორია გადატანილია". The doctor row
+   re-renders with the new doctor, no next visit, Book reading „first visit".
 
-   Rule 9: Drawer · SearchField · DoctorRow · DoctorBioModal · RecordPicker ·
-   Button · Toast — nothing new. */
+   Rule 9: Drawer · InlineAlert · Select · DoctorRow · DoctorBioModal · Button ·
+   Toast — nothing new. */
 
 const C = D.cur.change
 
@@ -83,14 +76,14 @@ export function useChangeDoctor({ personId, onChanged }) {
         <ChangeDoctorDrawer
           personId={personId}
           onClose={() => setOpen(false)}
-          onDone={({ doctor: next, ids, full }) => {
-            setPersonalDoctor(next.id)
-            ids.length ? replaceShares(ids, next) : clearShares()
+          onDone={({ doctor: next, clinic }) => {
+            const previous = currentDoctor()
+            setPersonalDoctor(next.id, clinic.value)
+            handoverShares(allRecordIds(personId), previous, next)
             onChanged?.()
             setDoctor(currentDoctor())
             setOpen(false)
-            const who = shortName(next.name)
-            setToast({ text: full ? C.doneHist(who) : ids.length ? C.doneN(ids.length, who) : C.done(who) })
+            setToast({ text: C.doneHist(shortName(next.name)) })
           }}
         />
       )}
@@ -103,30 +96,30 @@ export function useChangeDoctor({ personId, onChanged }) {
 
 export function ChangeDoctorDrawer({ personId, onClose, onDone }) {
   const current = currentDoctor()
+  const [clinicValue, setClinicValue] = useState('')
   const [pickedId, setPickedId] = useState(null)
-  const [query, setQuery] = useState('')
   const [bio, setBio] = useState(null)
-  const [err, setErr] = useState(null)
-  /* The handover: every record selected up front (see the header note). */
-  const picker = useRecordPicker({ personId, all: true })
-  const { ids, full } = picker
+  const [err, setErr] = useState(null) /* { clinic } | { doctor } */
 
   const person = PERSONS.find((p) => p.id === personId)
-  /* The network minus whoever is the personal doctor right now — listing her as
-     a „new" doctor would be a trap. */
-  const q = query.trim().toLowerCase()
-  const network = TRANSFER_DOCTORS
-    .filter((d) => d.id !== current.id)
-    .filter((d) => !q || `${d.name} ${d.spec} ${d.clinic}`.toLowerCase().includes(q))
-  const rowShape = (d) => ({ ...d, role: `${d.spec} · ${d.clinic}` })
+  const clinic = CLINICS.find((c) => c.value === clinicValue) || null
+  /* The personal doctors at the chosen clinic, minus whoever is the personal doctor now. */
+  const list = clinic ? personalDoctorsAt(clinic.value, current.bookingId) : []
+  const picked = list.find((d) => d.id === pickedId) || null
+  const rowShape = (d) => ({ ...d, role: `${d.spec} · ${clinic.label}` })
   const bioShape = (d) => ({ ...d, role: d.spec })
-  const picked = TRANSFER_DOCTORS.find((d) => d.id === pickedId) || null
+
+  /* A new clinic starts the doctor choice over — the pick belonged to the old list. */
+  const pickClinic = (v) => { setClinicValue(v); setPickedId(null); setErr(null) }
   const pick = (id) => { setPickedId(id); setErr(null) }
 
   const submit = () => {
-    if (!picked) return setErr(C.errDoctor)
-    onDone({ doctor: picked, ids, full })
+    if (!clinic) return setErr({ clinic: C.errClinic })
+    if (!picked) return setErr({ doctor: C.errDoctor })
+    onDone({ doctor: picked, clinic })
   }
+
+  const clinicOptions = CLINICS.map((c) => ({ value: c.value, label: c.label, sub: c.address }))
 
   return (
     <>
@@ -136,9 +129,6 @@ export function ChangeDoctorDrawer({ personId, onClose, onDone }) {
         className="dash-trfdrawer dash-chgdrawer"
         footer={
           <>
-            <span className="dash-trf__total" aria-live="polite">
-              {ids.length ? D.cur.transfer.totalLine(ids.length) : D.cur.transfer.totalNone}
-            </span>
             <Button variant="tertiary" size="md" onClick={onClose}>{C.cancel}</Button>
             <Button variant="primary" size="md" onClick={submit}>{C.confirm}</Button>
           </>
@@ -146,16 +136,34 @@ export function ChangeDoctorDrawer({ personId, onClose, onDone }) {
       >
         <p className="dash-trf__ctx">{C.ctx(person?.name, current.name)}</p>
 
-        {/* 1 · the new doctor — the transfer drawer's network block, verbatim. */}
-        <section className="dash-trf__block" aria-label={C.pick}>
+        {/* The rule, stated before any choice is made. */}
+        <InlineAlert tone="info">{C.info}</InlineAlert>
+
+        {/* 1 · the clinic — the wizard's many-clinic dropdown, address on every row. */}
+        <section className="dash-trf__block" aria-label={C.clinic}>
           <div className="dash-trf__head">
-            <p className="dash-trf__lbl">{C.pick}</p>
+            <p className="dash-trf__lbl">{C.clinic}</p>
           </div>
-          <div className="dash-trf__network">
-            <SearchField value={query} onChange={setQuery} placeholder={D.cur.transfer.docSearch} />
+          <Select
+            value={clinicValue}
+            placeholder={C.clinicPh}
+            options={clinicOptions}
+            onChange={pickClinic}
+            error={!!err?.clinic}
+            ariaLabel={C.clinic}
+          />
+          {err?.clinic && <p className="gpi-field__hint gpi-field__hint--err dash-trf__err" role="alert">{err.clinic}</p>}
+        </section>
+
+        {/* 2 · the doctor — shown once a clinic is chosen (the user's sequence). */}
+        {clinic && (
+          <section className="dash-trf__block" aria-label={C.pick}>
+            <div className="dash-trf__head">
+              <p className="dash-trf__lbl">{C.pick}</p>
+            </div>
             <div className="dash-trf__doclist" role="list" aria-label={C.pick}>
-              {network.length === 0 && <p className="dash-trf__empty">{D.cur.transfer.noDoctor}</p>}
-              {network.map((d) => (
+              {list.length === 0 && <p className="dash-trf__empty">{C.noDoctor}</p>}
+              {list.map((d) => (
                 <DoctorRow
                   key={d.id}
                   doctor={rowShape(d)}
@@ -166,14 +174,9 @@ export function ChangeDoctorDrawer({ personId, onClose, onDone }) {
                 />
               ))}
             </div>
-            {err && <p className="gpi-field__hint gpi-field__hint--err dash-trf__err" role="alert">{err}</p>}
-          </div>
-        </section>
-
-        {/* 2 · the handover — the shared picker, everything selected up front, plus
-            the consent line naming who gets access. */}
-        <RecordPicker picker={picker} label={C.hist} />
-        <p className="dash-trf__ctx">{C.consent(picked ? shortName(picked.name) : C.newDoc)}</p>
+            {err?.doctor && <p className="gpi-field__hint gpi-field__hint--err dash-trf__err" role="alert">{err.doctor}</p>}
+          </section>
+        )}
       </Drawer>
 
       {bio && (

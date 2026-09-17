@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Avatar from '../components/Avatar.jsx'
 import Badge from '../components/Badge.jsx'
 import Breadcrumbs from '../components/Breadcrumbs.jsx'
@@ -19,7 +19,7 @@ import { useTransfer } from './CuratioTransfer.jsx'
 import { useGate } from './gate.jsx'
 import { D } from './strings.js'
 import { uc } from './text.js'
-import { PERSONS, currentDoctor, ANALYSES, MEDS, VISITS, SECTION_ICON, forPerson, getAttachments, addAttachment, dateWithYear, shortName, shareName } from './curatioData.js'
+import { PERSONS, currentDoctor, ANALYSES, MEDS, VISITS, SECTION_ICON, forPerson, getAttachments, addAttachment, dateWithYear, shortName, shareName, getRead, markRead, isUnread, unreadCount, onUnreadChange } from './curatioData.js'
 
 /* #/dash/curatio?sec= — F-02/F-03 on the surface they were made for.
    One page, three sections (a SEGMENTED CONTROL on the title line is the hub
@@ -172,6 +172,10 @@ export default function CuratioHistory({ embedded = false, personId: personProp 
   /* Per-record attach: which record the modal is for, and the attached docs. */
   const [attachTo, setAttachTo] = useState(null)
   const [attachments, setAttachments] = useState(getAttachments)
+  /* Unread (2026-09-17): the opened-records set, re-read on every store write —
+     the section page's demo bar and this table share one page. */
+  const [read, setRead] = useState(getRead)
+  useEffect(() => onUnreadChange(() => setRead(getRead())), [])
 
   const crumbs = (
     <Breadcrumbs
@@ -184,35 +188,46 @@ export default function CuratioHistory({ embedded = false, personId: personProp 
     />
   )
 
-  const base = { analyses: ANALYSES, meds: MEDS, visits: VISITS }[sec]
+  const BASES = { analyses: ANALYSES, meds: MEDS, visits: VISITS }
+  const base = BASES[sec]
+  /* The category value is PER SECTION: a hash change that skips the switch (back
+     button, a breadcrumb) can leave `cat` holding another section's value — the
+     trigger then printed nothing (2026-09-17, caught while measuring). Resolve to
+     „ყველა" whenever the current section does not know the value. */
+  const catValue = CATS()[sec][cat] ? cat : 'all'
   const rows = useMemo(() => {
     let r = forPerson(base, personId)
     if (period !== 'all') {
       const cap = { m3: 3, m6: 6, y1: 12 }[period]
       r = r.filter((x) => (x.monthsAgo ?? 0) < cap)
     }
-    if (cat !== 'all') r = r.filter((x) => matchCat(sec, x, cat))
+    if (catValue !== 'all') r = r.filter((x) => matchCat(sec, x, catValue))
     if (clinic !== 'all') r = r.filter((x) => x.src === clinic)
     if (search.trim()) {
       const q = search.trim().toLowerCase()
       r = r.filter((x) => `${x.name} ${x.clinic || ''} ${x.doctor || ''}`.toLowerCase().includes(q))
     }
     return r
-  }, [base, personId, period, cat, clinic, search, sec])
+  }, [base, personId, period, catValue, clinic, search, sec])
 
   const secList = [
-    /* NO counts (user, 2026-09-16: „we are not able to count files") — the Curatio
-       API cannot report how many records a section holds, so the tabs carry the
-       name + glyph only. Same rule on the dashboard card („ყველა", no figure). */
+    /* NO record counts (user, 2026-09-16: „we are not able to count files") — the
+       Curatio API cannot report how many records a section holds, so the tabs carry
+       the name + glyph only. Same rule on the dashboard card („ყველა", no figure).
+       The UNREAD counter (2026-09-17) is a different figure — records not opened
+       yet, per selected person — and the user chose it knowing the API must then
+       deliver a per-record „opened" flag (curatioData, read store). */
     { id: 'analyses', label: D.cur.hist.sections.analyses },
     { id: 'meds', label: D.cur.hist.sections.meds },
     { id: 'visits', label: D.cur.hist.sections.visits },
-  ]
+  ].map((s) => ({ ...s, unread: unreadCount(BASES[s.id], personId, read) }))
   /* The section switch (user, 2026-09-10) — replaces the left rail. Full names
-     (stakeholder comment #8) + the family glyph — NO counts since 2026-09-16; `short` = the card's
-     labels, swapped in ≤767 where the row scrolls sideways. Hidden while
-     locked: the counts are record data, and the rail never showed them either. */
-  const sectionSwitch = gate.unlocked ? (
+     (stakeholder comment #8) + the family glyph — NO record counts since 2026-09-16;
+     `short` = the card's labels, swapped in ≤767 where the row scrolls sideways.
+     Renders in BOTH gate states since 2026-09-17 (it was hidden while locked): the
+     dashboard card has shown its tabs behind the gate since 09-16, and the unread
+     counters are exactly what a locked user needs to see — parity, not a leak. */
+  const sectionSwitch = (
     <SegmentedControl
       className="dash-hist__switch"
       size="md"
@@ -228,9 +243,11 @@ export default function CuratioHistory({ embedded = false, personId: personProp 
         label: s.label,
         short: D.cur.hist.sectionsShort?.[s.id],
         icon: SEC_ICON[s.id],
+        badge: s.unread,
+        badgeLabel: s.unread ? D.cur.hist.unread.tab(s.unread) : undefined,
       }))}
     />
-  ) : null
+  )
   /* Embedded (v2): this IS the section head — title + switch on one line, the
      dashboard card's head grammar. Standalone keeps its page head + crumbs. */
   const head = embedded ? (
@@ -288,23 +305,43 @@ export default function CuratioHistory({ embedded = false, personId: personProp 
      (16 + 40 + 16), so the disc adds NO height. Colour follows ORIGIN: in-network
      = the Curatio tint (with the stripe it is one voice), external = the disc's
      neutral default. Glyph per section: document / pill / the visit's kind. */
+  /* Unread (2026-09-17, user: „dot ON the file icon, not outside the circle"):
+     the dot rides the glyph inside the disc (decoration), the name goes semibold
+     and the words ride the name as sr-only text — the same three-part mark the
+     dashboard rail rows carry. */
   const recLead = (r, glyph) => (
     <span className={`dash-lrow__disc${r.src === 'curatio' ? ' dash-lrow__disc--curatio' : ''}`} aria-hidden="true">
       <Icon name={glyph} size={20} />
+      {isUnread(r, read) && <span className="dash-lrow__new" />}
     </span>
   )
-  /* Download is the paperclip's twin (user, 2026-09-04): icon-only ghost, the
-     document type („PDF" / „ფორმა 100") kept in the tooltip + accessible name. */
-  const pdf = (label, recName) => (
+  const recCls = (r) => `dash-rec${isUnread(r, read) ? ' dash-rec--unread' : ''}`
+  const recName = (r) => (
+    <span className="dash-rec__name">
+      {r.name}
+      {isUnread(r, read) && <span className="gpi-sr-only">, {D.cur.hist.unread.row}</span>}
+    </span>
+  )
+  /* VIEW is the paperclip's twin (user, 2026-09-04 download → 2026-09-17 eye): an
+     icon-only ghost that opens the document in a NEW TAB — the browser's own PDF
+     viewer, no in-app preview (user: „see the document in the browser new window").
+     The document type („PDF" / „ფორმა 100") stays in the tooltip + accessible name,
+     which also announces the new tab (WCAG G201). Opening the file is what READS
+     the record (2026-09-17): the unread mark and the tab counter drop here, nowhere
+     else. `doc` picks the demo file per section — a real system opens the record's
+     own file from Curatio. */
+  const DOC_FILE = { analysis: 'curatio-demo-analysis.pdf', prescription: 'curatio-demo-prescription.pdf', form100: 'curatio-demo-form100.pdf' }
+  const openDoc = (doc) => window.open(`${import.meta.env.BASE_URL}downloads/${DOC_FILE[doc]}`, '_blank', 'noopener,noreferrer')
+  const pdf = (label, r, doc) => (
     <button
       type="button"
       className="gpi-iconbtn gpi-iconbtn--neutral gpi-iconbtn--ghost dash-hist__attach"
-      aria-label={recName ? `${label} — ${recName}` : label}
-      title={label}
-      onClick={() => {}}
+      aria-label={`${D.cur.hist.view} — ${r ? `${r.name} · ` : ''}${label} · ${D.cur.hist.newTab}`}
+      title={`${D.cur.hist.view} · ${label}`}
+      onClick={() => { if (r) markRead(r.id); openDoc(doc) }}
     >
-      <Icon name="download" size={16} />
-      <span className="gpi-iconbtn__label">{label}</span>
+      <Icon name="eye" size={16} />
+      <span className="gpi-iconbtn__label">{D.cur.hist.view}</span>
     </button>
   )
   /* Icon-only, so the label names the ACTION AND THE RECORD — the only thing that
@@ -402,10 +439,10 @@ export default function CuratioHistory({ embedded = false, personId: personProp 
       {
         key: 'name', header: D.cur.hist.cols.name, rowHeader: true,
         render: (r) => (
-          <span className="dash-rec">
+          <span className={recCls(r)}>
             {recLead(r, 'file-text')}
             <span className="dash-medcell">
-              <span>{r.name}</span>
+              {recName(r)}
               {sharedMark(r)}
               {attachedDocs(r)}
             </span>
@@ -419,16 +456,16 @@ export default function CuratioHistory({ embedded = false, personId: personProp 
       /* ⚠️ The სტატუსი column (norm/warn/crit) was REMOVED at the user's request
          2026-09-08. The result signal is no longer surfaced anywhere in this table
          — flagged in chat; StatusBadge is still used by the meds expiry cell. */
-      { key: 'pdf', header: '', width: '116px', align: 'right', render: (r) => actions(r, pdf('PDF', r.name)) },
+      { key: 'pdf', header: '', width: '116px', align: 'right', render: (r) => actions(r, pdf('PDF', r, 'analysis')) },
     ],
     meds: [
       {
         key: 'name', header: D.cur.hist.cols.med, rowHeader: true,
         render: (r) => (
-          <span className="dash-rec">
+          <span className={recCls(r)}>
             {recLead(r, 'pill')}
             <span className="dash-medcell">
-              <span>{r.name}</span>
+              {recName(r)}
               <span className="dash-medcell__meta">
                 {r.ref} · {r.doctor}
                 {r.chronic && <Badge color="brand" size="sm">{D.cur.hist.chronic}</Badge>}
@@ -456,18 +493,18 @@ export default function CuratioHistory({ embedded = false, personId: personProp 
             <Badge color="success" size="sm">{D.cur.hist.active}</Badge>
           ),
       },
-      { key: 'pdf', header: '', width: '116px', align: 'right', render: (r) => actions(r, pdf('PDF', r.name)) },
+      { key: 'pdf', header: '', width: '116px', align: 'right', render: (r) => actions(r, pdf('PDF', r, 'prescription')) },
     ],
     visits: [
       {
         key: 'name', header: D.cur.hist.cols.visit, rowHeader: true,
         render: (r) => (
-          <span className="dash-rec">
+          <span className={recCls(r)}>
             {/* the visit's kind (in person / remote) IS the glyph — it used to sit
                 inline before the name; the disc is its one home now */}
             {recLead(r, r.kind === 'remote' ? 'phone' : 'building-2')}
             <span className="dash-medcell">
-              <span>{r.name}</span>
+              {recName(r)}
               <span className="dash-medcell__meta">{r.doctor}</span>
               {sharedMark(r)}
               {attachedDocs(r)}
@@ -479,7 +516,7 @@ export default function CuratioHistory({ embedded = false, personId: personProp 
       { key: 'clinic', header: D.cur.hist.cols.clinic, width: '220px', icon: 'map-pin', render: clinicCell },
       {
         key: 'pdf', header: '', width: '116px', align: 'right',
-        render: (r) => actions(r, r.form100 ? pdf(D.cur.hist.form100, r.name) : <span className="dash-cell-muted">—</span>),
+        render: (r) => actions(r, r.form100 ? pdf(D.cur.hist.form100, r, 'form100') : <span className="dash-cell-muted">—</span>),
       },
     ],
   }[sec]
@@ -507,23 +544,23 @@ export default function CuratioHistory({ embedded = false, personId: personProp 
               onChange={(v) => { setPeriod(v); setPage(1) }}
               ariaLabel={D.cur.hist.filters.period}
               options={Object.entries(D.cur.hist.periods).map(([value, label]) => ({ value, label }))}
-              renderValue={(o) => `${D.cur.hist.filters.period}: ${o.label}`}
+              prefix={D.cur.hist.filters.period}
             />
             {/* On every tab since 2026-09-16 (was analyses-only) — same slot, per-section
                 options; the switch resets it to „ყველა" because the values differ. */}
             <Select
-              value={cat}
+              value={catValue}
               onChange={(v) => { setCat(v); setPage(1) }}
               ariaLabel={D.cur.hist.filters.cat}
               options={Object.entries(CATS()[sec]).map(([value, label]) => ({ value, label }))}
-              renderValue={(o) => `${D.cur.hist.filters.cat}: ${o.label}`}
+              prefix={D.cur.hist.filters.cat}
             />
             <Select
               value={clinic}
               onChange={(v) => { setClinic(v); setPage(1) }}
               ariaLabel={D.cur.hist.filters.clinic}
               options={Object.entries(D.cur.hist.clinics).map(([value, label]) => ({ value, label }))}
-              renderValue={(o) => `${D.cur.hist.filters.clinic}: ${o.label}`}
+              prefix={D.cur.hist.filters.clinic}
             />
             <SearchField value={search} onChange={(v) => { setSearch(v); setPage(1) }} placeholder={D.cur.hist.search} />
             {/* Embedded on v2 the doctor row already carries this action — one home per action (audit B4). */}

@@ -7,6 +7,7 @@
    platforms describe one truth. */
 
 import { lang } from '../i18n/index.js'
+import { doctors as BOOKING_DOCTORS, clinics as BOOKING_CLINICS, clinicByValue } from '../data/booking.js'
 
 const L = (ka, en) => (lang === 'en' ? en : ka)
 const face = (id) => `https://images.unsplash.com/${id}?w=96&h=96&fit=crop&crop=faces&auto=format&q=60`
@@ -15,7 +16,7 @@ const face = (id) => `https://images.unsplash.com/${id}?w=96&h=96&fit=crop&crop=
    visit-day and uninsured are STATES of one account, not separate pages, and a
    reviewer flips them from the demo bar. sessionStorage (not React state) so
    the dashboard and the section — separate routes — read the same account. */
-const DK = { visit: 'gpi.dash.visitDay', unins: 'gpi.dash.uninsured', attach: 'gpi.dash.attachments', ticket: 'gpi.dash.ticket', early: 'gpi.dash.windowClosed', shares: 'gpi.dash.shares', chg: 'gpi.dash.docChange', doc: 'gpi.dash.personalDoctor' }
+const DK = { visit: 'gpi.dash.visitDay', unins: 'gpi.dash.uninsured', attach: 'gpi.dash.attachments', ticket: 'gpi.dash.ticket', early: 'gpi.dash.windowClosed', shares: 'gpi.dash.shares', v2: 'gpi.dash.transferV2', doc: 'gpi.dash.personalDoctor', docClinic: 'gpi.dash.personalClinic', read: 'gpi.dash.read' }
 /* Per-record attachments (web twin of mobile's addAttachment, 2026-09-04): a
    document hung off an EXISTING record, keyed by record id. Own key (Rule 5). */
 export function getAttachments() {
@@ -27,6 +28,46 @@ export function addAttachment(recId, doc) {
     sessionStorage.setItem(DK.attach, JSON.stringify({ ...all, [recId]: [...(all[recId] || []), doc] }))
   } catch { /* private mode — the prototype just forgets */ }
 }
+/* ---- Unread records (2026-09-17) ----------------------------------------------
+   „Something new arrived": a record the person has not OPENED yet. The seed
+   records carry `unread: true` (the newest ones — what a fresh Curatio sync
+   brings); opening the file (the row's download) writes the id HERE, and the
+   record is read from then on. The store holds READ ids, not unread ones, so the
+   seed stays the truth and the demo bar's „new records" is just a clear. Own key
+   (Rule 5). What production needs from Curatio Core is exactly this: a per-record
+   „opened" flag — the section counters are its sum, per selected person. A
+   window event keeps siblings on one page (card ↔ demo bar) in step. */
+const UNREAD_EVT = 'gpi:unread'
+const announce = () => window.dispatchEvent(new Event(UNREAD_EVT))
+export const onUnreadChange = (fn) => {
+  window.addEventListener(UNREAD_EVT, fn)
+  return () => window.removeEventListener(UNREAD_EVT, fn)
+}
+export function getRead() {
+  try { return new Set(JSON.parse(sessionStorage.getItem(DK.read) || '[]')) } catch { return new Set() }
+}
+export function markRead(recId) {
+  try {
+    const s = getRead()
+    if (s.has(recId)) return
+    s.add(recId)
+    sessionStorage.setItem(DK.read, JSON.stringify([...s]))
+  } catch { /* private mode — the prototype just forgets */ }
+  announce()
+}
+const seededUnread = () => [...ANALYSES, ...MEDS, ...VISITS].filter((r) => r.unread).map((r) => r.id)
+export function markAllRead() {
+  try { sessionStorage.setItem(DK.read, JSON.stringify(seededUnread())) } catch { /* ditto */ }
+  announce()
+}
+export function clearRead() {
+  sessionStorage.removeItem(DK.read)
+  announce()
+}
+export const isUnread = (r, read = getRead()) => !!r.unread && !read.has(r.id)
+export const unreadCount = (rows, personId, read = getRead()) => forPerson(rows, personId).filter((r) => isUnread(r, read)).length
+export const anyUnread = (read = getRead()) => seededUnread().some((id) => !read.has(id))
+
 /* ---- History transfer (2026-09-09) --------------------------------------------
    Which records the patient has handed to which doctor. Keyed by record id →
    the doctors it is visible to (id + name, deduped), so the table can print
@@ -59,7 +100,9 @@ export function clearShares() {
    show „ნ. ნინოშვილი" beside English rows. Resolve by id first; the stored name
    is only the fallback for a doctor the roster no longer lists. */
 export const shareName = (d) =>
-  (d.id === DOCTOR.id ? DOCTOR.name : TRANSFER_DOCTORS.find((x) => x.id === d.id)?.name) ?? d.name
+  (d.id === DOCTOR.id
+    ? DOCTOR.name
+    : (PERSONAL_DOCTORS.find((x) => x.id === d.id)?.name ?? TRANSFER_DOCTORS.find((x) => x.id === d.id)?.name)) ?? d.name
 export const shortName = (name) => {
   const parts = String(name).trim().split(/\s+/)
   return parts.length > 1 ? `${parts[0][0]}. ${parts.slice(1).join(' ')}` : name
@@ -78,11 +121,12 @@ export const demo = {
   /* „window: closed" — stands in for the clock on visit day: the activation
      window (appointment − ACTIVATION_OPENS_MIN) has not opened yet. */
   windowClosed: () => sessionStorage.getItem(DK.early) === '1',
-  /* „Change personal doctor" CONCEPT (2026-09-16, comparison variant — Rule 4): ON =
-     the doctor row hides „ისტორიის გადატანა" behind a kebab as „პირადი ექიმის შეცვლა"
-     (the PO's rule: transferring history == changing the doctor). OFF = v2 as published. */
-  docChange: () => sessionStorage.getItem(DK.chg) === '1',
-  setDocChange: (on) => (on ? sessionStorage.setItem(DK.chg, '1') : sessionStorage.removeItem(DK.chg)),
+  /* „transfer (v2)" — the COMPARISON BASELINE (Rule 4). Since 2026-09-17 the change-doctor
+     version is what #/dash/curatio serves (the PO settled the rule: transferring history ==
+     changing the personal doctor, and the history moves automatically). ON = the published
+     v2 doctor row (transfer button → the full drawer) for side-by-side review. */
+  transferV2: () => sessionStorage.getItem(DK.v2) === '1',
+  setTransferV2: (on) => (on ? sessionStorage.setItem(DK.v2, '1') : sessionStorage.removeItem(DK.v2)),
   setWindowClosed: (on) => (on ? sessionStorage.setItem(DK.early, '1') : sessionStorage.removeItem(DK.early)),
 }
 
@@ -100,7 +144,7 @@ export const demo = {
    ACTIVATION_OPENS_MIN is the production rule the demo „window: closed" switch stands
    for. The stamp is the patient's evidence, so it is stored, not re-derived. */
 export const ACTIVATION_OPENS_MIN = 15
-/** @deprecated parked v1 (CuratioSection.jsx) still gates CHECK-IN by this; new code gates ACTIVATION. */
+/** @deprecated alias — CuratioTicket's opensAt() still reads it; new code gates ACTIVATION. */
 export const CHECKIN_OPENS_MIN = ACTIVATION_OPENS_MIN
 
 function ticketMap() {
@@ -151,6 +195,9 @@ export const PERSONS = [
 
 export const DOCTOR = {
   id: 'pd',
+  /* She is the booking wizard's d1 (same Nino Ninoshvili): the change-doctor drawer
+     lists the wizard's personal doctors and must not offer the current one as „new". */
+  bookingId: 'd1',
   /* `languages` / `bio` (2026-09-16): the concept's „ექიმის დეტალები" opens the wizard's
      DoctorBioModal on her too, so she needs its shape. DEMO copy. */
   languages: ['KA', 'EN', 'RU'],
@@ -184,28 +231,59 @@ export const TRANSFER_DOCTORS = [
     bio: L('ნევროლოგი. თავის ტკივილის და ძილის დარღვევების დიაგნოსტიკა, ნეიროფიზიოლოგიური კვლევები.', 'Neurologist. Headache and sleep-disorder diagnostics, neurophysiological studies.') },
 ]
 
-/* ---- The CURRENT personal doctor (2026-09-16, change-doctor concept) -------------
-   DOCTOR is the seed; the concept's drawer can replace her with a network doctor
-   for the session (sessionStorage, own key). Everything that means „the personal
-   doctor" — the doctor row, the history's „visible to" check, the transfer
-   drawer's personal target — reads currentDoctor(), never DOCTOR directly. A
-   network doctor is reshaped to DOCTOR's fields: `spec` = specialty · clinic,
-   no `next` (a new doctor has no booked visit yet), initials avatar (no photo). */
+/* ---- The Curatio clinics + their personal doctors (2026-09-17 change request) ----
+   The change-doctor drawer asks for the CLINIC first, then a personal doctor who
+   practises there — the booking wizard's own roster (data/booking.js: the eight
+   Tbilisi Curatio clinics + the `personal`-type doctors, EN labels merged by the
+   wizard's loc()), so the network is ONE list on every surface (Rule 1). Ids are
+   prefixed `bk:` — the wizard's d1…d5 collide with TRANSFER_DOCTORS' d1…d3, which are
+   different people. `bookingId` keeps the raw id: the seed DOCTOR is the wizard's d1
+   (same Nino Ninoshvili), and the drawer must not list the current doctor as „new". */
+export const CLINICS = BOOKING_CLINICS
+/* `spec` = the seed DOCTOR's wording („ოჯახის ექიმი" / „Family doctor"), not the wizard's
+   row label „პირადი ექიმი" — the doctor row already says „პირადი ექიმი" as its overline. */
+export const PERSONAL_DOCTORS = BOOKING_DOCTORS.filter((d) => d.type === 'personal').map((d) => ({
+  id: `bk:${d.id}`, bookingId: d.id, name: d.name, spec: L('ოჯახის ექიმი', 'Family doctor'), clinics: d.clinics,
+  languages: d.languages, bio: d.bio, avatar: d.avatar,
+}))
+export const personalDoctorsAt = (clinicValue, exceptBookingId = null) =>
+  PERSONAL_DOCTORS.filter((d) => d.clinics.includes(clinicValue) && d.bookingId !== exceptBookingId)
+
+/* ---- The CURRENT personal doctor (2026-09-16; clinic added 2026-09-17) ----------
+   DOCTOR is the seed; the change-doctor drawer replaces her for the session
+   (sessionStorage: the doctor id + the clinic she was chosen at, since a doctor
+   can practise at two). Everything that means „the personal doctor" — the doctor
+   row, the history's „visible to" check, the transfer drawer's personal target —
+   reads currentDoctor(), never DOCTOR directly. A chosen doctor is reshaped to
+   DOCTOR's fields: `spec` = role · clinic, no `next` (no booked visit yet),
+   initials avatar (no photo). The TRANSFER_DOCTORS branch serves ids stored by
+   the 09-16 concept (a network specialist) — kept so an old session still renders. */
 export const getDoctorId = () => sessionStorage.getItem(DK.doc)
-export function setPersonalDoctor(id) {
+export function setPersonalDoctor(id, clinicValue = null) {
   id ? sessionStorage.setItem(DK.doc, id) : sessionStorage.removeItem(DK.doc)
+  clinicValue ? sessionStorage.setItem(DK.docClinic, clinicValue) : sessionStorage.removeItem(DK.docClinic)
 }
 export function currentDoctor() {
-  const d = TRANSFER_DOCTORS.find((x) => x.id === getDoctorId())
+  const id = getDoctorId()
+  const pd = PERSONAL_DOCTORS.find((x) => x.id === id)
+  if (pd) {
+    const cl = clinicByValue(sessionStorage.getItem(DK.docClinic)) || clinicByValue(pd.clinics[0])
+    return { ...pd, spec: `${pd.spec} · ${cl.label}`, clinic: cl.label, next: null, photo: undefined }
+  }
+  const d = TRANSFER_DOCTORS.find((x) => x.id === id)
   return d ? { ...d, spec: `${d.spec} · ${d.clinic}`, next: null, photo: undefined } : DOCTOR
 }
-/* The concept's history handover: the new doctor sees EVERYTHING (or nothing) —
-   the old doctor drops off every record, per the PO rule that only the personal
-   doctor sees Curatio history. Replaces the store instead of appending. */
-export function replaceShares(ids, doctor) {
-  const next = {}
-  ids.forEach((id) => { next[id] = [{ id: doctor.id, name: doctor.name }] })
-  sessionStorage.setItem(DK.shares, JSON.stringify(next))
+/* The handover (2026-09-17: AUTOMATIC — the PO's rule): every record of the person
+   becomes visible to the NEW personal doctor and the old one drops off; whatever a
+   record was shared with beyond the personal doctor (a specialist, from the table's
+   per-record action) is kept — changing the family doctor revokes nothing else. */
+export function handoverShares(ids, from, to) {
+  const all = getShares()
+  ids.forEach((id) => {
+    const rest = (all[id] || []).filter((d) => d.id !== from.id && d.id !== to.id)
+    all[id] = [{ id: to.id, name: to.name }, ...rest]
+  })
+  sessionStorage.setItem(DK.shares, JSON.stringify(all))
 }
 
 /* Section glyphs — the record FAMILY (the history head switch, the transfer
@@ -249,17 +327,19 @@ export const dateWithYear = (r) => `${r.date}, ${yearOf(r)}`
 
 /* ---- F-02/F-03: history records --------------------------------------------
    src: 'curatio' | 'external' — mirrors the mobile SourceTag vocabulary.
-   monthsAgo drives the period filter without live dates. */
+   monthsAgo drives the period filter without live dates.
+   unread: true (2026-09-17) — not opened yet; see the read store above. Seeded on
+   the newest rows only (a fresh sync), so the counters differ per section. */
 export const ANALYSES = [
-  { id: 'an1', p: 'g', date: L('12 ნოე', '12 Nov'), monthsAgo: 0, name: L('სისხლის საერთო ანალიზი', 'Complete blood count'), cat: 'blood', clinic: L('კურაციო საბურთალოზე', 'Curatio Saburtalo'), src: 'curatio', status: 'norm' },
-  { id: 'an2', p: 'g', date: L('2 ნოე', '2 Nov'), monthsAgo: 0, name: L('ჰორმონები — TSH, T4', 'Hormones — TSH, T4'), cat: 'hormones', clinic: L('კურაციო ვაკეში', 'Curatio Vake'), src: 'curatio', status: 'warn' },
+  { id: 'an1', unread: true, p: 'g', date: L('12 ნოე', '12 Nov'), monthsAgo: 0, name: L('სისხლის საერთო ანალიზი', 'Complete blood count'), cat: 'blood', clinic: L('კურაციო საბურთალოზე', 'Curatio Saburtalo'), src: 'curatio', status: 'norm' },
+  { id: 'an2', unread: true, p: 'g', date: L('2 ნოე', '2 Nov'), monthsAgo: 0, name: L('ჰორმონები — TSH, T4', 'Hormones — TSH, T4'), cat: 'hormones', clinic: L('კურაციო ვაკეში', 'Curatio Vake'), src: 'curatio', status: 'warn' },
   { id: 'an3', p: 'g', date: L('21 ოქტ', '21 Oct'), monthsAgo: 1, name: L('ბიოქიმია — ლიპიდური სპექტრი', 'Biochemistry — lipid panel'), cat: 'biochem', clinic: 'BMSC', src: 'external', status: 'crit' },
   { id: 'an4', p: 'g', date: L('9 ოქტ', '9 Oct'), monthsAgo: 1, name: L('შარდის საერთო ანალიზი', 'Urinalysis'), cat: 'urine', clinic: L('კურაციო საბურთალოზე', 'Curatio Saburtalo'), src: 'curatio', status: 'norm' },
   { id: 'an5', p: 'g', date: L('28 სექ', '28 Sep'), monthsAgo: 2, name: L('გლუკოზა უზმოზე', 'Fasting glucose'), cat: 'biochem', clinic: L('კურაციო ვაკეში', 'Curatio Vake'), src: 'curatio', status: 'norm' },
   { id: 'an6', p: 'g', date: L('14 ივლ', '14 Jul'), monthsAgo: 4, name: L('ვიტამინი D', 'Vitamin D'), cat: 'blood', clinic: 'BMSC', src: 'external', status: 'warn' },
   { id: 'an7', p: 'g', date: L('2 მაი', '2 May'), monthsAgo: 6, name: L('სისხლის საერთო ანალიზი', 'Complete blood count'), cat: 'blood', clinic: L('კურაციო საბურთალოზე', 'Curatio Saburtalo'), src: 'curatio', status: 'norm' },
   { id: 'an8', p: 'g', date: L('11 თებ', '11 Feb'), monthsAgo: 9, name: L('ბიოქიმია — ღვიძლის პანელი', 'Biochemistry — liver panel'), cat: 'biochem', clinic: L('კურაციო ვაკეში', 'Curatio Vake'), src: 'curatio', status: 'norm' },
-  { id: 'an9', p: 'e', date: L('18 ოქტ', '18 Oct'), monthsAgo: 1, name: L('სისხლის საერთო ანალიზი', 'Complete blood count'), cat: 'blood', clinic: L('კურაციო საბურთალოზე', 'Curatio Saburtalo'), src: 'curatio', status: 'norm' },
+  { id: 'an9', unread: true, p: 'e', date: L('18 ოქტ', '18 Oct'), monthsAgo: 1, name: L('სისხლის საერთო ანალიზი', 'Complete blood count'), cat: 'blood', clinic: L('კურაციო საბურთალოზე', 'Curatio Saburtalo'), src: 'curatio', status: 'norm' },
   { id: 'an10', p: 'e', date: L('3 სექ', '3 Sep'), monthsAgo: 2, name: L('ალერგოპანელი', 'Allergy panel'), cat: 'blood', clinic: 'BMSC', src: 'external', status: 'warn' },
   /* an11–an14 (2026-09-08): Giorgi's analyses were 8 rows against a PAGE of 8, so
      pagination could never appear. These four take him to 12 — two pages — AND
@@ -278,7 +358,7 @@ export const MEDS = [
 ]
 
 export const VISITS = [
-  { id: 'v1', p: 'g', date: L('2 ნოე', '2 Nov'), monthsAgo: 0, name: L('ოჯახის ექიმის ვიზიტი', 'Family doctor visit'), kind: 'inclinic', doctor: DOCTOR.name, clinic: L('კურაციო საბურთალოზე', 'Curatio Saburtalo'), src: 'curatio', form100: true },
+  { id: 'v1', unread: true, p: 'g', date: L('2 ნოე', '2 Nov'), monthsAgo: 0, name: L('ოჯახის ექიმის ვიზიტი', 'Family doctor visit'), kind: 'inclinic', doctor: DOCTOR.name, clinic: L('კურაციო საბურთალოზე', 'Curatio Saburtalo'), src: 'curatio', form100: true },
   { id: 'v2', p: 'g', date: L('12 ოქტ', '12 Oct'), monthsAgo: 1, name: L('დისტანციური კონსულტაცია', 'Online consultation'), kind: 'remote', doctor: DOCTOR.name, clinic: L('კურაციო', 'Curatio'), src: 'curatio', form100: false },
   { id: 'v3', p: 'g', date: L('28 სექ', '28 Sep'), monthsAgo: 2, name: L('ენდოკრინოლოგის ვიზიტი', 'Endocrinologist visit'), kind: 'inclinic', doctor: L('თ. ბერიძე', 'T. Beridze'), clinic: L('კურაციო ვაკეში', 'Curatio Vake'), src: 'curatio', form100: true },
   { id: 'v4', p: 'g', date: L('14 ივლ', '14 Jul'), monthsAgo: 4, name: L('ოჯახის ექიმის ვიზიტი', 'Family doctor visit'), kind: 'inclinic', doctor: DOCTOR.name, clinic: L('კურაციო საბურთალოზე', 'Curatio Saburtalo'), src: 'curatio', form100: true },
@@ -286,3 +366,7 @@ export const VISITS = [
 ]
 
 export const forPerson = (rows, personId) => rows.filter((r) => r.p === personId)
+
+/* Every record of a person across the three sections — the automatic handover's scope. */
+export const allRecordIds = (personId) =>
+  [...forPerson(ANALYSES, personId), ...forPerson(MEDS, personId), ...forPerson(VISITS, personId)].map((r) => r.id)

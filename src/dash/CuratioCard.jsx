@@ -9,7 +9,7 @@ import { ActionTile, ListRow, ProductCard, RailSection } from './DashParts.jsx'
 import { useGate } from './gate.jsx'
 import { D } from './strings.js'
 import { BOOKINGS } from './data.js'
-import { TODAY, PERSONS, ANALYSES, MEDS, VISITS, forPerson, ticketState } from './curatioData.js'
+import { TODAY, PERSONS, ANALYSES, MEDS, VISITS, forPerson, ticketState, getRead, isUnread, unreadCount, onUnreadChange } from './curatioData.js'
 
 /* The dashboard's „ჩემი კურაციო" card — placement A, locked in the concept
    round: its OWN card, rendered with or without a health policy, because the
@@ -20,7 +20,9 @@ import { TODAY, PERSONS, ANALYSES, MEDS, VISITS, forPerson, ticketState } from '
    Four states, all data/session-driven, none a separate page:
    · locked (default)  — the section tabs stay visible (user, 2026-09-16: set the
      expectation of what each holds), under them the padlock + a per-section
-     „will appear here" line + the unlock prompt; no counts leak past the gate.
+     „will appear here" line + the unlock prompt; no RECORD counts leak past the
+     gate — the UNREAD counters on the tabs do (user, 2026-09-17): „something new
+     arrived" is the reason to unlock, and it names no record.
    · unlocked          — a per-section records preview (segmented switch).
    · visit day         — NO ticket in the card any more (2026-09-10, same day the
      ordinary-day „next booking" row went): the ticket now LEADS THE PAGE as the
@@ -49,18 +51,21 @@ const go = (hash) => () => {
    leave 30–46px of air under the last row, which is the complaint. The
    sibling rails carry 5–7 rows, so four is also the closer density. */
 const SECTIONS = ['analyses', 'meds', 'visits']
+const BASE = { analyses: ANALYSES, meds: MEDS, visits: VISITS }
 const PREVIEW_ROWS = 4
-function sectionRows(sec, personId) {
+/* `read` = the opened-records set (2026-09-17): every preview row learns whether
+   it is still unread, so the rail can mark it the way the history table does. */
+function sectionRows(sec, personId, read) {
   if (sec === 'analyses')
-    return forPerson(ANALYSES, personId).map((a) => ({ id: a.id, name: a.name, meta: `${a.date} · ${D.cur.hist.statuses[a.status]}` }))
+    return forPerson(ANALYSES, personId).map((a) => ({ id: a.id, name: a.name, unread: isUnread(a, read), meta: `${a.date} · ${D.cur.hist.statuses[a.status]}` }))
   if (sec === 'meds')
     return forPerson(MEDS, personId).map((m) => ({
-      id: m.id, name: m.name,
+      id: m.id, name: m.name, unread: isUnread(m, read),
       meta: m.expiryDays != null && m.expiryDays <= 14
         ? `${D.cur.hist.expiring} · ${D.cur.hist.expiryIn(m.expiryDays)}`
         : `${m.date} · ${m.doctor}`,
     }))
-  return forPerson(VISITS, personId).map((v) => ({ id: v.id, name: v.name, meta: `${v.date} · ${v.doctor}` }))
+  return forPerson(VISITS, personId).map((v) => ({ id: v.id, name: v.name, unread: isUnread(v, read), meta: `${v.date} · ${v.doctor}` }))
 }
 
 /* `insured` (2026-09-10) = the dashboard's hasHealth. Uninsured: no doctor, no
@@ -82,7 +87,11 @@ export default function CuratioCard({ visitDay = false, insured = true }) {
     window.addEventListener('gpi:ticket', on)
     return () => window.removeEventListener('gpi:ticket', on)
   }, [])
-  const rows = sectionRows(sec, personId)
+  /* Unread state (2026-09-17): re-read whenever the store announces a write —
+     the dashboard's demo bar sits on this page and flips it. */
+  const [read, setRead] = useState(getRead)
+  useEffect(() => onUnreadChange(() => setRead(getRead())), [])
+  const rows = sectionRows(sec, personId, read)
   const person = PERSONS.find((p) => p.id === personId)
   const upcomingRows = insured ? BOOKINGS.filter((b) => b.person === person.name) : []
 
@@ -108,10 +117,17 @@ export default function CuratioCard({ visitDay = false, insured = true }) {
              the narrowest home these three names get (it already scrolls at 390).
              The canonical section names still lead the history page's rail and the
              section shelf, so comment #8's wording is not lost. */
-          options={SECTIONS.map((id) => ({
-            value: id,
-            label: D.cur.hist.sectionsShort?.[id] ?? D.cur.hist.sections[id],
-          }))}
+          options={SECTIONS.map((id) => {
+            /* The unread counter (2026-09-17) renders in BOTH gate states — it is
+               the one figure allowed across the gate (see the header comment). */
+            const n = unreadCount(BASE[id], personId, read)
+            return {
+              value: id,
+              label: D.cur.hist.sectionsShort?.[id] ?? D.cur.hist.sections[id],
+              badge: n,
+              badgeLabel: n ? D.cur.hist.unread.tab(n) : undefined,
+            }
+          })}
         />
       )}
     >
@@ -126,9 +142,12 @@ export default function CuratioCard({ visitDay = false, insured = true }) {
               lead={
                 <span className="dash-lrow__disc dash-lrow__disc--curatio">
                   <Icon name="file-text" size={20} />
+                  {/* unread dot ON the glyph (2026-09-17) — decoration; ListRow speaks the words */}
+                  {r.unread && <span className="dash-lrow__new" aria-hidden="true" />}
                 </span>
               }
               title={r.name}
+              unread={r.unread ? D.cur.hist.unread.row : undefined}
               sub={r.meta}
               onClick={go(`#/dash/curatio?sec=${sec}`)}
             />

@@ -6,7 +6,7 @@ import HealthCard from './HealthCard.jsx'
 import AutoCard from './AutoCard.jsx'
 import CuratioCard from './CuratioCard.jsx'
 import { TicketBanner } from './CuratioTicket.jsx'
-import { demo, clearShares, clearArrived } from './curatioData.js'
+import { demo, clearShares, clearArrived, clearRead, markAllRead, anyUnread } from './curatioData.js'
 import { D } from './strings.js'
 import { POLICIES, POLICY_COUNT, BOOKINGS, REFERRALS } from './data.js'
 
@@ -35,6 +35,8 @@ export default function DashboardScreen() {
   const [refs, setRefs] = useState(true)
   const [manyBookings, setManyBookings] = useState(true)
   const [visitDay, setVisitDay] = useState(demo.visitDay)
+  /* „new records" ↔ „all read" (2026-09-17): the Curatio card's unread counters. */
+  const [unread, setUnread] = useState(anyUnread)
 
   const policies = hasHealth ? POLICIES : POLICIES.filter((p) => p.kind !== 'health')
   const bookings = manyBookings ? BOOKINGS : BOOKINGS.slice(0, 1)
@@ -69,6 +71,7 @@ export default function DashboardScreen() {
           { label: visitDay ? 'ordinary day' : 'visit day', onClick: () => { if (visitDay) clearArrived(); demo.setVisitDay(!visitDay); setVisitDay(!visitDay) } },
           { label: refs ? 'no referrals' : 'referrals', onClick: () => setRefs((v) => !v) },
           { label: manyBookings ? '1 booking' : '3 bookings', onClick: () => setManyBookings((v) => !v) },
+          { label: unread ? 'all read' : 'new records', onClick: () => { unread ? markAllRead() : clearRead(); setUnread(!unread) } },
           {
             label: 'reset',
             ghost: true,
@@ -77,6 +80,8 @@ export default function DashboardScreen() {
               demo.setVisitDay(false)
               clearArrived()
               clearShares()
+              clearRead()
+              setUnread(true)
               setHasHealth(true)
               setRefs(true)
               setManyBookings(true)

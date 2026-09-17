@@ -151,13 +151,19 @@ export function MetaRow({ lead, title, sub, action, className = '' }) {
    all "lead · title(+sub) · trailing facts (· chevron)". `onClick` promotes the
    whole row to a button; without it the row is static, and no chevron is drawn
    — an affordance that leads nowhere is worse than none. */
-export function ListRow({ lead, title, titleBadge, sub, trailing, onClick }) {
+/* `unread` (2026-09-17, additive): the sr-only reading („ახალი ჩანაწერი") of a
+   record not opened yet — the row gets `--unread` (semibold title) and the words;
+   the red dot itself rides the consumer's `lead` disc (decoration, aria-hidden). */
+export function ListRow({ lead, title, titleBadge, sub, trailing, onClick, unread }) {
   const inner = (
     <>
       {lead && <span className="dash-lrow__lead">{lead}</span>}
       <span className="dash-lrow__text">
         <span className="dash-lrow__titlerow">
-          <span className="dash-lrow__title">{title}</span>
+          <span className="dash-lrow__title">
+            {title}
+            {unread && <span className="gpi-sr-only">, {unread}</span>}
+          </span>
           {titleBadge}
         </span>
         {sub && <span className="dash-lrow__sub">{sub}</span>}
@@ -166,12 +172,13 @@ export function ListRow({ lead, title, titleBadge, sub, trailing, onClick }) {
       {onClick && <Icon name="chevron-right" size={20} className="dash-lrow__chev" />}
     </>
   )
+  const cls = `dash-lrow${unread ? ' dash-lrow--unread' : ''}`
   return onClick ? (
-    <button type="button" className="dash-lrow dash-lrow--btn" onClick={onClick}>
+    <button type="button" className={`${cls} dash-lrow--btn`} onClick={onClick}>
       {inner}
     </button>
   ) : (
-    <div className="dash-lrow">{inner}</div>
+    <div className={cls}>{inner}</div>
   )
 }
 

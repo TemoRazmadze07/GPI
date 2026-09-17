@@ -1173,6 +1173,29 @@
 }
 .gpi-seg__icon { flex: 0 0 auto; }
 .gpi-seg__count { font-weight: 400; } /* data beside the label: lighter by weight, never by colour */
+/* Unread counter (2026-09-17): the inbox convention — a solid danger disc, white
+   figure (#b41c10 on white 7.3:1; the same over the soft variant's pale-indigo
+   active pill). min-width = height, so one digit is a true circle and two grow
+   into a pill; tabular numerals so „12" and „11" sit identically; the 4px side
+   inset keeps a 2-digit figure off the curve. Only the ALERT gets colour —
+   `__count` (how many records exist) stays plain text. sm: 16px, still ≥ the
+   11px type floor. */
+.gpi-seg__badge {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--action-danger);
+  color: var(--action-danger-fg);
+  font: 600 11px/1 var(--font-sans);
+  font-variant-numeric: tabular-nums;
+}
+.gpi-seg--sm .gpi-seg__badge { min-width: 16px; height: 16px; padding: 0 var(--space-2); }
 .gpi-seg__label--short { display: none; } /* ≤767 swaps it in — mobile.css */
 /* min-height 24 (2026-09-04): 4px padding + 13px type measured 21px — under
    the WCAG 2.2 target floor (Rule 7). The track grows to 28. */
@@ -1240,6 +1263,17 @@
    line-height 20px (> font size) so Georgian glyphs aren't clipped by overflow:hidden. */
 .gpi-fsel__btn > span { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; line-height: 20px; }
 .gpi-fsel__btn.is-open { border-color: var(--border-focus); }
+/* `prefix` trigger (2026-09-17): „name: VALUE" — the name muted/regular, the value
+   600 (the bolder part is the one that changes). `__sized` is a one-cell grid: the
+   visible value and one hidden copy of EVERY option share the cell, so the trigger's
+   intrinsic width = its longest option → a stable width, nothing beside it moves
+   when the value changes. Ghosts are visibility:hidden (take space, no paint, no
+   a11y). Each layer keeps the one-line ellipsis rule of the plain trigger. */
+.gpi-fsel__sized { display: grid; }
+.gpi-fsel__sized > span { grid-area: 1 / 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gpi-fsel__ghost { visibility: hidden; }
+.gpi-fsel__prefix { color: var(--text-muted); }
+.gpi-fsel__value { font-weight: 600; color: var(--text-main); }
 /* Disabled = a fixed/locked field (e.g. city in the returning personal-doctor flow):
    sunken bg, muted text + a lock glyph, non-interactive but still legible. */
 .gpi-fsel__btn.is-disabled { background: var(--surface-page); color: var(--text-muted); cursor: default; }

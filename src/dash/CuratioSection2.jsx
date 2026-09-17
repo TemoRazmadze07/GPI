@@ -13,7 +13,7 @@ import ActionMenu from '../components/ActionMenu.jsx'
 import DoctorBioModal from '../components/DoctorBioModal.jsx'
 import { D } from './strings.js'
 import { BOOKINGS, BOOKINGS_COUNT } from './data.js'
-import { TODAY, PERSONS, demo, clearArrived } from './curatioData.js'
+import { TODAY, PERSONS, demo, clearArrived, clearRead, markAllRead, anyUnread } from './curatioData.js'
 
 /* ჩემი კურაციო — v2 (#/dash/curatio?v=2), the merged concept the user locked
    on 2026-09-04 (L0 approved in chat):
@@ -35,8 +35,14 @@ import { TODAY, PERSONS, demo, clearArrived } from './curatioData.js'
        CtaBanner) that says what the policy adds; the history (own data, OTP)
        is untouched, and the transfer dialog offers network doctors only.
        This supersedes the earlier „doctor row + gate note" rendering.
-   PROMOTED 2026-09-07: this is the version #/dash/curatio serves. v1 is parked at
-   ?v=1 (Rule 4 — kept for comparison, not deleted); the demo bar toggles between them. */
+   PROMOTED 2026-09-07: this is the version #/dash/curatio serves. The two-column v1
+   was DELETED 2026-09-17 (user: outdated layout) — git history keeps it.
+   CHANGE-DOCTOR IS THE DEFAULT since 2026-09-17 (the PO settled the rule): the doctor
+   row = Book + kebab [details · change personal doctor]; the history moves with the
+   doctor automatically, so the row carries NO transfer action — sharing particular
+   records with a doctor lives in the table alone (each row's send icon). The published
+   v2 row (transfer button → drawer) stays as the comparison baseline behind the demo
+   chip „transfer (v2)" (Rule 4). */
 
 const ROUTE = '#/dash/curatio'
 const go = (hash) => () => {
@@ -48,22 +54,24 @@ const BOOK = go('#/desktop/appointments/book')
    fake destination would demo a flow that does not exist. ⚠️ flagged. */
 const BUY = undefined
 
-/* Same anatomy as v1's DoctorCard (the `.dash-doc` grammar) — duplicated here
-   so the v1 file, which another track is editing, stays untouched. Fold into
-   one export when v2 is chosen. */
+/* The doctor row — the `.dash-doc` grammar (once shared with v1's DoctorCard;
+   v1 deleted 2026-09-17, so this is its only home). */
 function DoctorBox({ doctor, onTransfer, concept = false, onChange }) {
-  /* CHANGE-DOCTOR CONCEPT (2026-09-16, demo chip „change doctor"): the transfer
-     button gives way to the kebab (user: „a bit hidden in the three dots") with
-     THREE items — „ექიმის დეტალები" (the wizard's bio modal on the current doctor),
-     „ისტორიის გადატანა" (round 2: whatever was not handed over at the change can
-     follow any time) and „პირადი ექიმის შეცვლა". A freshly chosen doctor has no next visit: the sub line says so
-     and Book reads „first visit". v2 (concept off) renders exactly as published. */
+  /* CHANGE-DOCTOR row (default since 2026-09-17; concept since 09-16): the transfer
+     button gives way to the kebab (user: „a bit hidden in the three dots") with TWO
+     items — „ექიმის დეტალები" (the wizard's bio modal on the current doctor) and
+     „პირადი ექიმის შეცვლა". The 09-16 „ისტორიის გადატანა" item is gone: the history
+     moves automatically with the doctor (PO rule), and sharing particular records is
+     the table's per-record action alone. A freshly chosen doctor has no next visit:
+     the sub line says so and Book reads „first visit". v2 (the baseline chip) renders
+     exactly as published. */
   const [bio, setBio] = useState(false)
   return (
     <section className="dash-mrow dash-doc dash-cur2__doc" aria-label={D.cur.doctor.role}>
       <Avatar src={doctor.photo} seed={doctor.avatar} name={doctor.name} size={48} />
       <div className="dash-doc__text">
-        <span className="dash-cur2__label">{D.cur.doctor.role}</span>
+        {/* No „პირადი ექიმი" overline (user, 2026-09-17): the sub line already names the
+            role; the section's aria-label keeps the relationship for assistive tech. */}
         <span className="dash-mrow__title">{doctor.name}</span>
         <span className="dash-mrow__sub">
           {doctor.spec} · {doctor.next ? D.cur.doctor.nextVisit(doctor.next) : D.cur.doctor.noVisit}
@@ -78,9 +86,6 @@ function DoctorBox({ doctor, onTransfer, concept = false, onChange }) {
             label={D.cur.doctor.more}
             items={[
               { id: 'details', label: D.cur.doctor.details, onSelect: () => setBio(true) },
-              /* Round 2 (user): history not handed over at the change must be transferable
-                 any time — the transfer drawer, personal doctor only in this mode. */
-              { id: 'transfer', label: D.cur.doctor.transfer, onSelect: onTransfer },
               { id: 'change', label: D.cur.doctor.change, onSelect: onChange },
             ]}
           />
@@ -134,12 +139,14 @@ export default function CuratioSection2() {
   const upcoming = BOOKINGS.filter((b) => b.person === person.name)
   /* One transfer flow for the page: the doctor row's menu item and the history
      table's row icons open the same dialog and read the same shares store. */
-  /* The change-doctor concept — off by default; the demo chip flips `demo.docChange`.
-     In concept mode the transfer drawer is personal-doctor-only (the PO rule: nobody
-     else can receive history) — it is how records NOT handed over at the change
-     follow later, from the row's kebab or a record's send icon. */
-  const [concept, setConcept] = useState(demo.docChange)
-  const transfer = useTransfer({ personId, insured: !uninsured, personalOnly: concept })
+  /* The change-doctor row is the DEFAULT (2026-09-17); the demo chip „transfer (v2)"
+     flips `demo.transferV2` to the published baseline row for comparison (Rule 4). The
+     transfer drawer itself (the table's per-record share) is the same in both modes. */
+  const [v2, setV2] = useState(demo.transferV2)
+  const concept = !v2
+  /* „new records" ↔ „all read" (2026-09-17): the history's unread counters + row marks. */
+  const [unread, setUnread] = useState(anyUnread)
+  const transfer = useTransfer({ personId, insured: !uninsured })
   const change = useChangeDoctor({ personId, onChanged: transfer.refresh })
   /* `?transfer=1` (flow map / study links): land with the dialog open — the
      OTP first if the session is locked, exactly as a click would. Read once. */
@@ -148,8 +155,9 @@ export default function CuratioSection2() {
     const q = h.indexOf('?')
     const params = q !== -1 ? new URLSearchParams(h.slice(q + 1)) : null
     if (params?.get('transfer') === '1') transfer.open()
-    /* `?change=1` — land on the concept with its drawer open (flow map / study links). */
-    if (params?.get('change') === '1') { demo.setDocChange(true); setConcept(true); change.open() }
+    /* `?change=1` — land with the change-doctor drawer open (flow map / study links);
+       forces the default row in case the baseline chip was left on. */
+    if (params?.get('change') === '1') { demo.setTransferV2(false); setV2(false); change.open() }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -167,10 +175,10 @@ export default function CuratioSection2() {
           { label: demo.windowClosed() ? 'window: open' : 'window: closed', onClick: () => { demo.setWindowClosed(!demo.windowClosed()); window.location.reload() } },
           { label: 'reset ticket', ghost: true, onClick: () => { clearArrived(); window.location.reload() } },
           { label: 'clear transfers', ghost: true, onClick: transfer.reset },
-          /* The concept switch. Turning it OFF also puts the seed doctor back and clears
-             the handover marks, so v2 demos from a clean state. */
-          { label: concept ? 'transfer (v2)' : 'change doctor', onClick: () => { const on = !concept; demo.setDocChange(on); if (!on) change.reset(); setConcept(on) } },
-          { label: 'v1', ghost: true, onClick: go('#/dash/curatio?v=1') },
+          { label: unread ? 'all read' : 'new records', onClick: () => { unread ? markAllRead() : clearRead(); setUnread(!unread) } },
+          /* The baseline switch. Going to v2 also puts the seed doctor back and clears
+             the handover marks, so the published row demos from a clean state. */
+          { label: v2 ? 'change doctor' : 'transfer (v2)', onClick: () => { const on = !v2; demo.setTransferV2(on); if (on) change.reset(); setV2(on) } },
         ]}
       />
 

@@ -287,7 +287,6 @@ export const kaDash = {
       role: 'პირადი ექიმი',
       nextVisit: (d) => `შემდეგი ვიზიტი: ${d}`,
       book: 'ჩაწერა',
-      remote: 'დისტანციური კონსულტაცია',
       transfer: 'ისტორიის გადატანა',
       /* Accessible name of the kebab that holds the two actions above (2026-09-08). */
       more: 'მეტი მოქმედება',
@@ -354,9 +353,14 @@ export const kaDash = {
       renew: 'ჩაეწერე განახლებისთვის',
       renewNote: 'რეცეპტის განახლებისთვის საჭიროა ვიზიტი პირად ექიმთან',
       form100: 'ფორმა 100',
+      /* The row's eye (2026-09-17): opens the document in a new tab — the accessible name says so. */
+      view: 'ნახვა',
+      newTab: 'იხსნება ახალ ფანჯარაში',
       expiryBadge: (n) => `${n} ვადა`,
       empty: 'ჩანაწერები ვერ მოიძებნა',
       emptyHint: 'შეცვალე ფილტრები ან ძებნის ტექსტი',
+      /* Unread (2026-09-17): the section counters' accessible reading + the row mark. */
+      unread: { tab: (n) => `${n} ახალი`, row: 'ახალი ჩანაწერი' },
     },
     /* History transfer (2026-09-09) — the doctor-row action, finally wired. ONE flow
        for both entry points: full history OR a checklist of records, to the personal
@@ -370,23 +374,22 @@ export const kaDash = {
     change: {
       title: 'პირადი ექიმის შეცვლა',
       ctx: (person, doc) => `${person} · ახლანდელი პირადი ექიმი: ${doc}`,
-      /* Round 3 (2026-09-17, user): the block headings are INSTRUCTIONS, no „1 ·" / „2 ·"
-         numbers — the imperative verb carries the sequence. Note the heading says
-         „გაუზიარე" (share) while the buttons and toasts still say „გადატანა" (transfer):
-         the user's wording, and share-vs-transfer is the open stakeholder question. */
+      /* 2026-09-17 change request (after the PO discussion): the handover is AUTOMATIC — no
+         record picker. The rule is stated ONCE, up front, as an info alert; then the clinic,
+         then the doctors who practise there. Headings stay instructions without numbers
+         (round 3). ⚠️ „გადაეცემა" (transfer) — share-vs-transfer wording is still the open
+         stakeholder question; the toast uses the same verb. */
+      info: 'ახალი პირადი ექიმის არჩევის შემდეგ შენი სამედიცინო ისტორია მას ავტომატურად გადაეცემა.',
+      clinic: 'აირჩიე კლინიკა',
+      clinicPh: 'კურაციოს კლინიკა',
       pick: 'აირჩიე ახალი პირადი ექიმი',
-      /* Round 2 (2026-09-16): block 2 = the transfer drawer's record picker, all selected
-         up front; the consent line is the mobile docsel wording; block 3 removed. */
-      hist: 'გაუზიარე სამედიცინო ისტორია ახალ პირად ექიმს',
-      consent: (doc) => `${doc} მიიღებს წვდომას არჩეულ ჩანაწერებზე კურაციოში`,
-      newDoc: 'ახალი ექიმი',
+      noDoctor: 'ამ კლინიკაში სხვა პირადი ექიმი არ არის',
       cancel: 'გაუქმება',
       confirm: 'ექიმის შეცვლა',
-      /* NOT the heading's words any more (round 3) — an error that repeats the heading
-         verbatim reads as an echo, not as a fix. */
+      /* NOT the headings' words (round 3) — an error that repeats the heading verbatim
+         reads as an echo, not as a fix. */
+      errClinic: 'აირჩიე კლინიკა სიიდან',
       errDoctor: 'აირჩიე ექიმი სიიდან',
-      done: (doc) => `პირადი ექიმი შეიცვალა: ${doc}`,
-      doneN: (n, doc) => `პირადი ექიმი შეიცვალა: ${doc} · გადაეცა ${n} ჩანაწერი`,
       doneHist: (doc) => `პირადი ექიმი შეიცვალა: ${doc} · სრული ისტორია გადატანილია`,
     },
     transfer: {
@@ -683,7 +686,6 @@ export const enDash = {
       role: 'Personal doctor',
       nextVisit: (d) => `Next visit: ${d}`,
       book: 'Book',
-      remote: 'Remote consultation',
       transfer: 'Transfer history',
       details: 'Doctor details',
       change: 'Change personal doctor',
@@ -734,23 +736,26 @@ export const enDash = {
       renew: 'Book a renewal visit',
       renewNote: 'Renewing a prescription requires a visit to your personal doctor',
       form100: 'Form 100',
+      view: 'View',
+      newTab: 'opens in a new tab',
       expiryBadge: (n) => `${n} expiring`,
       empty: 'No records found',
       emptyHint: 'Change the filters or the search text',
+      unread: { tab: (n) => `${n} new`, row: 'New record' },
     },
     /* see the ka note — one flow, two entry points; draft copy */
     change: {
       title: 'Change personal doctor',
       ctx: (person, doc) => `${person} · current personal doctor: ${doc}`,
+      info: 'After you choose a new personal doctor, your medical history is transferred to them automatically.',
+      clinic: 'Choose a clinic',
+      clinicPh: 'Curatio clinic',
       pick: 'Choose a new personal doctor',
-      hist: 'Share your medical history with the new doctor',
-      consent: (doc) => `${doc} will get access to the selected records in Curatio`,
-      newDoc: 'The new doctor',
+      noDoctor: 'No other personal doctor at this clinic',
       cancel: 'Cancel',
       confirm: 'Change doctor',
+      errClinic: 'Choose a clinic from the list',
       errDoctor: 'Choose a doctor from the list',
-      done: (doc) => `Personal doctor changed to ${doc}`,
-      doneN: (n, doc) => `Personal doctor changed to ${doc} · ${n} ${n === 1 ? 'record' : 'records'} transferred`,
       doneHist: (doc) => `Personal doctor changed to ${doc} · full history transferred`,
     },
     transfer: {

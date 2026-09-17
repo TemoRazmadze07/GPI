@@ -73,8 +73,8 @@ export const apps = [
           { id: 'dCurHist', path: 'dash/curatio/history',  label: 'history — analyses (OTP-gated)',   status: 'in-progress', hash: '/dash/curatio?sec=analyses' },
           { id: 'dCurMeds', path: '…/history?sec=meds',    label: '↳ prescriptions — expiry + renewal', status: 'in-progress', hash: '/dash/curatio?sec=meds' },
           { id: 'dCurVis',  path: '…/history?sec=visits',  label: '↳ visits — form 100',              status: 'in-progress', hash: '/dash/curatio?sec=visits' },
-          { id: 'dCurTrf',  path: 'dash/curatio?transfer=1', label: '↳ transfer history — full / selected → doctor (OTP-gated)', status: 'in-progress', hash: '/dash/curatio?transfer=1' },
-          { id: 'dCurChg',  path: 'dash/curatio?change=1',   label: '↳ CONCEPT change personal doctor — kebab → drawer, history picker all-selected (OTP-gated)', status: 'in-progress', hash: '/dash/curatio?change=1' },
+          { id: 'dCurTrf',  path: 'dash/curatio?transfer=1', label: '↳ share records with a doctor — the table\'s per-record drawer; v2 baseline row via the demo chip (OTP-gated)', status: 'in-progress', hash: '/dash/curatio?transfer=1' },
+          { id: 'dCurChg',  path: 'dash/curatio?change=1',   label: '↳ change personal doctor — DEFAULT: kebab → drawer: info alert → clinic → doctor, history moves automatically (OTP-gated)', status: 'in-progress', hash: '/dash/curatio?change=1' },
         ],
       },
       {

@@ -14,7 +14,16 @@ import Icon from '../lib/Icon.jsx'
    trigger AND in the menu. Ports the mobile PersonSelect anatomy (avatar · name
    + OCIN) onto the desktop Select instead of forking a second dropdown; options
    without them render exactly as before. */
-export default function Select({ value, placeholder, options, onChange, disabled = false, error = false, className = '', ariaLabel, renderValue }) {
+/* `prefix` (additive, 2026-09-17, user: „make the value bolder … it should not
+   jump"): a FILTER trigger — „კატეგორია: ყველა" — as two parts, the filter's
+   name muted + regular and the VALUE at 600, so the eye lands on what is set.
+   It also makes the trigger STABLE-WIDTH: every option is rendered once more,
+   invisibly, stacked in the same grid cell as the visible one, so the trigger is
+   as wide as its LONGEST option from the start and never grows or shrinks when
+   the value changes (the search field beside it stopped resizing). No hard-coded
+   px, so ka/en and per-section option sets size themselves. Supersedes
+   `renderValue` for the „name: value" case; `renderValue` stays for anything else. */
+export default function Select({ value, placeholder, options, onChange, disabled = false, error = false, className = '', ariaLabel, renderValue, prefix }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
@@ -34,6 +43,14 @@ export default function Select({ value, placeholder, options, onChange, disabled
 
   const selected = options.find((o) => o.value === value)
   const rich = options.some((o) => o.lead || o.sub)
+  /* How the closed trigger prints an option (plain rows). */
+  const print = (o) =>
+    prefix ? (
+      <>
+        <span className="gpi-fsel__prefix">{prefix}: </span>
+        <span className="gpi-fsel__value">{o.label}</span>
+      </>
+    ) : renderValue ? renderValue(o) : o.label
   const Row = ({ o, label }) => (
     <>
       {o.lead && <span className="gpi-fsel__lead" aria-hidden="true">{o.lead}</span>}
@@ -58,9 +75,17 @@ export default function Select({ value, placeholder, options, onChange, disabled
       >
         {selected && rich ? (
           <Row o={selected} label={renderValue ? renderValue(selected) : selected.label} />
+        ) : prefix && selected ? (
+          <span className="gpi-fsel__sized">
+            <span className="gpi-fsel__cur">{print(selected)}</span>
+            {/* the ghost stack: sizes the trigger to the longest option, never read */}
+            {options.map((o) => (
+              <span key={o.value} className="gpi-fsel__ghost" aria-hidden="true">{print(o)}</span>
+            ))}
+          </span>
         ) : (
           <span className={selected ? '' : 'gpi-fsel__ph'}>
-            {selected ? (renderValue ? renderValue(selected) : selected.label) : placeholder}
+            {selected ? print(selected) : placeholder}
           </span>
         )}
         <Icon name={disabled ? 'lock' : 'chevron-down'} size={16} />
